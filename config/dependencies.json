@@ -1,0 +1,38 @@
+{
+  "version": "0.1.0-alpha.26",
+  "protocol": 9,
+  "journal_format": 4,
+  "checkpoint_format": 2,
+  "sdk": {
+    "repository": "https://gitlab.com/gothiccoop/gothiccoop.git",
+    "commit": "0255381eeb86ea4b888f420fafaa4a10ee4d85e3",
+    "included": false
+  },
+  "runtime": {
+    "game": "Gothic II: Die Nacht des Raben",
+    "executable": "2.6 (fix)",
+    "union": "1.0m",
+    "architecture": "x86",
+    "union_menu": "zUnionMenu.d aus der eigenen Union-Installation; nicht enthalten"
+  },
+  "qol": {
+    "ninja": "4.1.16",
+    "toolkit": "16.0",
+    "quickloot": "1.9.5",
+    "sprint": "2.4.0",
+    "patchmenu": "1.1.1",
+    "bridge_revision": 1,
+    "original_archives_included": false
+  },
+  "compiler": {
+    "toolset": "v142",
+    "language": "C++17",
+    "windows_sdk": "10.0.19041.0",
+    "target": "Release|Win32"
+  },
+  "optional_renderer": {
+    "name": "GD3D11",
+    "tested_profile": "17.9.7",
+    "included": false
+  }
+}
