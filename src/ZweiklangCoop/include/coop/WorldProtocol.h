@@ -3,6 +3,18 @@
 #include <map>
 #include <type_traits>
 namespace zweiklang::worldsync {
+inline int MatchAnchor(const std::vector<float>& distances) {
+    int exact=-1,exactCount=0,best=-1;float first=4000000,second=4000000;
+    for(std::size_t i=0;i<distances.size();++i){const float d=distances[i];if(!std::isfinite(d)||d<0)continue;if(d<=1){exact=static_cast<int>(i);++exactCount;}if(d<first){second=first;first=d;best=static_cast<int>(i);}else if(d<second)second=d;}
+    if(exactCount)return exactCount==1?exact:-1;
+    return best>=0&&std::sqrt(second)-std::sqrt(first)>=100?best:-1;
+}
+struct TalkLease {
+    unsigned npc=0;std::uint64_t until=0;
+    void Begin(unsigned id,std::uint64_t now){npc=id;until=id?now+3000:0;}
+    bool Allows(unsigned id,std::uint64_t now)const{return id&&id==npc&&now<until;}
+    void Clear(){npc=0;until=0;}
+};
 enum class Life:std::uint32_t {Visible=1,Dormant=2,Removed=3};
 inline unsigned RemovalLife(bool culling){return static_cast<unsigned>(culling?Life::Dormant:Life::Removed);}
 struct Ground {std::uint32_t id=0,revision=0,instance=0,amount=0;bool present=false;std::array<float,3> anchor{},position{};std::string name;};

@@ -16,6 +16,8 @@ void TestNetworkMovement(){
     Check(zweiklang::PlaceNetworkActor(actor,2100.0f,180.0f)&&!actor.collDetectionStatic&&actor.collDetectionDynamic,"asymmetric collision configuration preserved");
     actor.isInMovementMode=1;
     Check(!zweiklang::PlaceNetworkActor(actor,9999.0f,0.0f)&&actor.position==2100&&actor.commits==2&&actor.isInMovementMode==1,"existing native movement block is never nested or committed by network");
+    actor.isInMovementMode=0;actor.collDetectionDynamic=false;
+    Check(zweiklang::PlaceNetworkActor(actor,2200.0f,90.0f)&&!actor.collDetectionStatic&&!actor.collDetectionDynamic,"nonphysical partner stays nonphysical after network pose commit");
 }
 void TestActiveAnimationPrefix(){
     struct Animation {std::string name;};

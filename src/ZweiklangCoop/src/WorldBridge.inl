@@ -13,16 +13,32 @@ bool worldConstructing=false,worldCulling=false,worldGuestPass=false,worldNative
 oCInformationManager* worldTradeManager=nullptr;
 bool worldTradeReady=false;
 std::string worldGroundPending;
+ws::TalkLease worldTalkLease;
 
 void QueueWorld(co::Bytes bytes){if(bytes.size()>net::MaximumDatagramBytes-net::ProtocolHeaderBytes||worldOutbox.size()>=8192){combatFailure="World lifecycle queue limit reached";return;}worldOutbox.push_back(std::move(bytes));}
 void WorldReset(){
     worldConstructing=true;
+    worldTalkLease.Clear();
     for(auto& entry:groundBindings){if(entry->owned&&entry->item->homeWorld)entry->item->RemoveVobFromWorld();entry->item->Release();}
     worldOutbox.clear();groundBindings.clear();groundByPointer.clear();groundById.clear();npcProbes.clear();npcProbeTargets.clear();npcProbeSerial=0;nextGroundId=1;groundCursor=0;
     worldDualPasses=worldTimersRestored=worldGuestTicks=0;lastWorldScan=lastWorldSend=lastWorldLog=worldConnectedAt=0;worldGroundPending.clear();worldTradeManager=nullptr;worldTradeReady=false;worldConstructing=false;
 }
-bool WorldLocalTalksTo(oCNpc* npc){if(!npc||!player)return false;if(player->talkOther==npc)return true;auto& info=oCInformationManager::GetInformationManager();return !info.IsDone&&info.Npc==npc&&info.Player==player;}
-unsigned WorldLocalInteraction(){if(!player)return 0;auto* npc=player->talkOther;auto& info=oCInformationManager::GetInformationManager();if(!npc&&!info.IsDone&&info.Player==player)npc=info.Npc;auto it=npcByPointer.find(npc);return it==npcByPointer.end()?0:it->second->id;}
+bool WorldLocalTalksTo(oCNpc* npc){
+    if(!npc||!player)return false;
+    if(player->talkOther==npc||npc->talkOther==player)return true;
+    auto& info=oCInformationManager::GetInformationManager();if(!info.IsDone&&info.Npc==npc&&info.Player==player)return true;
+    const auto binding=npcByPointer.find(npc);
+    return binding!=npcByPointer.end()&&worldTalkLease.Allows(binding->second->id,Now());
+}
+bool WorldBeginTalk(oCNpc* npc,oCNpc* other){
+    if(!CombatConnected()||HostCombat()||other!=player||!npc||npc==player||npc==PartnerNpc()||npc->IsDead()||npc->IsUnconscious())return false;
+    const auto it=npcByPointer.find(npc);if(it==npcByPointer.end()||!it->second->id)return false;
+    auto& entry=*it->second;worldTalkLease.Begin(entry.id,Now());
+    if(auto* model=npc->GetModel()){model->aniTransScale=entry.rootScale;model->doVobRot=entry.originalRotation;}
+    npc->SetSleepingMode(zVOB_AWAKE);
+    CombatLog("dialog_request","npc="+std::string(npc->GetObjectName().ToChar())+" id="+std::to_string(entry.id)+" guest_ai_lease_ms=3000");return true;
+}
+unsigned WorldLocalInteraction(){if(!player)return 0;auto* npc=player->talkOther;auto& info=oCInformationManager::GetInformationManager();if(!npc&&!info.IsDone&&info.Player==player)npc=info.Npc;auto it=npcByPointer.find(npc);if(it!=npcByPointer.end())return it->second->id;return worldTalkLease.Allows(worldTalkLease.npc,Now())?worldTalkLease.npc:0;}
 bool WorldTradePaused(oCNpc* npc){
     if(!HostCombat()||!npc||WorldLocalTalksTo(npc))return false;
     if(guestLootSource.corpse==npc&&guestLootSource.identity.kind==lo::Source::Merchant)return true;
@@ -93,7 +109,9 @@ NpcBinding* WorldCreateNpc(const co::Npc& message){
     if(worldConstructing)return nullptr;worldConstructing=true;
     auto* npc=zDYNAMIC_CAST<oCNpc>(ogame->GetGameWorld()->CreateVob(zVOB_TYPE_NSC,message.instance));
     if(!npc){worldConstructing=false;combatFailure="Cannot construct authoritative NPC instance";return nullptr;}
-    npc->dontWriteIntoArchive=TRUE;npc->ClearPerception();
+    // Keep native dialogue perception on real world NPCs. Mirror hooks suppress
+    // autonomous AI, while a requested guest conversation needs AssessTalk_S.
+    npc->dontWriteIntoArchive=TRUE;
     auto* entry=RegisterCombatNpc(npc);if(!entry){npc->Release();worldConstructing=false;return nullptr;}
     entry->owned=entry->mirror=true;entry->anchor=zVEC3(message.anchor[0],message.anchor[1],message.anchor[2]);
     zVEC3 position(message.pose.x,message.pose.y,message.pose.z);npc->Enable(position);if(!npc->homeWorld)ogame->GetWorld()->AddVob(npc);
@@ -112,8 +130,9 @@ void WorldApplyNpc(NpcBinding& entry,const co::Npc& state){
         entry.visualKey=key;
     }
     QolApplySprint(npc,state.sprint);
-    if(auto* model=npc->GetModel()){if(!entry.modelDefaultsCaptured){entry.rootScale=model->aniTransScale;entry.originalRotation=model->doVobRot;entry.modelDefaultsCaptured=true;}model->aniTransScale=zVEC3(0,0,0);model->doVobRot=FALSE;}
-    npc->SetPhysicsEnabled(FALSE);npc->SetSleepingMode(zVOB_AWAKE);
+    const bool talking=WorldLocalTalksTo(npc);
+    if(auto* model=npc->GetModel()){if(!entry.modelDefaultsCaptured){entry.rootScale=model->aniTransScale;entry.originalRotation=model->doVobRot;entry.modelDefaultsCaptured=true;}model->aniTransScale=talking?entry.rootScale:zVEC3(0,0,0);model->doVobRot=talking?entry.originalRotation:FALSE;}
+    npc->SetPhysicsEnabled(talking?entry.originalPhysics:FALSE);npc->SetSleepingMode(zVOB_AWAKE);
 }
 GroundBinding* RegisterGround(oCItem* item){
     if(!item||!item->homeWorld||item->homeWorld!=ogame->GetWorld()||item->amount<=0||item->GetInstance()<=0)return nullptr;
@@ -171,7 +190,7 @@ bool WorldHostRequest(rc::Message& m){
 bool WorldGroundAction(oCNpc* actor,zCVob* vob,bool drop){
     if(worldConstructing||worldNativeDropPass||actor!=player||!CombatConnected())return false;
     auto* item=zDYNAMIC_CAST<oCItem>(vob);if(!item)return false;
-    if(!recoveryReady||!RecoveryCanLoot()){notice="Bodenitems warten auf den sicheren Inventarabgleich.";return true;}
+    if(!recoveryReady||!RecoveryCanLoot()){notice="Bodenitems warten auf den sicheren Inventarabgleich.";LootLog("ground_blocked","item="+std::string(item->GetObjectName().ToChar())+" ready="+std::to_string(recoveryReady)+" reason="+(recoveryError.empty()?"Checkpoint fehlt":recoveryError));return true;}
     for(int i=0;i<8&&!worldOutbox.empty()&&lootOutbox.size()<48;++i){lootOutbox.push_back(std::move(worldOutbox.front()));worldOutbox.pop_front();}
     if(!worldGroundPending.empty()){notice="Ein Gegenstandsvorgang wird noch bestätigt.";return true;}
     if(drop&&(!LootEligible(item)||item->HasFlag(1<<12))){notice="Ausgeruestete oder gebundene Gegenstaende bitte nicht als Koop-Bodenitem ablegen.";return true;}

@@ -9,6 +9,9 @@ bool recoveryReady=false,recoveryLoading=false,recoveryHello=false,recoveryBlock
 unsigned long long recoveryLastLocks=0,recoveryLastReplay=0,recoveryLastQueryScan=0;
 int recoverySaveSlot=-1;
 bool recoverySaveStarted=false;
+bool recoveryNativeSaveCompleted=false;
+native_save::Stamp recoverySavedatBefore,recoveryWorldBefore;
+std::string recoverySavingWorld;
 rc::Checkpoint recoverySavingCheckpoint;
 std::string recoveryLastWorld;
 std::map<std::string,unsigned long long> recoveryLockTimes;
@@ -20,15 +23,17 @@ void RecoveryInit(){
     try{recoveryDir=systemDirectory+"\\ZweiklangCoopState";if(!CreateDirectoryA(recoveryDir.c_str(),nullptr)&&GetLastError()!=ERROR_ALREADY_EXISTS)throw std::runtime_error("Cannot create recovery directory");recoveryStore.Open(recoveryDir+"\\transactions.bin");recoveryStoreReady=true;}
     catch(const std::exception& e){RecoveryFail(e.what());}
 }
-std::string RecoveryFullPath(const std::string& input){char out[MAX_PATH];const auto n=GetFullPathNameA(input.c_str(),MAX_PATH,out,nullptr);if(!n||n>=MAX_PATH)throw std::runtime_error("Recovery path invalid");return out;}
 std::string RecoverySlot(int slot){
     if(!zoptions||!gameMan||!gameMan->savegameManager||slot<0||slot>20)throw std::runtime_error("Recovery save slot unavailable");
-    const auto base=RecoveryFullPath(zoptions->GetDirString(DIR_SAVEGAMES).ToChar());
+    // GetDirString is a configured path; GetFullPath resolves the engine's
+    // native directory without relying on Gothic's changing working directory.
+    auto* directory=zoptions->GetDir(DIR_SAVEGAMES);
+    if(!directory)throw std::runtime_error("Native save directory unavailable");
+    const std::string base=directory->GetFullPath().ToChar();
     const std::string relative=gameMan->savegameManager->GetSlotDirName(slot).ToChar();
-    const auto path=RecoveryFullPath(base+"\\"+relative);
-    const auto prefix=base.back()=='\\'?base:base+"\\";
-    if(path.size()<prefix.size()||_strnicmp(path.c_str(),prefix.c_str(),prefix.size())!=0)throw std::runtime_error("Recovery slot outside native save directory");
-    return path.back()=='\\'?path:path+"\\";
+    const auto path=native_save::Slot(base,relative);
+    LootLog("recovery_save_path","slot="+std::to_string(slot)+" configured="+zoptions->GetDirString(DIR_SAVEGAMES).ToChar()+" native="+base+" resolved="+path);
+    return path;
 }
 std::string RecoveryFingerprint(const std::string& slot){
     const auto path=slot+"SAVEINFO.SAV";auto b=rc::ReadFile(path);std::uint64_t hash=14695981039346656037ull;for(auto c:b){hash^=c;hash*=1099511628211ull;}
@@ -62,7 +67,10 @@ rc::Checkpoint RecoveryBeforeSave(int slot){
         if(recoveryTimeline.empty())recoveryTimeline=rc::NewGuid();
         c.profile=recoveryStore.Profile();c.timeline=recoveryTimeline;c.effects=recoveryEffects;
         const auto dir=RecoverySlot(slot);
-        if(!CreateDirectoryA(dir.c_str(),nullptr)&&GetLastError()!=ERROR_ALREADY_EXISTS)throw std::runtime_error("Cannot create save checkpoint directory");
+        native_save::PrepareDirectory(dir);
+        recoverySavedatBefore=native_save::Capture(dir+"SAVEDAT.SAV");
+        recoverySavingWorld=CurrentWorld();const auto dot=recoverySavingWorld.find_last_of('.');if(dot!=std::string::npos)recoverySavingWorld.resize(dot);recoverySavingWorld+=".SAV";
+        recoveryWorldBefore=native_save::Capture(dir+recoverySavingWorld);
         if(GetFileAttributesA((dir+"SAVEINFO.SAV").c_str())!=INVALID_FILE_ATTRIBUTES)c.fingerprint=RecoveryFingerprint(dir);
         rc::AtomicWrite(recoveryDir+"\\saving-slot"+std::to_string(slot)+".bin",rc::Encode(c));
     }catch(const std::exception& e){RecoveryFail(e.what());}
@@ -70,7 +78,7 @@ rc::Checkpoint RecoveryBeforeSave(int slot){
 }
 void RecoveryAfterSave(int slot,rc::Checkpoint c){
     if(!recoveryError.empty())return;
-    try{const auto dir=RecoverySlot(slot);const auto fp=RecoveryFingerprint(dir);if(!c.fingerprint.empty()&&fp==c.fingerprint)throw std::runtime_error("Native save header unchanged; checkpoint not advanced");c.fingerprint=fp;rc::AtomicWrite(dir+"ZWEIKLANG_RECOVERY.BIN",rc::Encode(c));if(!DeleteFileA((recoveryDir+"\\saving-slot"+std::to_string(slot)+".bin").c_str()))throw std::runtime_error("Cannot finish save checkpoint guard");recoveryReady=true;LootLog("recovery_checkpoint_save","slot="+std::to_string(slot)+" effects="+std::to_string(c.effects.size()));}
+    try{const auto dir=RecoverySlot(slot);const auto fp=RecoveryFingerprint(dir);if(!recoveryNativeSaveCompleted||!native_save::Advanced(recoverySavedatBefore,native_save::Capture(dir+"SAVEDAT.SAV"))||!native_save::Advanced(recoveryWorldBefore,native_save::Capture(dir+recoverySavingWorld)))throw std::runtime_error("Native save incomplete: world/character files not advanced");if(!c.fingerprint.empty()&&fp==c.fingerprint)throw std::runtime_error("Native save header unchanged; checkpoint not advanced");c.fingerprint=fp;rc::AtomicWrite(dir+"ZWEIKLANG_RECOVERY.BIN",rc::Encode(c));if(!DeleteFileA((recoveryDir+"\\saving-slot"+std::to_string(slot)+".bin").c_str()))throw std::runtime_error("Cannot finish save checkpoint guard");recoveryReady=true;LootLog("recovery_checkpoint_save","slot="+std::to_string(slot)+" effects="+std::to_string(c.effects.size()));}
     catch(const std::exception& e){RecoveryFail(e.what());}
 }
 LootSource RecoverySource(const rc::Tx& tx){
@@ -125,9 +133,9 @@ bool RecoveryApply(const rc::Record& record,bool desired){
 }
 bool RecoveryReconcile(const rc::Record& r){return rc::Reconcile(r,recoveryEffects,RecoveryApply);}
 bool RecoveryCanLoot(){
+    if(!recoveryError.empty()||recoveryBlocked){notice="Inventarabgleich gesperrt; konkrete Ursache in der Diagnose (Strg+Umschalt+D).";return false;}
     if(CombatConnected()&&!recoveryReady){notice="Bitte Testspielstand laden oder einmal speichern, damit Inventar-Recovery gebunden ist.";return false;}
-    if(recoveryError.empty()&&!recoveryBlocked)return true;
-    notice="Offener Inventarabgleich: bitte denselben Testspielstand/Partner verwenden; siehe Recovery-Log.";return false;
+    return true;
 }
 lo::Identity RecoveryIdentity(const LootSource& source){
     auto id=source.identity;

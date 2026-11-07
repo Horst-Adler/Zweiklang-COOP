@@ -32,7 +32,9 @@ func int ZK_COOP_QOL_BLOCK_QUICKLOOT()
 };
 func int ZK_COOP_QOL_BLOCK_PARTYSPRINT()
 {
-    return ZK_COOP_QOL_GUEST;
+    // The hero keeps upstream sprint; partner overlays come from the plugin.
+    // Do not pass the AI-less remote actor into the upstream party loop.
+    return ZK_COOP_QOL_ACTIVE;
 };
 func void ZK_COOP_PREPARE_QUICKLOOT()
 {

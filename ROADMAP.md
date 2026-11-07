@@ -11,7 +11,7 @@ Spielabnahme. Es gibt keine feste Termin- oder Kampagnenkompatibilitätszusage.
 - Namenloser Held und Velaya-Profil; Partnergesichter und Animationen korrigiert.
 - Verbindung und Reconnect im LAN in früheren Tests bestätigt.
 - Alpha.15: Bewegung ohne Reconnect, Gasttreffer, Gast-Aggro und gleiche Gegner-HP bestätigt.
-- 2.196 technische Assertions im aktuellen Alpha.26-Code und im separaten
+- 2.228 technische Assertions im aktuellen Alpha.27-Code und im separaten
   Veröffentlichungscheckout erfolgreich ausgeführt.
 
 ## Alpha – gemeinsamer Kern
@@ -92,3 +92,7 @@ Figuren, Kampf, Items, Quests und Saveprofilen. G2-Adressen nicht übernehmen.
 Separate Zwei-PC-Kampagnen- und Stabilitätsabnahme vor einer eigenen Freigabe.
 
 **Odyssee und Gothic 1 sind keine Abschlusskriterien für die Gothic-2-Vollversion.**
+
+## Unmittelbare Wiederholungsprüfung nach Alpha.26
+
+Zuerst die Alpha.27-Korrekturen für Speicherung, Bereitschaft, Einzelaufnahmen, Gastdialoge und Spielerkollision oben im Turm abnehmen. Dann den unterbrochenen Cavalorn-Ablauf fortsetzen. Frühere grüne Haken ersetzen diese Regression nicht; eine technische Korrektur ist noch keine bestätigte gemeinsame Spielabnahme.

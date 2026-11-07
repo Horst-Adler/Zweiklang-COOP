@@ -80,7 +80,7 @@ std::vector<std::string> SessionStatusLines(){
     const auto now=Now();const auto reason=session::Readiness(localReadiness,havePeerReadiness?&peerReadiness:nullptr,haveTarget&&now-lastSnapshotAt<=2000);
     lines.push_back(session::Text(reason));
     if(!diagnosticOverlay)return lines;
-    lines.push_back("Protokoll 8 | Welt "+CurrentWorld()+" | Zustand "+(haveTarget?std::to_string(now-lastSnapshotAt)+" ms":"fehlt")+" | offen "+std::to_string(network.PendingEvents()+lootOutbox.size()+worldOutbox.size()+QuestPendingAwards()));
+    lines.push_back("Protokoll "+std::to_string(net::ProtocolVersion)+" | Welt "+CurrentWorld()+" | Zustand "+(haveTarget?std::to_string(now-lastSnapshotAt)+" ms":"fehlt")+" | offen "+std::to_string(network.PendingEvents()+lootOutbox.size()+worldOutbox.size()+QuestPendingAwards()));
     lines.push_back("Abstand "+(haveTarget?std::to_string(static_cast<int>(std::sqrt(Distance2(player->GetPositionWorld(),zVEC3(target.x,target.y,target.z)))/100))+" m":"?")+" | Cavalorn "+std::to_string(QuestInt("MIS_ADDON_CAVALORN_KILLBRAGO"))+" | naechste Marke "+session::Step(markerStep));
     if(!recoveryError.empty())lines.push_back("Sperre: "+recoveryError.substr(0,90));else if(recoveryBlocked)lines.push_back("Sperre: gespeicherte Inventarvorgaenge warten auf Abgleich.");
     if(!questError.empty())lines.push_back("Quest: "+questError.substr(0,90));

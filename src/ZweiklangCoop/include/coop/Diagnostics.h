@@ -17,6 +17,8 @@ private:
     void Rotate();
     std::mutex mutex_;
     FILE* file_ = nullptr;
+    FILE* events_ = nullptr;
+    FILE* beginning_ = nullptr;
     std::string path_, name_, role_ = "OFFLINE";
     int level_ = 1;
     unsigned int maxBytes_ = 8 * 1024 * 1024;

@@ -1,7 +1,7 @@
 # Versionshistorie
 
 Belegbare Entwicklungsstände, keine nachträglichen öffentlichen Releases.
-Die aktuelle Quellversion ist **0.1.0-alpha.26**, Stand 7. November 2026.
+Die aktuelle Quellversion ist **0.1.0-alpha.27**, Stand 7. November 2026.
 Die lokale Entwicklungsnummer wird für diese Veröffentlichung nicht erhöht.
 
 | Stand | Änderungen | Nachweis / Einschränkung |
@@ -36,3 +36,11 @@ Die lokale Entwicklungsnummer wird für diese Veröffentlichung nicht erhöht.
   Diagnosearchive und Buildprodukte ausgeschlossen.
 
 Es wird kein GitHub-Release allein aufgrund dieses Entwicklungsstands erzeugt.
+
+## Alpha.27 – Befundkorrekturen nach dem ersten Durchlauf
+
+Der Alpha.26-Test endete vor dem Questabschluss: zwei als Fehler markierte Schritte, weitere ungeklärte Punkte und ein zusätzlicher Kollisionsbefund. Speicher-/Checkpointfehler blockierten Inventaraktionen; ein separater Infrastrukturabbruch beendet den Durchlauf, ohne einen Spielabsturz zu beweisen.
+
+Native Savepfade, frühe Schreibvorprüfung, Prüfung der eigentlichen Save-Dateien und eindeutige Abschlussmeldungen korrigiert. Gastdialogübergang freigegeben, Partnerkollision entfernt, NPC-Physik beim Trennen wiederhergestellt, Sprint-Partyguard auf beide PCs erweitert, identische eindeutige Spawnanker berücksichtigt. Wesentliche Ereignisse und Sitzungsanfang haben eigene Logaufbewahrung; Protokollanzeige korrigiert. Testplan durch konkrete Marker-Anleitung ergänzt.
+
+**2.228 technische Assertions und Win32-Build bestanden. Native Abnahme der Korrekturen offen.** Protokoll 9, Journal 4, Checkpointformat 2 unverändert; kein Fertig-Release. [Details](docs/ALPHA-27.md).

@@ -333,6 +333,7 @@ void TestKeyboardLayout() {
 #include "CombatTests.inl"
 #include "LootTests.inl"
 #include "RecoveryTests.inl"
+#include "NativeSaveTests.inl"
 #include "WorldTests.inl"
 #include "SessionTests.inl"
 #include "QolTests.inl"
@@ -360,6 +361,7 @@ int main() {
         TestRecoveryWire();
         TestRecoveryStore();
         TestRecoveryCheckpoints();
+        TestNativeSavePaths();
         TestRecoveryCrashMatrix();
         TestDepositLedger();
         TestWorldCodecAndLifecycle();

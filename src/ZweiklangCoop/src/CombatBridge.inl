@@ -3,7 +3,7 @@
 namespace co=combat;
 struct NpcBinding {
     oCNpc* npc=nullptr;std::uint32_t id=0,revision=0;zVEC3 anchor,rootScale;
-    bool mirror=false,originalRotation=false,modelDefaultsCaptured=false,owned=false,hidden=false,pausedByPeer=false;std::uint32_t generation=1,life=1,probeCookie=0;std::string visualKey;co::Npc desired;unsigned long long last=0;int loggedHp=-1;
+    bool mirror=false,originalRotation=false,originalPhysics=false,modelDefaultsCaptured=false,owned=false,hidden=false,pausedByPeer=false;std::uint32_t generation=1,life=1,probeCookie=0;std::string visualKey;co::Npc desired;unsigned long long last=0;int loggedHp=-1;
 };
 std::vector<std::unique_ptr<NpcBinding>> npcBindings;
 std::map<oCNpc*,NpcBinding*> npcByPointer;
@@ -35,6 +35,7 @@ void CombatReset(){
         // disconnect even though those NPCs are authoritative, not mirrors.
         if(entry->modelDefaultsCaptured&&(entry->mirror||entry->pausedByPeer)){auto* model=zDYNAMIC_CAST<zCModel>(n->GetVisual());if(model){model->aniTransScale=entry->rootScale;if(entry->mirror)model->doVobRot=entry->originalRotation;}}
         entry->pausedByPeer=false;
+        if(entry->mirror)n->SetPhysicsEnabled(entry->originalPhysics);
         if(entry->owned&&n->homeWorld)n->RemoveVobFromWorld();
         n->Release();
     }
@@ -50,6 +51,7 @@ NpcBinding* RegisterCombatNpc(oCNpc* npc){
     auto* model=zDYNAMIC_CAST<zCModel>(npc->GetVisual());
     entry->rootScale=model?model->aniTransScale:zVEC3(1,1,1);
     entry->originalRotation=model?model->doVobRot:false;entry->life=npc->homeWorld?1:2;
+    entry->originalPhysics=npc->physicsEnabled!=FALSE;
     entry->modelDefaultsCaptured=model!=nullptr;
     if(HostCombat()){entry->id=nextNpcId++;npcById[entry->id]=entry.get();}
     auto* value=entry.get();npcByPointer[npc]=value;npcBindings.push_back(std::move(entry));return value;
@@ -112,12 +114,15 @@ void UpdateCombatActor(){
 NpcBinding* ResolveCombatNpc(const co::Npc& message){
     auto existing=npcById.find(message.id);if(existing!=npcById.end())return existing->second;
     const zVEC3 anchor(message.anchor[0],message.anchor[1],message.anchor[2]);
-    NpcBinding* best=nullptr;float closest=4000000.0f,second=4000000.0f;
+    NpcBinding* best=nullptr;float closest=4000000.0f;
+    std::vector<NpcBinding*> candidates;std::vector<float> distances;
     NpcBinding* unique=nullptr;int matches=0;
-    for(auto& entry:npcBindings){if(entry->mirror||entry->npc->GetInstance()!=message.instance)continue;++matches;unique=entry.get();const float d=Distance2(entry->anchor,anchor);if(d<closest){second=closest;closest=d;best=entry.get();}else if(d<second)second=d;}
-    if(matches==1&&unique->npc->IsHuman()){best=unique;second=4000000.0f;closest=0;}
-    if(best&&std::sqrt(second)-std::sqrt(closest)<100.0f){
-        if(Now()-mappingWarnings[message.id]>5000){mappingWarnings[message.id]=Now();CombatLog("npc_mapping_unresolved","ambiguous id="+std::to_string(message.id));}return nullptr;
+    for(auto& entry:npcBindings){if(entry->mirror||entry->npc->GetInstance()!=message.instance)continue;++matches;unique=entry.get();const float d=Distance2(entry->anchor,anchor);candidates.push_back(entry.get());distances.push_back(d);}
+    const int resolved=worldsync::MatchAnchor(distances);
+    if(resolved>=0){best=candidates[resolved];closest=distances[resolved];}
+    if(matches==1&&unique->npc->IsHuman()){best=unique;closest=0;}
+    if(!best&&!candidates.empty()){
+        if(Now()-mappingWarnings[message.id]>5000){mappingWarnings[message.id]=Now();CombatLog("npc_mapping_unresolved","ambiguous id="+std::to_string(message.id)+" instance="+std::to_string(message.instance)+" candidates="+std::to_string(candidates.size()));}return nullptr;
     }
     if(!best){
         if(message.life!=1)return nullptr;

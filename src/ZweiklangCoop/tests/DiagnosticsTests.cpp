@@ -44,11 +44,19 @@ void RunDiagnosticsTests() {
         logger.Configure(2,"Anna");
         for(int i=0;i<100;++i)logger.Write(2,"rotation",std::string(200,'x'));
         logger.Flush();check(GetFileAttributesA((path+".1").c_str())!=INVALID_FILE_ATTRIBUTES,"log rotates");
+        {std::ifstream events(path+".events.jsonl");std::string savedEvents((std::istreambuf_iterator<char>(events)),{});
+         check(savedEvents.find("first\\u000asecond")!=std::string::npos&&savedEvents.find("rotation")==std::string::npos,"essential events survive packet/debug rotation independently");}
+        {std::ifstream beginning(path+".begin.jsonl");std::string savedBeginning((std::istreambuf_iterator<char>(beginning)),{});
+         check(savedBeginning.find("\"seq\":1,")!=std::string::npos,"session beginning preserved after rotating main log");}
+        logger.Write(1,"test_marker","step=C09");logger.Flush();
+        {std::ifstream events(path+".events.jsonl");std::string savedMarkers((std::istreambuf_iterator<char>(events)),{});
+         check(savedMarkers.find("step=C09")!=std::string::npos,"test markers durably retained in essential event stream");}
         logger.Configure(0,"Anna");logger.Write(1,"disabled","hidden");logger.Flush();
         std::ifstream tail(path);std::string final((std::istreambuf_iterator<char>(tail)),{});
         check(final.find("disabled")==std::string::npos,"logging off respected");
     }
     for(int i=1;i<=4;++i)DeleteFileA((path+"."+std::to_string(i)).c_str());
     DeleteFileA(path.c_str());RemoveDirectoryA(folder.c_str());
+    DeleteFileA((path+".events.jsonl").c_str());DeleteFileA((path+".begin.jsonl").c_str());RemoveDirectoryA(folder.c_str());
     std::cout<<"PASS: settings validation and diagnostic log levels, JSON escaping, rotation, role context\n";
 }

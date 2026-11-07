@@ -8,7 +8,9 @@ void TestSessionReadiness(){
     Check(ss::Readiness(local,nullptr,true)==ss::Reason::Peer,"socket connection alone cannot claim both players ready");
     auto changed=local;changed.flags&=~ss::Checkpoint;Check(ss::Readiness(changed,&peer,true)==ss::Reason::Checkpoint,"missing local save binding reported");
     changed=local;changed.flags|=ss::Blocked;Check(ss::Readiness(changed,&peer,true)==ss::Reason::Recovery,"local recovery problem takes priority over ready");
+    changed.flags&=~ss::Checkpoint;Check(ss::Readiness(changed,&peer,true)==ss::Reason::Recovery,"actual recovery failure takes priority over generic save reminder");
     changed=peer;changed.flags|=ss::Blocked;Check(ss::Readiness(local,&changed,true)==ss::Reason::Deferred,"remote recovery blocker is visible locally");
+    changed.flags&=~ss::Checkpoint;Check(ss::Readiness(local,&changed,true)==ss::Reason::Deferred,"remote failure remains visible when peer checkpoint is absent");
     changed=local;changed.flags|=ss::Pending;Check(ss::Readiness(changed,&peer,true)==ss::Reason::Transfer,"local pending transaction not mislabeled fully ready");
     changed=peer;changed.flags|=ss::Pending;Check(ss::Readiness(local,&changed,true)==ss::Reason::Transfer,"remote in-flight inventory transaction visible locally");
     changed=local;changed.flags|=ss::Incapacitated;Check(ss::Readiness(changed,&peer,true)==ss::Reason::Player,"local death/unconsciousness not mislabeled ready");

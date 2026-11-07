@@ -7,7 +7,16 @@ struct List {std::vector<Node*> nodes;int GetNumInList()const{return static_cast
 struct Manager {List spawnList;std::array<float,3> camPos{};float insertTime=0;};
 }
 void TestWorldCodecAndLifecycle(){
-    namespace ws=zweiklang::worldsync;namespace co=zweiklang::combat;
+    namespace ws=zweiklang::worldsync;
+    Check(ws::MatchAnchor({0,2500,4900})==0,"unique exact creature spawn wins even with close same-instance neighbours");
+    Check(ws::MatchAnchor({0,0,40000})==-1,"coincident spawn anchors do not bind a guessed creature");
+    Check(ws::MatchAnchor({2500,3600})==-1,"nearby inexact same-instance creatures remain ambiguous");
+    Check(ws::MatchAnchor({400,90000})==0,"well separated nearest spawn remains accepted");
+    ws::TalkLease lease;lease.Begin(238,1000);
+    Check(lease.Allows(238,1000)&&!lease.Allows(242,1000),"guest dialogue transition releases only requested NPC");
+    Check(lease.Allows(238,3999)&&!lease.Allows(238,4000),"failed dialogue attempt cannot release mirror AI indefinitely");
+    lease.Clear();Check(!lease.Allows(238,1001),"disconnect clears guest dialogue lease");
+    namespace co=zweiklang::combat;
     co::Npc visual;visual.head="HEAD1";visual.bodyTex=23;const auto oldKey=co::AppearanceKey(visual);
     visual.head="HEAD12";visual.bodyTex=3;Check(co::AppearanceKey(visual)!=oldKey,"head-name and texture boundary cannot collide");
     const auto colors=co::AppearanceKey(visual);++visual.bodyColor;Check(co::AppearanceKey(visual)!=colors,"body color triggers native visual refresh");

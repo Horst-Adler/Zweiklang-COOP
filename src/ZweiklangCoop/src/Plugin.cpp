@@ -20,6 +20,7 @@
 #include "coop/NetworkMotion.h"
 #include "coop/LootProtocol.h"
 #include "coop/Recovery.h"
+#include "coop/NativeSave.h"
 #include "coop/WorldProtocol.h"
 #include "coop/SessionProtocol.h"
 #include "coop/CavalornPolicy.h"
@@ -287,7 +288,7 @@ bool CreateProxy() {
     remote->showVisual = TRUE;
     remote->ignoredByTraceRay = FALSE;
     remote->SetCollDetStat(FALSE);
-    remote->SetCollDetDyn(TRUE);
+    remote->SetCollDetDyn(FALSE);
     remote->SetPhysicsEnabled(FALSE);
     remote->SetVisual(zSTRING("HUMANS.MDS"));
     remoteModel = zDYNAMIC_CAST<zCModel>(remote->GetVisual());
@@ -662,7 +663,7 @@ void Initialize() {
     if(faultFile!=INVALID_HANDLE_VALUE)faultObserver=AddVectoredExceptionHandler(1,ObserveFault);
     LogRuntime();
     lastFrame = Now();
-    Log("Zweiklang Coop 0.1.0-alpha.26 initialized; protocol=9; engine=G2NotR; no auto-connect.");
+    Log("Zweiklang Coop 0.1.0-alpha.27 initialized; protocol=9; engine=G2NotR; no auto-connect.");
 }
 
 void Shutdown() {
@@ -728,7 +729,12 @@ void BeforeSave() {
     saving = true;
     Leave("Save started: presence session closed; reconnect after saving.");
 }
-void AfterSave() { saving = false; lastFrame = Now();notice="Speichern beendet. Sitzung bei Bedarf erneut starten.";Log("Save completed"); }
+void AfterSave() {
+    saving=false;lastFrame=Now();
+    if(!recoveryError.empty()){notice="Speichern fehlgeschlagen: siehe Recovery-Diagnose. Ausgangssave behalten.";Log("Save failed: "+recoveryError);}
+    else if(recoverySaveSlot>=0){notice="Spielstand wird geprueft ...";Log("Native save callback finished; checkpoint validation pending");}
+    else {notice="Speichern beendet; Checkpointstatus vor Koop pruefen.";Log("Native save callback finished outside managed slot");}
+}
 void BeforeLoad() {
     QuestRestoreConditions();
     questError.clear();questSessionBound=false;
@@ -747,14 +753,29 @@ using namespace gothic;
 void __fastcall SharedReadSave(CGameManager*,void*,int);
 CInvoke<void(__thiscall*)(CGameManager*,int)> originalReadSave(0x0042A040,&SharedReadSave);
 void __fastcall SharedReadSave(CGameManager* manager,void*,int slot){if(slot<0){originalReadSave(manager,slot);return;}zweiklang::engine::RecoveryBeginLoad(slot);originalReadSave(manager,slot);zweiklang::engine::RecoveryEndLoad();}
+void __fastcall SharedNativeReadSave(oCGame*,void*,int,int);
+CInvoke<void(__thiscall*)(oCGame*,int,int)> originalNativeReadSave(0x006C67D0,&SharedNativeReadSave);
+void __fastcall SharedNativeReadSave(oCGame* game,void*,int slot,int globals){
+    using namespace zweiklang::engine;
+    // Cover direct load paths as well as CGameManager; never bind twice.
+    const bool bind=slot>=0&&!recoveryLoading;
+    if(bind)RecoveryBeginLoad(slot);originalNativeReadSave(game,slot,globals);if(bind)RecoveryEndLoad();
+}
 void __fastcall SharedWriteSave(CGameManager*,void*,int);
 CInvoke<void(__thiscall*)(CGameManager*,int)> originalWriteSave(0x0042A2D0,&SharedWriteSave);
 void __fastcall SharedWriteSave(CGameManager* manager,void*,int slot){
     using namespace zweiklang::engine;
     if(!recoveryError.empty()||recoveryBlocked){notice="Speichern gesperrt: erst den Inventar-/Questabgleich klaeren.";LootLog("save_blocked",recoveryError);return;}
-    recoverySaveSlot=slot;recoverySaveStarted=false;
+    if(slot<0){originalWriteSave(manager,slot);return;}
+    recoverySaveSlot=slot;recoverySaveStarted=false;recoveryNativeSaveCompleted=false;
+    QuestRestoreConditions();
+    recoverySavingCheckpoint=RecoveryBeforeSave(slot);
+    if(!recoveryError.empty()){notice="Speichern vor Dateiaenderungen abgebrochen; siehe Recovery-Diagnose.";LootLog("save_blocked","Preflight failed before game manager write: "+recoveryError);recoverySaveSlot=-1;return;}
+    recoverySaveStarted=true;
     originalWriteSave(manager,slot);
     if(recoverySaveStarted)RecoveryAfterSave(slot,recoverySavingCheckpoint);
+    if(recoveryError.empty()&&recoveryReady){notice="Spielstand und Checkpoint gespeichert. Sitzung erneut starten.";Log("Save completed and checkpoint verified");}
+    else {notice="Spielstand nicht vollstaendig bestaetigt; siehe Recovery-Diagnose.";Log("Save verification failed: "+recoveryError);}
     recoverySaveSlot=-1;recoverySaveStarted=false;
 }
 void __fastcall SharedNativeWriteSave(oCGame*,void*,int,int);
@@ -762,9 +783,10 @@ CInvoke<void(__thiscall*)(oCGame*,int,int)> originalNativeWriteSave(0x006C5250,&
 void __fastcall SharedNativeWriteSave(oCGame* game,void*,int slot,int globals){
     using namespace zweiklang::engine;
     QuestRestoreConditions();
-    if(recoverySaveSlot>=0&&!recoverySaveStarted){recoverySavingCheckpoint=RecoveryBeforeSave(recoverySaveSlot);recoverySaveStarted=true;}
+    if(slot>=0&&recoverySaveSlot<0){notice="Direktes Speichern ohne Checkpointvorpruefung gesperrt.";LootLog("save_blocked","Unmanaged native save slot="+std::to_string(slot));return;}
     if(!recoveryError.empty()){recoverySaveStarted=false;LootLog("save_blocked","Recovery guard failed before native write");return;}
     originalNativeWriteSave(game,slot,globals);
+    if(recoverySaveSlot>=0)recoveryNativeSaveCompleted=true;
 }
 int __fastcall CoopSessionInput(CGameManager*,void*,int);
 CInvoke<int(__thiscall*)(CGameManager*,int)> originalSessionInput(0x0042AD50,&CoopSessionInput);
@@ -802,6 +824,14 @@ void __fastcall SharedHumanAI(oCAIHuman* ai,void*,zCVob* vob,int& remove){
 void __fastcall SharedPerception(oCNpc*,void*);
 CInvoke<void(__thiscall*)(oCNpc*)> originalPerception(0x0075DD30,&SharedPerception);
 void __fastcall SharedPerception(oCNpc* npc,void*){if(!zweiklang::engine::CombatMirror(npc))originalPerception(npc);}
+int __fastcall SharedAssessTalk(oCNpc*,void*,oCNpc*);
+CInvoke<int(__thiscall*)(oCNpc*,oCNpc*)> originalAssessTalk(0x0075C890,&SharedAssessTalk);
+int __fastcall SharedAssessTalk(oCNpc* npc,void*,oCNpc* other){
+    using namespace zweiklang::engine;const bool leased=WorldBeginTalk(npc,other);
+    const int result=originalAssessTalk(npc,other);
+    if(leased){CombatLog("dialog_request_result","npc="+std::string(npc->GetObjectName().ToChar())+" result="+std::to_string(result));if(!result)worldTalkLease.Clear();}
+    return result;
+}
 void __fastcall SharedFocus(oCNpc*,void*,zCVob*);
 CInvoke<void(__thiscall*)(oCNpc*,zCVob*)> originalFocus(0x00732B60,&SharedFocus);
 void __fastcall SharedFocus(oCNpc* npc,void*,zCVob* target){
@@ -942,18 +972,18 @@ int __fastcall TakeEvent(oCNpc*,void*,zCVob*);
 int __fastcall DropEvent(oCNpc*,void*,zCVob*);
 CInvoke<int(__thiscall*)(oCNpc*,zCVob*)> originalTake(0x007449C0,&TakeEvent);
 CInvoke<int(__thiscall*)(oCNpc*,zCVob*)> originalDrop(0x00744DD0,&DropEvent);
-void ItemEvent(const char* event,oCNpc* npc,zCVob* item,int result) {
+void ItemEvent(const char* event,oCNpc* npc,zCVob* item) {
     using namespace zweiklang::engine;
     if(diagnosticsReady&&activeLogLevel>0&&npc&&item)
-        diagnostics.Write(1,event,"npc="+std::string(npc->GetObjectName().ToChar())+" item="+item->GetObjectName().ToChar()+" result="+std::to_string(result));
+        diagnostics.Write(1,event,"npc="+std::string(npc->GetObjectName().ToChar())+" item="+item->GetObjectName().ToChar()+" phase=attempt");
 }
 int __fastcall TakeEvent(oCNpc* npc,void*,zCVob* item) {
     // Log before execution: engine may destroy or merge the world item.
-    ItemEvent("take_attempt",npc,item,0);if(zweiklang::engine::WorldGroundAction(npc,item,false))return TRUE;
-    auto* held=zDYNAMIC_CAST<oCItem>(item);if(held)held->AddRef();const auto result=originalTake(npc,item);if(held){zweiklang::engine::WorldGroundChanged(held);held->Release();}return result;
+    ItemEvent("take_attempt",npc,item);if(zweiklang::engine::WorldGroundAction(npc,item,false))return TRUE;
+    const std::string itemName=item?item->GetObjectName().ToChar():"";auto* held=zDYNAMIC_CAST<oCItem>(item);if(held)held->AddRef();const auto result=originalTake(npc,item);if(held){zweiklang::engine::WorldGroundChanged(held);held->Release();}zweiklang::engine::diagnostics.Write(1,"take_result","item="+itemName+" native_result="+std::to_string(result));return result;
 }
 int __fastcall DropEvent(oCNpc* npc,void*,zCVob* item) {
-    ItemEvent("drop_attempt",npc,item,0);auto* held=zDYNAMIC_CAST<oCItem>(item);if(held)held->AddRef();const bool handled=zweiklang::engine::WorldGroundAction(npc,item,true);const int result=handled?TRUE:originalDrop(npc,item);if(held)held->Release();return result;
+    ItemEvent("drop_attempt",npc,item);auto* held=zDYNAMIC_CAST<oCItem>(item);if(held)held->AddRef();const bool handled=zweiklang::engine::WorldGroundAction(npc,item,true);const int result=handled?TRUE:originalDrop(npc,item);if(held)held->Release();return result;
 }
 void __fastcall SharedSpawnPass(oCSpawnManager*,void*);
 CInvoke<void(__thiscall*)(oCSpawnManager*)> originalSpawnPass(0x007780B0,&SharedSpawnPass);

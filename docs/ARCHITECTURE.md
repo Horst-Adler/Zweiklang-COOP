@@ -82,7 +82,7 @@ Dateinamen aus dem Netz werden als frei wählbare Modellpfade akzeptiert.
 
 Eigene Daedalus-Instanzen registrieren das Union-Untermenü. C++ befüllt den
 eigenen Optionsbereich, unterstützt die native Texteingabe und verarbeitet
-eigene Aktionen. **Alpha.26 hat keine eigene Hauptmenügrafik- oder Transparenzänderung.**
+eigene Aktionen. **Seit Alpha.26 gibt es keine eigene Hauptmenügrafik- oder Transparenzänderung.**
 
 Diagnoselogik erfasst ausgewählte Ereignisse mit Kontext, Zeit-/Sequenzdaten,
 Logstufen und Rotation. Testmarken besitzen eine gemeinsame Kennung; das
@@ -91,7 +91,15 @@ Logdateien können lokale Namen, Adressen und Pfade enthalten und bleiben lokal.
 
 ## Grenzen der Nachweise
 
-Die 2.196 technischen Assertions testen unter anderem echte UDP-Loopbacks,
+Die 2.228 technischen Assertions testen unter anderem echte UDP-Loopbacks,
 Codecs, Fehlergrenzen, Recovery-Matrizen und Eingabe-/Konfigurationshilfen.
 Sie ersetzen keine Engine-, Renderer-, Skript- oder Kampagnenabnahme auf zwei PCs.
 Die bestätigten früheren Spielbefunde sind in README und Changelog getrennt genannt.
+
+## Alpha.27: Grenzen zwischen nativer Engine und Recovery
+
+Die Save-Vorprüfung läuft vor `CGameManager::Write_Savegame`, bevor die Engine Metadaten oder Skriptdateien verändert. Der Verzeichnispfad kommt aus dem nativen Save-Verzeichnisobjekt; `NativeSave.h` prüft die Slotkomponente, Schreibbarkeit und Fortschreibung von Nutzdateien. Ein nativer Rückruf allein bestätigt keinen vollständigen Save. Direkte Ladepfade werden ebenfalls gebunden. Unverwaltete direkte Save-Aufrufe außerhalb des internen Current-Slots werden abgelehnt.
+
+Ein Gast-Gesprächsversuch gibt die KI nur des angefragten NPCs kurzzeitig frei; bestätigte Gesprächsreferenzen übernehmen danach. Ohne Gespräch läuft die Spiegelung wieder. Die ursprüngliche NPC-Physik wird beim Trennen wiederhergestellt. Ein exakt identischer, eindeutiger Spawnanker darf enge Gruppen auflösen; mehrfach identische Anker bleiben unzugeordnet.
+
+Die Diagnose behält zusätzlich Level-1-Ereignisse in `.events.jsonl` (16 MiB, vier Rotationen) und den ersten MiB der Sitzung in `.begin.jsonl`. Beide verwenden dieselbe Sequenz wie das Hauptlog. Zusammenführungen müssen doppelte Sequenzen derselben Sitzung verwerfen. Diese Dateien und die native Spielabnahme sind in [Alpha.27](ALPHA-27.md) beschrieben.

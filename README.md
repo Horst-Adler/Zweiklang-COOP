@@ -2,7 +2,7 @@
 
 **Gothic II: Die Nacht des Raben gemeinsam zu zweit erleben – mit eigenem Charakter auf jedem PC.**
 
-![Version](https://img.shields.io/badge/Version-0.1.0--alpha.26-b08d48)
+![Version](https://img.shields.io/badge/Version-0.1.0--alpha.27-b08d48)
 ![Entwicklung](https://img.shields.io/badge/Status-Entwickler--Alpha-orange)
 ![Plattform](https://img.shields.io/badge/Ziel-Windows%20%2F%20x86-466647)
 ![Lizenz](https://img.shields.io/badge/Eigener%20Code-AGPL--3.0--only-blue)
@@ -10,7 +10,7 @@
 Zweiklang COOP ist eine eigenständige Union-Erweiterung für **Zwei-Spieler-Koop über ein Netzwerk**. Ein PC übernimmt die Hostrolle, der andere verbindet sich als Gast. Beide spielen mit eigener Gothic-Installation und eigener normaler Spielansicht. Der Host verwaltet die gemeinsamen Weltzustände.
 
 > **Stand vom 7. November 2026: Entwickler-Alpha, keine freigegebene gemeinsame Kampagne.**
-> Aktuell ist `0.1.0-alpha.26`, Netzwerkprotokoll **9**, Journalformat **4**, Save-Checkpointformat **2**. **2.196 technische Assertions** bestehen; die letzte dokumentierte gemeinsame Spielbestätigung betrifft ausgewählte Funktionen der Alpha.15. Neuere Systeme benötigen weiterhin gemeinsame Spieltests.
+> Aktuell ist `0.1.0-alpha.27`, Netzwerkprotokoll **9**, Journalformat **4**, Save-Checkpointformat **2**. **2.228 technische Assertions** bestehen. Der erste Alpha.26-Durchlauf bestätigte Teile von Bewegung und Kampf, brach aber mit einer Inventarsperre und zusätzlich einem externen Infrastrukturabbruch ab. Alpha.27 korrigiert die Befunde; die gemeinsame Spielabnahme dieser Korrekturen steht aus.
 
 **Wichtig für die Einrichtung:** Diese Alpha setzt beim Sitzungsstart ausdrücklich die Koop-Brücken für **Sprint 2.4.0 und Quickloot 1.9.5** voraus. Die unveränderten Originalarchive allein reichen nicht. Fremdarchive, SDK, Union-Laufzeit und Originalspiele sind **nicht enthalten**. Es gibt kein über GitHub veröffentlichtes Fertig-Release; der dokumentierte Weg führt über den eigenen Build und separat beschaffte Abhängigkeiten.
 
@@ -43,11 +43,11 @@ Die Angaben beziehen sich auf den **belegten Umfang**, nicht auf eine pauschale 
 | Friendly Fire und Partnerfokus | Teilweise implementiert | Hostregel und Schadensschutz eingebaut. Bei FF aus ist der Partner nur mit weggesteckter Waffe im sozialen Fokus; neuerer Spieltest offen. |
 | Leichen und Kisten | Teilweise implementiert | Entnehmen, Einlagern, Quellen-Sperren und Schlosszustände eingebaut; gemeinsame native Abnahme offen. |
 | Bodenitems und NPC-Handel | Teilweise implementiert | Bestands-/Goldabgleich und bestätigte Transaktionen für gewöhnliche Items; Sonderzustände und Spieltests offen. |
-| Transfer-Recovery | Teilweise implementiert | Persistente Entscheidungen, Checkpoints und Altformat-Regressionen technisch geprüft; kein allgemeines Zurückspulen beliebiger Saves. |
+| Transfer-Recovery | Teilweise implementiert | Persistente Entscheidungen, Checkpoints und Altformat-Regressionen technisch geprüft. Alpha.26 zeigte einen Save-/Checkpointblocker; Korrektur in Alpha.27 noch nativ abnehmen. |
 | Sprint und Quickloot | Teilweise implementiert | Lokale Archivtransformation und native Koop-Brücken vorhanden; Abhängigkeiten separat erforderlich, Kombination im Spiel abnehmen. |
 | Cavalorns Banditen | Teilweise implementiert | Enger erster Questadapter: Host führt Dialoge; Gast erhält Quest-/Tagebuchstand und volle tatsächlich gewährte Gaben. Spielabnahme offen. |
 | Zwei Aktivierungsgebiete | Teilweise implementiert | Host berücksichtigt beide Spielergebiete innerhalb derselben Welt; große Distanz und Langzeitbetrieb nicht freigegeben. |
-| Diagnose und Testmarken | Implementiert, Bedienabnahme offen | Strukturierte Logs, Rotation, Bereitschaft/Sperrgründe und 65 gemeinsame Schrittmarken. Keine vollständige Aufzeichnung jedes internen Spielvorgangs. |
+| Diagnose und Testmarken | Implementiert, Bedienabnahme offen | Strukturierte Logs, getrennte Ereignis-/Anfangsaufbewahrung, Bereitschaft/Sperrgründe und 65 gemeinsame Schrittmarken. Keine vollständige Aufzeichnung jedes internen Spielvorgangs. |
 | Allgemeine Quests, Fraktionen und Kampf-EP-Teilung | Geplant | Der Cavalorn-Adapter ist keine allgemeine Questlösung. |
 | Gemeinsames Ein-Klick-Speichern / getrennte Welten | Geplant bzw. offen | Aktuell manuelle passende Saves; Weltwechsel beenden die Sitzung. |
 | Direkter Spielerhandel, weitere Aussehen, Startausrüstung | Geplant für Beta | Kein Spieler-Handelsfenster in dieser Alpha. |
@@ -58,9 +58,11 @@ Die Angaben beziehen sich auf den **belegten Umfang**, nicht auf eine pauschale 
 
 Die aktive Entwicklung konzentriert sich auf Gothic II DNdR und einen belastbaren Koop-Kern. Die kurze gemeinsame Teststrecke beginnt in Xardas’ Turm und endet nach Cavalorns Banditenhöhle. Handel bei einem echten Händler, große Entfernungen und weitere Sonderfälle benötigen gegebenenfalls separate Durchgänge.
 
-Alpha.26 nimmt die Startbild-/Transparenzexperimente aus Alpha.24/25 zurück. Der Menücode entspricht wieder der Basis vor dem Grafikeinbau; das normale Gothic-Menü wird verwendet. Das eigene Startbild ist eine **Beta-Aufgabe**. Der Rückbau verändert nicht die übrigen Koop-Funktionen, die Netzwerkversion oder die Speicherformate.
+Seit Alpha.26 sind die Startbild-/Transparenzexperimente aus Alpha.24/25 zurückgenommen. Der Menücode entspricht wieder der Basis vor dem Grafikeinbau; das normale Gothic-Menü wird verwendet. Das eigene Startbild ist eine **Beta-Aufgabe**. Der Rückbau verändert nicht die übrigen Koop-Funktionen, die Netzwerkversion oder die Speicherformate.
 
 Die Prüfungen unterscheiden klar zwischen automatischen Tests und Spielbeobachtung. Ein erfolgreicher Build, ein korrekt dekodiertes Paket oder eine simulierte Recovery-Transaktion beweist noch nicht, dass ein entsprechender Spielablauf auf zwei PCs fehlerfrei funktioniert. Deshalb sind zahlreiche bereits programmierte Systeme weiterhin als teilweise implementiert gekennzeichnet.
+
+Alpha.27 bearbeitet den ersten abgebrochenen Test: native Savepfade, Vorprüfung vor Dateimutationen, bestätigte Welt-/Charakterspeicherung, sichtbare Recovery-Sperrgründe, Gastdialogübergang, nichtphysische Partnerdarstellung, Sprint-Party-Schutz auf beiden PCs und eindeutig identische NPC-Spawnanker. Die Details und verbleibende Spieltestpflicht stehen in [Alpha.27](docs/ALPHA-27.md). Alte Teil-Saves werden nicht automatisch repariert; für den neuen Durchgang freie Testslots verwenden.
 
 ## Voraussetzungen
 
@@ -100,7 +102,7 @@ Der Installer unterstützt `-WhatIf`. Vorhandene persönliche Pluginoptionen wer
 - **F8:** Sitzung trennen.
 - **Strg + Umschalt + D:** Diagnoseanzeige umschalten.
 - **Strg + Umschalt + N/B:** nächsten/vorigen Testschritt wählen.
-- **Strg + Umschalt + M:** gemeinsame Logmarkierung für den gewählten Schritt schreiben.
+- **Strg + Umschalt + M:** gemeinsame Logmarkierung für den gewählten Schritt schreiben; danach wird die nächste ID gewählt. Vor der Aktion markieren, bei einem Fehler dieselbe ID erneut wählen und markieren. Normalerweise markiert nur der Host für beide; Details im [Testplan](docs/TESTPLAN-CAVALORN.md).
 
 Die **Host-IP** bezeichnet die Adresse des Host-PCs. Das **Client-IP-Feld** ist die lokale Bindeadresse des Gast-PCs, keine zweite Hostadresse. Die Rollenwahl kann die passende primäre lokale IPv4 anzeigen; die entfernte Hostadresse muss auf dem Gast trotzdem stimmen.
 
@@ -164,12 +166,13 @@ Die [Roadmap](ROADMAP.md) trennt Arbeitspakete und Abschlusskriterien. Sie enth�
 
 1. Keine nachgewiesene vollständige gemeinsame Kampagne. Aktuelle Spielabnahme bis Cavalorn offen.
 2. Allgemeine Quests, freie Questabgabe durch den Gast, Fraktionsausnahmen und allgemeine Kampf-EP-Teilung fehlen noch. Der Cavalorn-Adapter deckt nur das untersuchte Skriptprofil ab.
-3. Speichern/Laden trennt die Sitzung; lokale Saves und Recovery-Zustände müssen zusammenpassen. Bereits protokollierte Belohnungen sind kein beliebig rückspulbarer Weltzustand.
+3. Alpha.26 konnte nach einem Checkpointfehler nur Save-Metadaten aktualisieren. Alpha.27 prüft früher und bestätigt Nutzdaten; native Wiederholungsprüfung offen. Alte Abbruchsaves nicht als neuen bestätigten Ausgangsstand verwenden. Speichern/Laden trennt die Sitzung; lokale Saves und Recovery-Zustände müssen zusammenpassen. Bereits protokollierte Belohnungen sind kein beliebig rückspulbarer Weltzustand.
 4. Gewöhnliche Gegenstände werden unterstützt; spezielle Itemdaten, Diebstahl-/Skriptfolgen und Weltobjektzustände sind nicht allgemein synchronisiert.
 5. Unterschiedliche Welten/Weltwechsel sind nicht als laufender unabhängiger Koop freigegeben. Große Entfernung und lange getrennte Wege benötigen weitere Tests.
 6. Die originale Engine und weitere Plugins können native Interaktionen verändern. Nur die dokumentierte Kombination wird untersucht; gleiche Dateiversionen auf beiden PCs sind erforderlich.
-7. Das eigene Startbild und die transparente Hauptmenüvariante sind nach Darstellungsfehlern zurückgezogen. **Alpha.26 verwendet das Originalmenü.**
-8. Die Alpha lehnt den Sitzungsstart ab, wenn die benötigten Quickloot-/Sprint-Brückenmarker fehlen. Nicht durch Entfernen der Prüfungen umgehen; Abhängigkeiten korrekt vorbereiten.
+7. Das eigene Startbild und die transparente Hauptmenüvariante sind nach Darstellungsfehlern zurückgezogen. **Seit Alpha.26 wird das Originalmenü verwendet.**
+8. Der Gastdialog mit Xardas und die Kollision beim Gegeneinanderspringen sind nach Alpha.26 korrigiert, aber noch nicht auf zwei PCs abgenommen. Sprint-Begleiteriteration ist während der Koop-Schutzphase auf beiden PCs gesperrt; der Held sprintet weiter.
+9. Die Alpha lehnt den Sitzungsstart ab, wenn die benötigten Quickloot-/Sprint-Brückenmarker fehlen. Nicht durch Entfernen der Prüfungen umgehen; Abhängigkeiten korrekt vorbereiten.
 
 Fehler bitte mit reproduzierbaren Schritten, Build, betroffener Rolle, Uhrzeit und relevanten bereinigten Logs melden. Keine Originalspiele, vollständigen Spielstände oder privaten Diagnosearchive öffentlich hochladen.
 
@@ -187,4 +190,4 @@ Zweiklang ist ein eigenständiges Fan-/Community-Projekt. Gothic und die Origina
 
 ## Changelog und Versionshistorie
 
-Die [Versionshistorie](CHANGELOG.md) führt belegte Alpha-Stände bis **Alpha.26** auf. Eine GitHub-Veröffentlichung dieses Quellstands ist keine nachträgliche Behauptung, alle historischen Funktionen seien im Spiel abgenommen. Es wird allein aus der Entwicklungsnummer kein öffentlicher Release erzeugt.
+Die [Versionshistorie](CHANGELOG.md) führt belegte Alpha-Stände bis **Alpha.27** auf. Eine GitHub-Veröffentlichung dieses Quellstands ist keine nachträgliche Behauptung, alle historischen Funktionen seien im Spiel abgenommen. Es wird allein aus der Entwicklungsnummer kein öffentlicher Release erzeugt.

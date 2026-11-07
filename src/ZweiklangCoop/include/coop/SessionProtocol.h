@@ -15,13 +15,13 @@ inline bool Decode(const combat::Bytes& b,Marker& s){if(b.empty()||b[0]!=62)retu
 inline combat::Bytes Encode(const Cavalorn& s){combat::Writer w;w.data.push_back(61);w.text(s.hostTimeline);w.text(s.ownerTimeline);w.u(s.revision);w.u(s.mission);w.u(s.letter);w.u(s.told);w.u(s.dead);w.u(s.away);return w.data;}
 inline bool Decode(const combat::Bytes& b,Cavalorn& s){if(b.empty()||b[0]!=61)return false;combat::Reader r{b};s.hostTimeline=r.text();s.ownerTimeline=r.text();s.revision=r.u();s.mission=r.u();s.letter=r.u();s.told=r.u();s.dead=r.u();s.away=r.u();return r.done()&&recovery::Guid(s.hostTimeline)&&recovery::Guid(s.ownerTimeline)&&s.revision>0&&s.mission<=4&&s.letter<=4&&s.told<2048&&s.dead<8&&s.away<2;}
 inline Reason Readiness(const Ready& local,const Ready* peer,bool fresh){
-    if(!(local.flags&Checkpoint))return Reason::Checkpoint;
     if(local.flags&Blocked)return Reason::Recovery;
+    if(!(local.flags&Checkpoint))return Reason::Checkpoint;
     if(local.flags&Incapacitated)return Reason::Player;
     if(!(local.flags&Rules))return Reason::Rules;
     if(!(local.flags&Actor))return Reason::Actor;
+    if(peer&&(peer->flags&Blocked))return Reason::Deferred;
     if(!peer||!(peer->flags&Checkpoint))return Reason::Peer;
-    if(peer->flags&Blocked)return Reason::Deferred;
     if(peer->flags&Incapacitated)return Reason::PeerPlayer;
     if((local.flags|peer->flags)&Pending)return Reason::Transfer;
     if(!(peer->flags&Rules)||!(peer->flags&Actor))return Reason::Peer;
