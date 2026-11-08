@@ -160,3 +160,8 @@ Logs/Diagnosearchive und Screenshots:
 ```
 
 Bei einem Freeze, Absturz, dauerhaften HP-Widerspruch oder Itemverlust den aktuellen Abschnitt abbrechen, Zeitpunkt festhalten und Logs sichern. Bis zur Klärung keine guten Ausgangssaves überschreiben. Normale Quest-/Belohnungslücken ohne blockiertes Spiel könnt ihr dokumentieren und den restlichen Ablauf fortsetzen.
+
+
+## Vorrangiger Wiederholungstest Alpha.28
+
+Vor der Route Partnerkollision, einzelne Bodenaufnahmen und anschließend ausschließlich Gast speichern, danach erneut aufnehmen; dann ausschließlich Host speichern und wiederholen. Verbindung soll jeweils erhalten bleiben. Offene Inventarvorgänge vor dem Speichern beenden. Laden trennt weiterhin. Weitere Details: [Alpha.28](ALPHA-28.md).

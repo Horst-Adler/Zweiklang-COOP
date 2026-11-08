@@ -372,6 +372,7 @@ int main() {
         TestLegacyRecoveryMigration();
         TestQolCompatibility();
         TestSessionReadiness();
+        TestSaveTransport();
         TestSessionCodecsAndTransport();
         TestCavalornRewards();
         TestCombatTransport();

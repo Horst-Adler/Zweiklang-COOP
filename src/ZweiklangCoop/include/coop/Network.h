@@ -35,6 +35,8 @@ public:
     void Poll(std::uint64_t nowMs);
     bool SendSnapshot(const Snapshot& snapshot, std::uint64_t nowMs);
     void Stop();
+    bool SetSaving(bool saving, std::uint64_t nowMs);
+    bool PeerSaving() const;
 
     State GetState() const;
     Role GetRole() const;

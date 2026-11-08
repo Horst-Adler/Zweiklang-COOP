@@ -133,6 +133,7 @@ bool RecoveryApply(const rc::Record& record,bool desired){
 }
 bool RecoveryReconcile(const rc::Record& r){return rc::Reconcile(r,recoveryEffects,RecoveryApply);}
 bool RecoveryCanLoot(){
+    if(saving||network.PeerSaving()){notice="Inventar wartet: Speichervorgang laeuft.";return false;}
     if(!recoveryError.empty()||recoveryBlocked){notice="Inventarabgleich gesperrt; konkrete Ursache in der Diagnose (Strg+Umschalt+D).";return false;}
     if(CombatConnected()&&!recoveryReady){notice="Bitte Testspielstand laden oder einmal speichern, damit Inventar-Recovery gebunden ist.";return false;}
     return true;

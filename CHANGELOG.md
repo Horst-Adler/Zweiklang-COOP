@@ -1,5 +1,9 @@
 # Versionshistorie
 
+## 0.1.0-alpha.28 – 2026-11-08
+
+Neue Inventar-Basis bei neuem Spiel, Startschutz bei ungeklärter Bindung, zuverlässige Speicherpause mit Sitzungserhalt und begrenzter Timeout-Verlängerung, Partnerkollision nach Weltaufnahme und gezielter Paarfilter. Versionsanzeige/Diagnose ergänzt. Protokoll 10; 2.250 technische Assertions. Native Abnahme offen. Details: [Alpha.28](docs/ALPHA-28.md).
+
 Belegbare Entwicklungsstände, keine nachträglichen öffentlichen Releases.
 Die aktuelle Quellversion ist **0.1.0-alpha.27**, Stand 7. November 2026.
 Die lokale Entwicklungsnummer wird für diese Veröffentlichung nicht erhöht.

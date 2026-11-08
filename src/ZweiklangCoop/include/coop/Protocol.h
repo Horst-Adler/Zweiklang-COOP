@@ -6,7 +6,7 @@
 
 namespace zweiklang { namespace net {
 
-constexpr std::uint16_t ProtocolVersion = 9;
+constexpr std::uint16_t ProtocolVersion = 10;
 constexpr std::uint32_t ProtocolMagic = 0x5A434F50u;
 constexpr std::size_t ProtocolHeaderBytes = 32;
 constexpr std::size_t MaximumDatagramBytes = 512;

@@ -110,6 +110,8 @@ struct Network::Impl {
     std::uint64_t token = 0, nonce = 0;
     std::uint64_t lastRx = 0, lastHello = 0, lastHeartbeat = 0, connectStarted = 0;
     std::uint64_t timeout = 8000;
+    bool localSaving=false,peerSaving=false;
+    std::uint64_t saveDeadline=0;
     std::uint32_t txSequence = 0, rxSequence = 0;
     bool hasSnapshot = false;
     Snapshot latest;
@@ -123,7 +125,7 @@ struct Network::Impl {
     std::map<std::uint32_t,Bytes> reorder;
     std::deque<Bytes> events,worldStates;
     std::uint32_t eventTx=0,eventExpected=1;
-    void ClearEvents(){pending.clear();reorder.clear();events.clear();worldStates.clear();eventTx=0;eventExpected=1;}
+    void ClearEvents(){localSaving=peerSaving=false;saveDeadline=0;pending.clear();reorder.clear();events.clear();worldStates.clear();eventTx=0;eventExpected=1;}
     void Trace(const std::string& text) { if(trace)trace(text); }
     static std::string Endpoint(const sockaddr_in& value) {
         char address[INET_ADDRSTRLEN]{};InetNtopA(AF_INET,const_cast<in_addr*>(&value.sin_addr),address,sizeof(address));
@@ -263,7 +265,13 @@ struct Network::Impl {
             reorder.emplace(sequence,Bytes(body,body+length));
             SendTo(peer,Message::EventAck,{},token,nonce,sequence);lastRx=now;
             while(reorder.count(eventExpected)){
-                events.push_back(std::move(reorder[eventExpected]));reorder.erase(eventExpected++);
+                auto data=std::move(reorder[eventExpected]);reorder.erase(eventExpected++);
+                // Transport-level ordered save controls work while engine queues pause.
+                if(data.size()==2&&data[0]==63&&data[1]<=1){
+                    peerSaving=data[1]!=0;saveDeadline=peerSaving?now+120000:0;
+                    if(!peerSaving)for(auto& entry:pending)entry.second.first=entry.second.last=now;
+                    Trace(peerSaving?"PEER_SAVE begin":"PEER_SAVE end");
+                }else events.push_back(std::move(data));
             }
             return;
         }
@@ -297,6 +305,16 @@ struct Network::Impl {
 
 Network::Network() : impl_(new Impl) {}
 Network::~Network() { Stop(); }
+bool Network::PeerSaving() const {return impl_->peerSaving;}
+bool Network::SetSaving(bool saving,std::uint64_t now){
+    if(impl_->state!=State::Connected)return false;
+    if(impl_->localSaving==saving)return true;
+    if(saving&&impl_->pending.size()>=126)return false; // reserve ordered resume capacity
+    if(!SendEvent(Bytes{63,static_cast<std::uint8_t>(saving)},now))return false;
+    impl_->localSaving=saving;
+    if(!saving){impl_->lastRx=now;for(auto& p:impl_->pending)p.second.first=p.second.last=now;}
+    impl_->Trace(saving?"LOCAL_SAVE begin":"LOCAL_SAVE end");return true;
+}
 
 bool Network::StartHost(std::uint16_t port, Compatibility compatibility, std::uint64_t nowMs,const std::string& localAddress) {
     Stop();
@@ -357,12 +375,13 @@ void Network::Poll(std::uint64_t nowMs) {
             impl_->lastHello = nowMs;
         }
     } else if (impl_->state == State::Connected) {
+        if(impl_->peerSaving&&nowMs>=impl_->saveDeadline){impl_->ForgetPeer("Peer save exceeded 120 seconds");return;}
         for(auto& entry:impl_->pending){
             auto& p=entry.second;
-            if(Elapsed(nowMs,p.first)>=impl_->timeout){impl_->Fail("Combat event acknowledgement timed out; reconnect");impl_->ClearEvents();return;}
+            if(Elapsed(nowMs,p.first)>=((impl_->localSaving||(impl_->peerSaving&&nowMs<impl_->saveDeadline))?120000:impl_->timeout)){impl_->Fail("Combat event acknowledgement timed out; reconnect");impl_->ClearEvents();return;}
             if(Elapsed(nowMs,p.last)>=150){impl_->SendTo(impl_->peer,Message::ReliableEvent,p.data,impl_->token,impl_->nonce,entry.first);p.last=nowMs;}
         }
-        if (Elapsed(nowMs, impl_->lastRx) >= impl_->timeout) { impl_->ForgetPeer("Peer timed out"); return; }
+        if (Elapsed(nowMs, impl_->lastRx) >= ((impl_->localSaving||(impl_->peerSaving&&nowMs<impl_->saveDeadline))?120000:impl_->timeout)) { impl_->ForgetPeer("Peer timed out"); return; }
         if (Elapsed(nowMs, impl_->lastHeartbeat) >= 1000) {
             impl_->SendTo(impl_->peer, Message::Heartbeat, {}, impl_->token, impl_->nonce);
             impl_->SendTo(impl_->peer,Message::PlayerName,Bytes(impl_->playerName.begin(),impl_->playerName.end()),impl_->token,impl_->nonce);

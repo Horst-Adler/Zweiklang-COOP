@@ -79,7 +79,7 @@ Dateien unter `src/ZweiklangCoop/tests/fixtures` gefunden werden.
 | `build/logs/tests.log` | Testausgabe |
 
 Die aktuelle Veröffentlichungsvorbereitung wurde mit der genannten lokalen
-Werkzeugkette neu gebaut. **2.228 Assertions bestanden**; Menü-Strukturprüfung
+Werkzeugkette neu gebaut. **2.250 Assertions bestanden**; Menü-Strukturprüfung
 und der zusätzliche Python-Check wurden ebenfalls ausgeführt. Die Tests prüfen
 unter anderem echte Loopback-UDP-Verbindungen, begrenzte Codecs, Wiederholungen,
 Recovery-Entscheidungen, Altformatdateien, Tastatureingaben und Konfiguration.

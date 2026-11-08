@@ -144,12 +144,12 @@ Kennung übergangen.
    den unterstützten ersten Questfall abwarten.
 5. Namen, Figuren, Bewegung und Diagnose kontrollieren; dann den
    [Cavalorn-Testplan](docs/TESTPLAN-CAVALORN.md) verwenden.
-6. F8 trennt regulär. Das Öffnen von Konfigurations-/Speichervorgängen kann die
+6. F8 trennt regulär. Das Öffnen der Union-Konfiguration kann die
    Sitzung absichtlich beenden.
 
 ## Speichern und Wiederherstellung
 
-Beide speichern getrennt in passenden Slots. Nach Speichern/Laden Sitzung neu
+Beide speichern getrennt in passenden Slots. Nach Laden Sitzung neu
 starten und Bereitschaft abwarten. Journale und Save-Checkpoints gehören zusammen.
 Alte Host-Saves vor bereits protokollierten Questgaben oder Transfers nicht
 ungeprüft erneut als Ausgangspunkt verwenden.
@@ -170,3 +170,5 @@ migriert keine neueren Journale zurück in beliebige alte Pluginformate.
 ## Erneuter Test nach dem Alpha.26-Abbruch
 
 Alte Testslots mit neuem Vorschaubild, aber fehlendem neuen Welt-/Charakterstand nicht als bestätigte Ausgangsbasis verwenden. Beide beginnen einen frischen Testzweig und speichern zunächst getrennt in freie Slots. Danach diese neuen Stände laden, verbinden und vollständige Bereitschaft abwarten. Bei Recovery-/Speicherfehlern hier stoppen und lokale Diagnose sichern. Alpha.27 umgeht keine Inventarsperre und repariert frühere Teil-Saves nicht automatisch.
+
+Ab Alpha.28 erhält reguläres Speichern die Verbindung. Nacheinander und ohne offene Transfers speichern; während der angekündigten Pause warten. [Befunde und Wiederholungstest](docs/ALPHA-28.md).

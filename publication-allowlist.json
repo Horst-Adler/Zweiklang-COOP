@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Ausdrückliche Positivliste der eigenständigen Veröffentlichung; keine Spiele, Website, Fremdarchive, SDK-Binärdateien oder persönlichen Daten.",
+  "description": "AusdrÃ¼ckliche Positivliste der eigenstÃ¤ndigen VerÃ¶ffentlichung; keine Spiele, Website, Fremdarchive, SDK-BinÃ¤rdateien oder persÃ¶nlichen Daten.",
   "allowed_paths": [
     ".gitattributes",
     ".github/ISSUE_TEMPLATE/bug_report.md",
@@ -79,7 +79,8 @@
     "src/ZweiklangCoop/tests/fixtures/Recovery17Checkpoint.bin",
     "src/ZweiklangCoop/tests/fixtures/Recovery17Store.bin",
     "src/ZweiklangCoop/tests/fixtures/Recovery18Checkpoint.bin",
-    "src/ZweiklangCoop/tests/fixtures/Recovery18Store.bin"
+    "src/ZweiklangCoop/tests/fixtures/Recovery18Store.bin",
+    "docs/ALPHA-28.md"
   ],
   "synthetic_fixtures": {
     "src/ZweiklangCoop/tests/fixtures/Recovery17Checkpoint.bin": "f0952bbf9d9287835f8534da1eb477338b34a189d1df696472f5ee3ce056f18a",

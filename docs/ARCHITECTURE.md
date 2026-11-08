@@ -52,7 +52,7 @@ Aktuell: Journalformat 4, Checkpointformat 2. Technische Regressionen umfassen
 echte synthetische Ausgaben der früheren Alpha.17-/Alpha.18-Serializer.
 Das ist keine vollständige gemeinsame Weltspeicherung und keine allgemeine
 Umkehr bereits verbuchter Aktionen. Save, Profil-/Zeitlinie und Recovery-Daten
-müssen zusammenpassen. Native Speichervorgänge trennen die Sitzung.
+müssen zusammenpassen. Native Speichervorgänge behalten ab Alpha.28 die Sitzung über geordnete zuverlässige Transportkontrollen bei; Spielzustandsverarbeitung und Inventaraktionen warten während der Pause.
 
 ## Erster Questadapter
 
@@ -91,7 +91,7 @@ Logdateien können lokale Namen, Adressen und Pfade enthalten und bleiben lokal.
 
 ## Grenzen der Nachweise
 
-Die 2.228 technischen Assertions testen unter anderem echte UDP-Loopbacks,
+Die 2.250 technischen Assertions testen unter anderem echte UDP-Loopbacks,
 Codecs, Fehlergrenzen, Recovery-Matrizen und Eingabe-/Konfigurationshilfen.
 Sie ersetzen keine Engine-, Renderer-, Skript- oder Kampagnenabnahme auf zwei PCs.
 Die bestätigten früheren Spielbefunde sind in README und Changelog getrennt genannt.
@@ -103,3 +103,5 @@ Die Save-Vorprüfung läuft vor `CGameManager::Write_Savegame`, bevor die Engine
 Ein Gast-Gesprächsversuch gibt die KI nur des angefragten NPCs kurzzeitig frei; bestätigte Gesprächsreferenzen übernehmen danach. Ohne Gespräch läuft die Spiegelung wieder. Die ursprüngliche NPC-Physik wird beim Trennen wiederhergestellt. Ein exakt identischer, eindeutiger Spawnanker darf enge Gruppen auflösen; mehrfach identische Anker bleiben unzugeordnet.
 
 Die Diagnose behält zusätzlich Level-1-Ereignisse in `.events.jsonl` (16 MiB, vier Rotationen) und den ersten MiB der Sitzung in `.begin.jsonl`. Beide verwenden dieselbe Sequenz wie das Hauptlog. Zusammenführungen müssen doppelte Sequenzen derselben Sitzung verwerfen. Diese Dateien und die native Spielabnahme sind in [Alpha.27](ALPHA-27.md) beschrieben.
+
+Alpha.28 verwendet Protokoll 10 und interne geordnete Savekontrollen (Payload 63). Die Speicherpause ist auf 120 Sekunden begrenzt; ACK-Fristen werden beim Fortsetzen neu angesetzt. Kollisionsausschluss nach Weltaufnahme und gezielter KI-Paarfilter ergänzen sich.

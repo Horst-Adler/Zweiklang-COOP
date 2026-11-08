@@ -1,3 +1,18 @@
+void TestSaveTransport(){
+    Network host,guest;ConnectedPair(host,guest);
+    Check(guest.SetSaving(true,1400),"guest announces native save without disconnect");
+    host.Poll(1401);Check(host.PeerSaving(),"save pause processed in transport before engine events");
+    Check(host.SendEvent(Bytes{60,1},1402),"outstanding event retained during native save");
+    host.Poll(21401);Check(host.GetState()==State::Connected,"20 second save survives normal heartbeat and event timeout");
+    Check(guest.SetSaving(false,21402),"save resume sent after synchronous native callback");
+    Pump(host,guest,21403);Check(!host.PeerSaving()&&host.GetState()==State::Connected&&guest.GetState()==State::Connected,"same session resumes on both peers without reconnect");
+    Bytes b;Check(!host.ConsumeEvent(b),"save control never leaks into engine combat decoder");
+    Check(guest.ConsumeEvent(b)&&b==Bytes({60,1}),"queued event survives save pause exactly once");
+    Check(!guest.ConsumeEvent(b),"save pause does not duplicate application event");
+    Check(host.SetSaving(true,22000),"host can save as well");guest.Poll(22001);Check(guest.PeerSaving(),"host save observed by guest");
+    host.Stop();guest.Poll(22002);Check(!guest.PeerSaving(),"disconnect clears save pause");
+    Network a,c;ConnectedPair(a,c);Check(c.SetSaving(true,1400),"bounded pause starts");a.Poll(1401);a.Poll(121402);Check(a.GetState()!=State::Connected&&!a.PeerSaving(),"abandoned save pause expires after 120 seconds");
+}
 void TestSessionReadiness(){
     namespace ss=zweiklang::session;
     Check(ss::Hotkey(0x32,true,true)==ss::Command::Marker&&ss::Hotkey(0x31,true,true)==ss::Command::Next&&ss::Hotkey(0x30,true,true)==ss::Command::Previous&&ss::Hotkey(0x20,true,true)==ss::Command::Overlay,"four explicit diagnostic chords mapped");

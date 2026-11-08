@@ -76,6 +76,7 @@ int joinKey = KEY_F7;
 int leaveKey = KEY_F8;
 bool loading = true;
 bool saving = false;
+bool freshGamePending=false;
 bool proxyFailed = false;
 zCVob* remote = nullptr;
 zCWorld* remoteWorld = nullptr;
@@ -336,6 +337,9 @@ bool CreateProxy() {
     remote->RotateWorldY(target.yaw);
     remoteWorld = ogame->GetWorld();
     remoteWorld->AddVob(remote);
+    // oCNpc::ThisVobAddedToWorld enables both flags again.
+    remote->SetCollDetStat(FALSE);remote->SetCollDetDyn(FALSE);
+    diagnostics.Write(1,"proxy_collision","post_add static=0 dynamic=0");
     remote->SetSleepingMode(zVOB_AWAKE);
     diagnostics.Write(1,"proxy_animation_ids","S_RUN="+std::to_string(remoteModel->GetAniIDFromAniName(zSTRING("S_RUN")))+" S_RUNL="+std::to_string(remoteModel->GetAniIDFromAniName(zSTRING("S_RUNL"))));
     for(int i=0;i<remoteModel->meshLibList.GetNumInList();++i){
@@ -380,6 +384,7 @@ void ApplyRemote(unsigned long long now, float seconds) {
         }
     }
     if (!haveTarget || !CreateProxy()) return;
+    remote->SetCollDetStat(FALSE);remote->SetCollDetDyn(FALSE);
     const zVEC3 old = remote->GetPositionWorld();
     const float dx = target.x - old[0], dy = target.y - old[1], dz = target.z - old[2];
     const float distanceSquared = dx * dx + dy * dy + dz * dz;
@@ -396,7 +401,7 @@ void ApplyRemote(unsigned long long now, float seconds) {
         lastRemoteLog=now;auto* active=remoteModel->numActiveAnis>0&&remoteModel->numActiveAnis<=6?remoteModel->aniChannels[0]:nullptr;
         std::ostringstream text;text<<"target="<<target.x<<","<<target.y<<","<<target.z<<" yaw="<<target.yaw<<" error="<<std::sqrt(distanceSquared)
             <<" actual="<<remote->GetPositionWorld()[0]<<","<<remote->GetPositionWorld()[1]<<","<<remote->GetPositionWorld()[2]
-            <<" placed="<<placed<<" movement_block="<<int(remote->isInMovementMode)<<" sleep="<<int(remote->sleepingMode)
+            <<" collision_static="<<remote->collDetectionStatic<<" collision_dynamic="<<remote->collDetectionDynamic<<" placed="<<placed<<" movement_block="<<int(remote->isInMovementMode)<<" sleep="<<int(remote->sleepingMode)
             <<" moving="<<isMoving<<" snapshot_age_ms="<<(now-lastSnapshotAt)<<" active_anis="<<remoteModel->numActiveAnis<<" ani="<<remoteAnimation<<" frame="<<(active?active->actFrame:-1.0f);
         diagnostics.Write(2,"proxy_state",text.str());
     }
@@ -410,7 +415,7 @@ void RenderStatus() {
     screen->SetFontColor(zCOLOR(210, 225, 255));
     const std::string role = network.GetRole() == net::Role::Host ? "HOST" :
                              network.GetRole() == net::Role::Guest ? "GUEST" : "OFFLINE";
-    screen->Print(180, 180, zSTRING(("Zweiklang Coop Alpha.26 | " + role + " | " + network.LastStatus()).c_str()));
+    screen->Print(180, 180, zSTRING(("Zweiklang Coop Alpha.28 | " + role + " | " + network.LastStatus()).c_str()));
     screen->Print(180, 390, zSTRING(notice.c_str()));
     if(!network.PeerName().empty())screen->Print(180,600,zSTRING(("Partner: "+ConvertText(network.PeerName(),CP_UTF8,CP_ACP)).c_str()));
     int y=810;for(const auto& line:SessionStatusLines()){screen->Print(180,y,zSTRING(line.c_str()));y+=210;}
@@ -434,6 +439,10 @@ void Start(bool asHost) {
         Log(notice);
         return;
     }
+    if(!recoveryReady||recoveryBlocked||!recoveryError.empty()){
+        notice="Koop-Start gesperrt: Spielstandbindung fehlt/ist fehlerhaft. Diagnose pruefen; laden oder speichern.";
+        LootLog("session_blocked","ready="+std::to_string(recoveryReady)+" error="+recoveryError);return;
+    }
     sessionWorld = CurrentWorld();
     if (sessionWorld.empty()) { notice = "Zuerst eine Spielwelt laden, dann Sitzung starten."; return; }
     if(!parser||parser->GetIndex(zSTRING("ZK_COOP_PARTNER"))<0){notice="ZweiklangCoop_Npc.d fehlt oder wurde nicht geladen. Beide PCs aktualisieren.";Log(notice);return;}
@@ -445,14 +454,14 @@ void Start(bool asHost) {
     }
     if(QuestInt("NINJA_QUICKLOOT_ZK_BRIDGE_REV",-1)!=1){notice="Quickloot fehlt oder hat keine Koop-Bruecke; passende Alpha-Dateien und Ninja pruefen.";Log(notice);return;}
     if(QuestInt("NINJA_SPRINT_ZK_BRIDGE_REV",-1)!=1){notice="Sprint fehlt oder hat keine Koop-Bruecke; passende Alpha-Dateien und Ninja pruefen.";Log(notice);return;}
-    diagnostics.Write(1,"qol_profile","quickloot=1.9.5 bridge=1 sprint=2.4.0 party_guard=1 protocol=9 journal=4");
+    diagnostics.Write(1,"qol_profile","quickloot=1.9.5 bridge=1 sprint=2.4.0 party_guard=1 protocol=10 journal=4");
     const net::Compatibility compatibility{kEngine, net::HashString(contentId), net::HashString(sessionWorld)};
     diagnostics.Role(asHost?"HOST":"CLIENT");
-    diagnostics.Write(1,"session_start","name="+options.name+" host="+hostAddress+" port="+std::to_string(port)+" world="+sessionWorld+" content="+contentId+" protocol=9");
+    diagnostics.Write(1,"session_start","name="+options.name+" host="+hostAddress+" port="+std::to_string(port)+" world="+sessionWorld+" content="+contentId+" protocol=10");
     const bool started = asHost ? network.StartHost(port, compatibility, Now(),hostAddress) :
                                  network.Connect(hostAddress, port, compatibility, Now(),options.client);
     Log(std::string("Session role=")+(asHost?"Host":"Client")+" bind="+(asHost?hostAddress:options.client));
-    notice = started ? "Koop: Cavalorn-Dialoge beim Host; Speichern trennt die Sitzung." : network.LastStatus();
+    notice = started ? "Koop verbunden; Speichern behaelt die Sitzung bei." : network.LastStatus();
     QolGuard(started);
     ReportNetworkStatus();
 }
@@ -663,7 +672,7 @@ void Initialize() {
     if(faultFile!=INVALID_HANDLE_VALUE)faultObserver=AddVectoredExceptionHandler(1,ObserveFault);
     LogRuntime();
     lastFrame = Now();
-    Log("Zweiklang Coop 0.1.0-alpha.27 initialized; protocol=9; engine=G2NotR; no auto-connect.");
+    Log("Zweiklang Coop 0.1.0-alpha.27 initialized; protocol=10; engine=G2NotR; no auto-connect.");
 }
 
 void Shutdown() {
@@ -675,12 +684,13 @@ void Shutdown() {
 void Frame() {
     if (loading || saving || !player || !ogame || !ogame->GetWorld()) return;
     ApplyLocalAppearance();
-    RecoveryFrame();
     const auto now = Now();
     const float elapsed = static_cast<float>((now - lastFrame) > 250 ? 250 : now - lastFrame) / 1000.0f;
     lastFrame = now;
     network.Poll(now);
     ReportNetworkStatus();
+    if(network.PeerSaving()){notice="Partner speichert; Abgleich wartet kurz.";RenderStatus();return;}
+    RecoveryFrame();
     ObserveState(now);
     if(network.GetState()!=net::State::Connected&&combatSession)CombatReset();
     if (network.GetState() != net::State::Idle && network.GetState() != net::State::Error &&
@@ -727,7 +737,7 @@ void MenuFrame() {
 void BeforeSave() {
     QuestRestoreConditions();
     saving = true;
-    Leave("Save started: presence session closed; reconnect after saving.");
+    Log("Save started: session retained; inventory guarded");
 }
 void AfterSave() {
     saving=false;lastFrame=Now();
@@ -739,17 +749,32 @@ void BeforeLoad() {
     QuestRestoreConditions();
     questError.clear();questSessionBound=false;
     questCheckedParser=nullptr;questCheckedInfoManager=nullptr;
-    loading = true;
+    freshGamePending=false;loading = true;
     Leave("Loading: presence session closed; reconnect after loading.");
     QolReset();
 }
-void BeforeNewGame(){BeforeLoad();recoveryTimeline.clear();recoveryEffects.clear();recoveryReady=false;recoveryLastReplay=0;recoveryLastWorld.clear();if(recoveryStoreReady){recoveryError.clear();recoveryBlocked=false;}}
-void AfterLoad() { QolReset();appearancePlayer=nullptr;appliedAppearance=-1; loading = false; saving = false; lastFrame = Now();notice="Bereit: Sitzung im Union-Menue oder mit F6/F7 starten.";Log("Load completed: world="+CurrentWorld());haveState=false; }
+void BeforeNewGame(){BeforeLoad();freshGamePending=true;recoveryTimeline.clear();recoveryEffects.clear();recoveryReady=false;recoveryLastReplay=0;recoveryLastWorld.clear();if(recoveryStoreReady){recoveryError.clear();recoveryBlocked=false;}}
+void AfterLoad() { QolReset();appearancePlayer=nullptr;appliedAppearance=-1; loading = false; saving = false;
+    if(freshGamePending){freshGamePending=false;try{
+        if(!recoveryStoreReady||!recoveryError.empty())throw std::runtime_error("Fresh game recovery store unavailable");
+        recoveryTimeline=rc::NewGuid();recoveryEffects.clear();recoveryReady=true;
+        LootLog("recovery_new_game","Fresh unsaved timeline="+recoveryTimeline+" effects=0; native save persists checkpoint");
+    }catch(const std::exception& e){RecoveryFail(e.what());}}
+    lastFrame = Now();notice="Bereit: Sitzung im Union-Menue oder mit F6/F7 starten.";Log("Load completed: world="+CurrentWorld());haveState=false; }
 }
 
 // The exact G2 2.6-fix methods come from the external Union/ZenGin SDK.
 namespace {
 using namespace gothic;
+int __fastcall CoopCanCollide(oCAIHuman*,void*,zCVob*);
+CInvoke<int(__thiscall*)(oCAIHuman*,zCVob*)> originalCanCollide(0x0069D890,&CoopCanCollide);
+int __fastcall CoopCanCollide(oCAIHuman* ai,void*,zCVob* other){
+    using namespace zweiklang::engine;
+    // Exclude only the player pair, leaving focus traces and enemy collision intact.
+    auto* partner=PartnerNpc();
+    if(player&&partner&&((ai==player->human_ai&&other==partner)||(ai==partner->human_ai&&other==player)))return FALSE;
+    return originalCanCollide(ai,other);
+}
 void __fastcall SharedReadSave(CGameManager*,void*,int);
 CInvoke<void(__thiscall*)(CGameManager*,int)> originalReadSave(0x0042A040,&SharedReadSave);
 void __fastcall SharedReadSave(CGameManager* manager,void*,int slot){if(slot<0){originalReadSave(manager,slot);return;}zweiklang::engine::RecoveryBeginLoad(slot);originalReadSave(manager,slot);zweiklang::engine::RecoveryEndLoad();}
@@ -767,14 +792,18 @@ void __fastcall SharedWriteSave(CGameManager* manager,void*,int slot){
     using namespace zweiklang::engine;
     if(!recoveryError.empty()||recoveryBlocked){notice="Speichern gesperrt: erst den Inventar-/Questabgleich klaeren.";LootLog("save_blocked",recoveryError);return;}
     if(slot<0){originalWriteSave(manager,slot);return;}
+    if(network.PeerSaving()||(SessionLocalReady().flags&zweiklang::session::Pending)||clientLootShown||clientOpenRequest){notice="Speichern wartet: Partner speichert oder Inventarvorgang ist offen. Erst abschliessen, dann erneut speichern.";LootLog("save_blocked","Active transfer/container/peer save");return;}
     recoverySaveSlot=slot;recoverySaveStarted=false;recoveryNativeSaveCompleted=false;
     QuestRestoreConditions();
     recoverySavingCheckpoint=RecoveryBeforeSave(slot);
     if(!recoveryError.empty()){notice="Speichern vor Dateiaenderungen abgebrochen; siehe Recovery-Diagnose.";LootLog("save_blocked","Preflight failed before game manager write: "+recoveryError);recoverySaveSlot=-1;return;}
+    if(CombatConnected()&&!network.SetSaving(true,Now())){notice="Speichern wartet auf freien Sendekanal.";DeleteFileA((recoveryDir+"\\saving-slot"+std::to_string(slot)+".bin").c_str());recoverySaveSlot=-1;return;}
     recoverySaveStarted=true;
     originalWriteSave(manager,slot);
     if(recoverySaveStarted)RecoveryAfterSave(slot,recoverySavingCheckpoint);
-    if(recoveryError.empty()&&recoveryReady){notice="Spielstand und Checkpoint gespeichert. Sitzung erneut starten.";Log("Save completed and checkpoint verified");}
+    if(CombatConnected()&&!network.SetSaving(false,Now()))Leave("Save resume failed; reconnect after checking logs");
+    network.Poll(Now());
+    if(recoveryError.empty()&&recoveryReady){notice="Spielstand und Checkpoint gespeichert. Koop-Sitzung bleibt bestehen.";Log("Save completed and checkpoint verified");}
     else {notice="Spielstand nicht vollstaendig bestaetigt; siehe Recovery-Diagnose.";Log("Save verification failed: "+recoveryError);}
     recoverySaveSlot=-1;recoverySaveStarted=false;
 }
