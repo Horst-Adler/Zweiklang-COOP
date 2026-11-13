@@ -49,8 +49,9 @@ Befund bearbeitet; automatische Tests allein erfüllen dieses Kriterium nicht.
 - Latenz, Jitter, Verlust, doppelte/vertauschte Pakete, dichte NPC-Gebiete und Last.
 - Mehrstündige Sitzungen; Ressourcenverbrauch und mögliche Lecks messen.
 - Versionswechsel, unterstützte Formatmigrationen und Rückfallprozeduren.
-- **Direkter Spielerhandel** mit Angeboten, beidseitiger Bestätigung und atomarer
-  Inventaränderung; sichere Behandlung von Abbruch/Disconnect/Entfernung.
+- **Partner ansprechen und direkt handeln:** eigenes Partner-Dialogmenü mit
+  „Handeln“, Items/Gold anbieten, beidseitige Bestätigung und atomare Inventaränderung;
+  sichere Behandlung von Dialogabbruch/Disconnect/Entfernung. Geplant, noch nicht implementiert.
 - **Zwei männliche und zwei weibliche Aussehen**, inklusive bestehender Held-/Velaya-Basis.
 - Braunes Leder-/Stoffoutfit und Startrüstung mit zwei Formen in Xardas’ Laborkiste
   hinter dem Gitter; einmalige Vergabe ohne Wiederholungsduplikate.
