@@ -174,7 +174,8 @@ bool WorldRecoveryEffect(const rc::Record& record,bool desired,bool& handled){
     }
     auto* item=WorldGroundFor(tx);if(!desired)return false;
     if(!item||item->amount<static_cast<int>(tx.amount))return false;
-    RegisterGround(item);if(item->amount>static_cast<int>(tx.amount))item->amount-=tx.amount;else item->RemoveVobFromWorld();WorldGroundChanged(item);return true;
+    LootLog("ground_effect_begin","tx="+tx.id+" item="+std::to_string(tx.item)+" amount="+std::to_string(tx.amount));
+    RegisterGround(item);if(item->amount>static_cast<int>(tx.amount))item->amount-=tx.amount;else item->RemoveVobFromWorld();WorldGroundChanged(item);LootLog("ground_effect_end","tx="+tx.id);return true;
 }
 bool WorldHostRequest(rc::Message& m){
     if(m.tx.action!=rc::Action::GroundTake&&m.tx.action!=rc::Action::Drop)return false;
@@ -183,6 +184,7 @@ bool WorldHostRequest(rc::Message& m){
     if(m.tx.action==rc::Action::GroundTake){auto* item=WorldGroundFor(m.tx);allowed=allowed&&item&&item->amount>=static_cast<int>(m.tx.amount);}
     else allowed=allowed&&m.tx.source.name=="ZK_DROP_"+m.tx.id;
     auto tx=m.tx;tx.decision=allowed?rc::Decision::Commit:rc::Decision::Abort;
+    LootLog("ground_decision_begin","tx="+tx.id+" decision="+std::to_string(static_cast<unsigned>(tx.decision))+" item="+std::to_string(tx.item));
     if(!recoveryStore.Put(tx,rc::Role::Host))throw std::runtime_error("Cannot persist ground decision");
     if(!RecoveryReconcile(*recoveryStore.Find(tx.id)))throw std::runtime_error("Ground decision replay deferred");
     m.tx=tx;m.op=rc::Op::Result;recoveryResponses[tx.id]=m;QueueRecovery(m);LootLog("ground_decision","tx="+tx.id+" action="+std::to_string(static_cast<unsigned>(tx.action))+" decision="+std::to_string(static_cast<unsigned>(tx.decision)));return true;
@@ -190,7 +192,7 @@ bool WorldHostRequest(rc::Message& m){
 bool WorldGroundAction(oCNpc* actor,zCVob* vob,bool drop){
     if(worldConstructing||worldNativeDropPass||actor!=player||!CombatConnected())return false;
     auto* item=zDYNAMIC_CAST<oCItem>(vob);if(!item)return false;
-    if(!recoveryReady||!RecoveryCanLoot()){notice="Bodenitems warten auf den sicheren Inventarabgleich.";LootLog("ground_blocked","item="+std::string(item->GetObjectName().ToChar())+" ready="+std::to_string(recoveryReady)+" reason="+(recoveryError.empty()?"Checkpoint fehlt":recoveryError));return true;}
+    if(!recoveryReady||!RecoveryCanLoot()){notice="Bodenitems warten auf den sicheren Inventarabgleich.";LootLog("ground_blocked","item="+std::string(item->GetObjectName().ToChar())+" ready="+std::to_string(recoveryReady)+" reason="+RecoveryBlockReason());return true;}
     for(int i=0;i<8&&!worldOutbox.empty()&&lootOutbox.size()<48;++i){lootOutbox.push_back(std::move(worldOutbox.front()));worldOutbox.pop_front();}
     if(!worldGroundPending.empty()){notice="Ein Gegenstandsvorgang wird noch bestätigt.";return true;}
     if(drop&&(!LootEligible(item)||item->HasFlag(1<<12))){notice="Ausgeruestete oder gebundene Gegenstaende bitte nicht als Koop-Bodenitem ablegen.";return true;}
@@ -200,6 +202,7 @@ bool WorldGroundAction(oCNpc* actor,zCVob* vob,bool drop){
         rc::Tx tx;tx.id=rc::NewGuid();tx.hostTimeline=HostCombat()?recoveryTimeline:recoveryPeerTimeline;tx.ownerTimeline=recoveryTimeline;tx.world=CurrentWorld();tx.action=drop?rc::Action::Drop:rc::Action::GroundTake;tx.source.kind=lo::Source::Ground;tx.item=item->GetInstance();tx.amount=static_cast<unsigned>(item->amount);
         const auto p=drop?player->GetPositionWorld()+player->GetAtVectorWorld()*100.0f:item->GetPositionWorld();tx.source.position={p[0],p[1]+(drop?75.0f:0.0f),p[2]};tx.source.name=drop?"ZK_DROP_"+tx.id:item->GetObjectName().ToChar();
         const auto role=HostCombat()?rc::Role::Local:rc::Role::Owner;
+        LootLog("ground_request_begin","tx="+tx.id+" action="+std::to_string(static_cast<unsigned>(tx.action))+" item="+std::to_string(tx.item)+" amount="+std::to_string(tx.amount));
         if(!recoveryStore.Put(tx,role))throw std::runtime_error("Cannot prepare ground operation");
         if(drop){
             std::set<oCItem*> before;auto* gameWorld=ogame->GetGameWorld();if(gameWorld->voblist_items)for(auto* it=gameWorld->voblist_items->GetNextInList();it;it=it->GetNextInList())before.insert(it->GetData());
@@ -215,7 +218,7 @@ bool WorldGroundAction(oCNpc* actor,zCVob* vob,bool drop){
             if(HostCombat()){recoveryEffects.insert(tx.id+"c");tx.decision=rc::Decision::Commit;if(!recoveryStore.Put(tx,role))throw std::runtime_error("Cannot commit native host drop");}
             else dropped->RemoveVobFromWorld();
         }else if(!RecoveryReconcile(*recoveryStore.Find(tx.id)))throw std::runtime_error("Cannot reserve ground pickup");
-        if(!HostCombat()){rc::Message m;m.op=rc::Op::Request;m.request=NextLootRequest();m.tx=tx;QueueRecovery(m);worldGroundPending=tx.id;}
+        if(!HostCombat()){rc::Message m;m.op=rc::Op::Request;m.request=NextLootRequest();m.tx=tx;QueueRecovery(m);worldGroundPending=tx.id;LootLog("ground_request_queued","tx="+tx.id);}
     }catch(const std::exception& e){RecoveryFail(e.what());}
     return true;
 }

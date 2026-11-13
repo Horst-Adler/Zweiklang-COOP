@@ -165,3 +165,8 @@ Bei einem Freeze, Absturz, dauerhaften HP-Widerspruch oder Itemverlust den aktue
 ## Vorrangiger Wiederholungstest Alpha.28
 
 Vor der Route Partnerkollision, einzelne Bodenaufnahmen und anschließend ausschließlich Gast speichern, danach erneut aufnehmen; dann ausschließlich Host speichern und wiederholen. Verbindung soll jeweils erhalten bleiben. Offene Inventarvorgänge vor dem Speichern beenden. Laden trennt weiterhin. Weitere Details: [Alpha.28](ALPHA-28.md).
+
+
+## Alpha.29: Vorrangiger Plugin-Test
+
+Nach Versionsabgleich zuerst einzelne Bodenaufnahmen, Quickloot separat und Itemübergaben prüfen. Journalwiederherstellung wird in isolierten technischen Tests geprüft; keinen Rechnerabsturz erzwingen. Bei Sperren Logs und Journalpaare erhalten. [Änderungen und Grenzen](ALPHA-29.md).

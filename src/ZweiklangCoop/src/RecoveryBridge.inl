@@ -20,7 +20,8 @@ void RecoveryFail(const std::string& why){recoveryError=why;recoveryBlocked=true
 void QueueRecovery(const rc::Message& m){if(lootOutbox.size()>=128){RecoveryFail("Recovery queue full");return;}lootOutbox.push_back(rc::Encode(m));}
 void RecoverySessionReset(){recoveryResponses.clear();recoveryPeerTimeline.clear();recoveryHello=false;recoveryUiTx.clear();recoveryQueries.clear();recoveryLockSent.clear();recoveryLastLocks=0;recoveryLockTimes.clear();recoveryLastQueryScan=0;}
 void RecoveryInit(){
-    try{recoveryDir=systemDirectory+"\\ZweiklangCoopState";if(!CreateDirectoryA(recoveryDir.c_str(),nullptr)&&GetLastError()!=ERROR_ALREADY_EXISTS)throw std::runtime_error("Cannot create recovery directory");recoveryStore.Open(recoveryDir+"\\transactions.bin");recoveryStoreReady=true;}
+    rc::SetTraceSink([](const std::string& phase,const std::string& detail){LootLog(("recovery_"+phase).c_str(),detail);});
+    try{recoveryDir=systemDirectory+"\\ZweiklangCoopState";if(!CreateDirectoryA(recoveryDir.c_str(),nullptr)&&GetLastError()!=ERROR_ALREADY_EXISTS)throw std::runtime_error("Cannot create recovery directory");recoveryStore.Open(recoveryDir+"\\transactions.bin");recoveryStoreReady=true;LootLog("recovery_store_open","records="+std::to_string(recoveryStore.Records().size())+" repair="+std::to_string(static_cast<unsigned>(recoveryStore.RecoveryStatus())));}
     catch(const std::exception& e){RecoveryFail(e.what());}
 }
 std::string RecoverySlot(int slot){
@@ -132,6 +133,13 @@ bool RecoveryApply(const rc::Record& record,bool desired){
     return ok;
 }
 bool RecoveryReconcile(const rc::Record& r){return rc::Reconcile(r,recoveryEffects,RecoveryApply);}
+std::string RecoveryBlockReason(){
+    if(saving||network.PeerSaving())return "Speichervorgang laeuft";
+    if(!recoveryError.empty())return recoveryError;
+    if(recoveryBlocked)return "Offene Inventar-/Questvorgaenge warten auf Abgleich";
+    if(CombatConnected()&&!recoveryReady)return "Spielstandbindung fehlt";
+    return {};
+}
 bool RecoveryCanLoot(){
     if(saving||network.PeerSaving()){notice="Inventar wartet: Speichervorgang laeuft.";return false;}
     if(!recoveryError.empty()||recoveryBlocked){notice="Inventarabgleich gesperrt; konkrete Ursache in der Diagnose (Strg+Umschalt+D).";return false;}
@@ -175,6 +183,7 @@ void RecoveryResult(const rc::Message& m){
     const auto* old=recoveryStore.Find(m.tx.id);
     if(!old||old->role!=rc::Role::Owner||!rc::Same(old->tx,m.tx)||m.tx.decision==rc::Decision::Prepared)throw std::runtime_error("Unsolicited/conflicting persistent decision");
     const bool first=!recoveryEffects.count(m.tx.id+(m.tx.action==rc::Action::Buy?"c":""));
+    LootLog("recovery_result_begin","tx="+m.tx.id+" decision="+std::to_string(static_cast<unsigned>(m.tx.decision)));
     if(!recoveryStore.Put(m.tx,rc::Role::Owner))throw std::runtime_error("Conflicting terminal decision");
     if(!RecoveryReconcile(*recoveryStore.Find(m.tx.id)))throw std::runtime_error("Owner decision requires unavailable inventory/source; replay deferred");
     if(first&&m.tx.decision==rc::Decision::Commit&&(clientQuickLoot||m.tx.action==rc::Action::GroundTake))QolNotify(m.tx.item,m.tx.amount);
@@ -188,6 +197,7 @@ void RecoveryResult(const rc::Message& m){
         if(!clientQuickLoot)if(auto* ui=LootUI(clientLootSource))ui->CheckSelectedItem();
         clientPendingTake=0;lootClientWait=0;recoveryUiTx.clear();
     }
+    LootLog("recovery_result_applied","tx="+m.tx.id+" first="+std::to_string(first));
     auto ack=m;ack.op=rc::Op::Receipt;QueueRecovery(ack);
 }
 bool RecoveryValidateHostRequest(const rc::Message& m){
@@ -221,6 +231,9 @@ void RecoveryReceive(const std::vector<std::uint8_t>& bytes){
             const auto cached=recoveryResponses.find(m.tx.id);if(cached!=recoveryResponses.end()){QueueRecovery(cached->second);return;}
             m.tx=previous->tx;m.op=rc::Op::Result;QueueRecovery(m);return;
         }
+        // Check before dispatching GroundTake/Drop; those also create decisions.
+        if(rc::UnknownCommitQuery(m))throw std::runtime_error("Owner has commit but host record is missing; refusing invented abort");
+        if(m.op==rc::Op::Request&&m.tx.decision!=rc::Decision::Prepared)throw std::runtime_error("New request already has terminal decision");
         if(WorldHostRequest(m))return;
         auto decided=m.tx;bool accepted=false;
         if(m.op==rc::Op::Request&&RecoveryValidateHostRequest(m)){
@@ -269,8 +282,8 @@ void RecoveryFrame(){
         if(recoveryReady&&(recoveryLastReplay==0||now-recoveryLastReplay>=1000||recoveryLastWorld!=CurrentWorld())){
         recoveryLastReplay=now;recoveryLastWorld=CurrentWorld();recoveryBlocked=false;
         for(auto r:recoveryStore.Ordered()){
-            if(r.role==rc::Role::Local&&r.tx.decision==rc::Decision::Prepared){r.tx.decision=rc::Decision::Abort;if(!recoveryStore.Put(r.tx,r.role))throw std::runtime_error("Cannot abort interrupted local operation");}
             if((r.role==rc::Role::Host?r.tx.hostTimeline:r.tx.ownerTimeline)!=recoveryTimeline)continue;
+            if(r.role==rc::Role::Local&&r.tx.decision==rc::Decision::Prepared){r.tx.decision=rc::Decision::Abort;if(!recoveryStore.Put(r.tx,r.role))throw std::runtime_error("Cannot abort interrupted local operation");}
             if((r.role==rc::Role::Host||r.role==rc::Role::Local||r.tx.action==rc::Action::Unlock)&&r.tx.world!=CurrentWorld())continue;
             if(!RecoveryReconcile(r))recoveryBlocked=true;
         }}

@@ -36,6 +36,94 @@ void TestRecoveryCheckpoints(){
     auto decoded=rc::DecodeCheckpoint(rc::Encode(c));Check(decoded.effects==c.effects&&decoded.timeline==c.timeline&&decoded.fingerprint==c.fingerprint,"save checkpoint records exactly represented transaction effects");
     auto b=rc::Encode(c);b.resize(b.size()-1);bool rejected=false;try{rc::DecodeCheckpoint(b);}catch(const std::exception&){rejected=true;}Check(rejected,"truncated save checkpoint is not trusted");
 }
+void TestInterruptedJournal(){
+    namespace rc=zweiklang::recovery;namespace fs=std::filesystem;
+    const auto seed=recovery_test::Temp(),seedPath=seed+"\\transactions.bin";
+    rc::Store initial;initial.Open(seedPath);const auto empty=rc::ReadFile(seedPath);
+    auto tx=recovery_test::Transaction();tx.source.kind=zweiklang::loot::Source::Ground;tx.action=rc::Action::GroundTake;tx.source.name="TEST_STONE_TABLET";
+    Check(initial.Put(tx,rc::Role::Host),"create real serialized host preparation");const auto prepared=rc::ReadFile(seedPath);
+    tx.decision=rc::Decision::Commit;Check(initial.Put(tx,rc::Role::Host),"create real serialized host commit");const auto committed=rc::ReadFile(seedPath);
+    auto image=[](rc::StoreSnapshot s){zweiklang::combat::Writer w;w.data.push_back(0xa7);w.u(4);w.text(s.profile);w.u(static_cast<unsigned>(s.records.size()));for(const auto& e:s.records){w.u(static_cast<unsigned>(e.second.role));w.u(e.second.ordinal);rc::Write(w,e.second.tx);}return rc::Seal(w);};
+    auto clean=[](const std::string& dir){for(const auto& e:fs::directory_iterator(dir))fs::remove(e.path());RemoveDirectoryA(dir.c_str());};
+    auto scenario=[&](const Bytes& main,const Bytes& pending,bool accepted,rc::StoreRecovery mode){
+        const auto dir=recovery_test::Temp(),path=dir+"\\transactions.bin";rc::AtomicWrite(path,main);rc::AtomicWrite(path+".pending",pending);
+        rc::Store restored;bool opened=false;try{restored.Open(path);opened=true;}catch(const std::exception&){}
+        Check(opened==accepted,"interrupted journal disposition matches validated history");
+        if(accepted){
+            Check(restored.RecoveryStatus()==mode,"recovery reports promote/equal/stale separately");
+            Check(restored.Find(tx.id)&&restored.Find(tx.id)->tx.decision==rc::Decision::Commit,"host retains terminal commit after interrupted publication");
+            Check(!rc::Exists(path+".pending"),"consumed pending cannot be overwritten by next transaction");
+            unsigned evidence=0;for(const auto& e:fs::directory_iterator(dir))if(e.path().filename().string().find(".interrupted-")!=std::string::npos)++evidence;
+            Check(evidence>0,"original interrupted bytes preserved as evidence");
+            rc::Store again;again.Open(path);Check(again.RecoveryStatus()==rc::StoreRecovery::Clean&&again.Find(tx.id),"second restart requires no repeated repair");
+            int removes=0;std::set<std::string> effects;
+            auto apply=[&](const rc::Record&,bool desired){if(desired)++removes;return true;};
+            rc::Reconcile(*again.Find(tx.id),effects,apply);rc::Reconcile(*again.Find(tx.id),effects,apply);
+            Check(removes==1,"recovered host commit applies one source effect with checkpoint bookkeeping");
+        }else{
+            Check(rc::ReadFile(path)==main&&rc::ReadFile(path+".pending")==pending,"conflict/truncation preserves both originals byte for byte");
+            Check(!restored.Put(tx,rc::Role::Host),"failed open cannot write through a partially loaded store");
+        }
+        clean(dir);
+    };
+    // Exact shape from the failed test: old empty host main, complete host
+    // Commit in pending, while the owner's main already contains that Commit.
+    scenario(empty,committed,true,rc::StoreRecovery::Promoted);
+    scenario(prepared,committed,true,rc::StoreRecovery::Promoted);
+    scenario(committed,committed,true,rc::StoreRecovery::Identical);
+    scenario(committed,prepared,true,rc::StoreRecovery::Stale);
+    auto bad=committed;bad.back()^=1;scenario(empty,bad,false,rc::StoreRecovery::Clean);
+    bad=committed;bad.resize(15);scenario(empty,bad,false,rc::StoreRecovery::Clean);
+    bad=empty;bad.back()^=1;scenario(bad,committed,false,rc::StoreRecovery::Clean);
+    auto s=rc::DecodeStore(committed);s.profile=std::string(32,'f');scenario(empty,image(s),false,rc::StoreRecovery::Clean);
+    s=rc::DecodeStore(committed);s.records.at(tx.id).tx.decision=rc::Decision::Abort;scenario(committed,image(s),false,rc::StoreRecovery::Clean);
+    s=rc::DecodeStore(committed);s.records.at(tx.id).tx.amount+=1;scenario(prepared,image(s),false,rc::StoreRecovery::Clean);
+    s=rc::DecodeStore(committed);s.records.at(tx.id).role=rc::Role::Owner;scenario(prepared,image(s),false,rc::StoreRecovery::Clean);
+    {
+        const auto dir=recovery_test::Temp(),path=dir+"\\transactions.bin";rc::AtomicWrite(path+".pending",committed);
+        rc::Store store;bool blocked=false;try{store.Open(path);}catch(const std::exception&){blocked=true;}
+        Check(blocked&&!rc::Exists(path)&&rc::ReadFile(path+".pending")==committed,"missing main plus nonempty pending requires explicit reconciliation");clean(dir);
+    }
+    {
+        const auto dir=recovery_test::Temp(),path=dir+"\\transactions.bin";rc::AtomicWrite(path+".pending",empty);rc::Store store;store.Open(path);
+        Check(store.Profile()==initial.Profile()&&store.Records().empty(),"interrupted first empty profile publication retains profile identity");clean(dir);
+    }
+    {
+        const auto dir=recovery_test::Temp(),path=dir+"\\transactions.bin";rc::AtomicWrite(path,committed);rc::Store store;store.Open(path);
+        unsigned writes=0;rc::SetTraceSink([&](const std::string& phase,const std::string&){if(phase=="write_begin")++writes;});
+        for(int i=0;i<5;++i)Check(store.Put(tx,rc::Role::Host),"duplicate commit remains acknowledged");
+        rc::SetTraceSink({});Check(writes==0&&rc::ReadFile(path)==committed,"duplicate terminal decisions cause no repeated durable journal write");
+        std::vector<std::string> phases;rc::SetTraceSink([&](const std::string& phase,const std::string&){phases.push_back(phase);});
+        auto second=recovery_test::Transaction(2);Check(store.Put(second,rc::Role::Host),"append after recovery works");rc::SetTraceSink({});
+        const std::vector<std::string> expected={"store_begin","write_begin","write_end","flush_begin","flush_end","replace_begin","replace_end","store_end"};
+        Check(phases==expected,"trace brackets transaction, write, durability flush and publication in order");
+        rc::SetTraceSink([](const std::string&,const std::string&){throw std::runtime_error("logger failed");});
+        second.decision=rc::Decision::Commit;Check(store.Put(second,rc::Role::Host),"diagnostic callback failure cannot change transaction outcome");rc::SetTraceSink({});clean(dir);
+    }
+    {
+        auto candidate=rc::DecodeStore(committed),base=rc::DecodeStore(prepared);
+        auto extra=recovery_test::Transaction(2);candidate.records.emplace(extra.id,rc::Record{extra,rc::Role::Owner,2});
+        Check(!rc::StoreSuccessor(candidate,base),"a candidate cannot both change a decision and append in one write");
+        auto altered=rc::DecodeStore(committed);altered.records.at(tx.id).ordinal=2;
+        Check(!rc::StoreSuccessor(altered,base),"order changes cannot masquerade as a decision update");
+    }
+    for(auto action:{rc::Action::GroundTake,rc::Action::Drop,rc::Action::Take,rc::Action::Put}){
+        rc::Message m;m.op=rc::Op::Query;m.tx.action=action;m.tx.decision=rc::Decision::Commit;
+        Check(rc::UnknownCommitQuery(m),"unknown owner commit cannot be converted into a new host abort for any loot route");
+        m.tx.decision=rc::Decision::Prepared;Check(!rc::UnknownCommitQuery(m),"unknown preparation can still receive a safe abort");
+    }
+    {
+        const auto dir=recovery_test::Temp(),path=dir+"\\transactions.bin";rc::Store store;store.Open(path);const auto before=rc::ReadFile(path);
+        const auto locked=CreateFileA((path+".pending").c_str(),GENERIC_READ|GENERIC_WRITE,0,nullptr,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,nullptr);
+        Check(locked!=INVALID_HANDLE_VALUE,"create isolated publication sharing failure");
+        std::string stage;rc::SetTraceSink([&](const std::string& phase,const std::string& detail){if(phase=="io_error")stage=detail;});
+        bool failed=false;try{store.Put(tx,rc::Role::Host);}catch(const std::exception&){failed=true;}rc::SetTraceSink({});CloseHandle(locked);
+        Check(failed&&stage.find("stage=create")!=std::string::npos&&stage.find("win32=32")!=std::string::npos,"publication error records exact stage and sharing-violation code");
+        Check(!store.Find(tx.id)&&rc::ReadFile(path)==before,"failed durable write never publishes in-memory decision or changes main");
+        Check(!store.Put(tx,rc::Role::Host),"write failure requires reopen before any later decision");clean(dir);
+    }
+    clean(seed);
+}
 void TestRecoveryCrashMatrix(){
     namespace rc=zweiklang::recovery;
     for(auto action:{rc::Action::Take,rc::Action::Put})for(auto decision:{rc::Decision::Commit,rc::Decision::Abort})for(int hostSaved=0;hostSaved<2;++hostSaved)for(int ownerSaved=0;ownerSaved<2;++ownerSaved){

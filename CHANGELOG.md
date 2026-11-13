@@ -1,5 +1,9 @@
 # Versionshistorie
 
+## 0.1.0-alpha.29 – 2026-11-13
+
+Sichere Haupt-/Pending-Journalwiederherstellung mit Beweiserhalt und Konfliktsperre, Schutz gegen erfundene Aborts bei bestätigten Client-Commits, idempotente dauerhafte Schreibvorgänge, aktive Zeitlinien vor lokalem Rücksetzen prüfen und genaue Persistenz-/Itemdiagnosen. 2.342 technische Assertions. Native Abnahme offen; keine VM-/Treiberänderung. [Details](docs/ALPHA-29.md).
+
 ## 0.1.0-alpha.28 – 2026-11-08
 
 Neue Inventar-Basis bei neuem Spiel, Startschutz bei ungeklärter Bindung, zuverlässige Speicherpause mit Sitzungserhalt und begrenzter Timeout-Verlängerung, Partnerkollision nach Weltaufnahme und gezielter Paarfilter. Versionsanzeige/Diagnose ergänzt. Protokoll 10; 2.250 technische Assertions. Native Abnahme offen. Details: [Alpha.28](docs/ALPHA-28.md).

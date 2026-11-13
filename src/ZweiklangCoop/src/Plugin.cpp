@@ -415,7 +415,7 @@ void RenderStatus() {
     screen->SetFontColor(zCOLOR(210, 225, 255));
     const std::string role = network.GetRole() == net::Role::Host ? "HOST" :
                              network.GetRole() == net::Role::Guest ? "GUEST" : "OFFLINE";
-    screen->Print(180, 180, zSTRING(("Zweiklang Coop Alpha.28 | " + role + " | " + network.LastStatus()).c_str()));
+    screen->Print(180, 180, zSTRING(("Zweiklang Coop Alpha.29 | " + role + " | " + network.LastStatus()).c_str()));
     screen->Print(180, 390, zSTRING(notice.c_str()));
     if(!network.PeerName().empty())screen->Print(180,600,zSTRING(("Partner: "+ConvertText(network.PeerName(),CP_UTF8,CP_ACP)).c_str()));
     int y=810;for(const auto& line:SessionStatusLines()){screen->Print(180,y,zSTRING(line.c_str()));y+=210;}
@@ -672,11 +672,11 @@ void Initialize() {
     if(faultFile!=INVALID_HANDLE_VALUE)faultObserver=AddVectoredExceptionHandler(1,ObserveFault);
     LogRuntime();
     lastFrame = Now();
-    Log("Zweiklang Coop 0.1.0-alpha.27 initialized; protocol=10; engine=G2NotR; no auto-connect.");
+    Log("Zweiklang Coop 0.1.0-alpha.29 initialized; protocol=10; engine=G2NotR; no auto-connect.");
 }
 
 void Shutdown() {
-    Leave("Session closed");diagnostics.Flush();diagnosticsReady=false;
+    Leave("Session closed");rc::SetTraceSink({});diagnostics.Flush();diagnosticsReady=false;
     if(faultObserver){RemoveVectoredExceptionHandler(faultObserver);faultObserver=nullptr;}
     if(faultFile!=INVALID_HANDLE_VALUE){CloseHandle(faultFile);faultFile=INVALID_HANDLE_VALUE;}
 }

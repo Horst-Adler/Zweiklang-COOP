@@ -360,6 +360,7 @@ int main() {
         TestLootConservation();
         TestRecoveryWire();
         TestRecoveryStore();
+        TestInterruptedJournal();
         TestRecoveryCheckpoints();
         TestNativeSavePaths();
         TestRecoveryCrashMatrix();

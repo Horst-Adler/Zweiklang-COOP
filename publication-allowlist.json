@@ -80,7 +80,8 @@
     "src/ZweiklangCoop/tests/fixtures/Recovery17Store.bin",
     "src/ZweiklangCoop/tests/fixtures/Recovery18Checkpoint.bin",
     "src/ZweiklangCoop/tests/fixtures/Recovery18Store.bin",
-    "docs/ALPHA-28.md"
+    "docs/ALPHA-28.md",
+    "docs/ALPHA-29.md"
   ],
   "synthetic_fixtures": {
     "src/ZweiklangCoop/tests/fixtures/Recovery17Checkpoint.bin": "f0952bbf9d9287835f8534da1eb477338b34a189d1df696472f5ee3ce056f18a",

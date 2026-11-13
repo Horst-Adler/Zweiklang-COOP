@@ -67,36 +67,118 @@ inline combat::Bytes ReadFile(const std::string& path){
     if(ok&&size.QuadPart>=0&&size.QuadPart<=16*1024*1024){b.resize(static_cast<std::size_t>(size.QuadPart));DWORD read=0;ok=::ReadFile(h,b.data(),static_cast<DWORD>(b.size()),&read,nullptr)&&read==b.size();}else ok=false;
     CloseHandle(h);if(!ok)throw std::runtime_error("Recovery file read failed");return b;
 }
+using TraceSink=std::function<void(const std::string&,const std::string&)>;
+inline TraceSink& TraceTarget(){static TraceSink sink;return sink;}
+inline void SetTraceSink(TraceSink sink){TraceTarget()=std::move(sink);}
+inline void Trace(const std::string& phase,const std::string& detail)noexcept{try{if(TraceTarget())TraceTarget()(phase,detail);}catch(...){}}
+inline bool Exists(const std::string& path){
+    if(GetFileAttributesA(path.c_str())!=INVALID_FILE_ATTRIBUTES)return true;
+    const auto error=GetLastError();if(error==ERROR_FILE_NOT_FOUND||error==ERROR_PATH_NOT_FOUND)return false;
+    throw std::runtime_error("Recovery path inaccessible win32="+std::to_string(error));
+}
+inline void IoFail(const char* stage,const std::string& path,DWORD error){
+    Trace("io_error","stage="+std::string(stage)+" path="+path+" win32="+std::to_string(error));
+    throw std::runtime_error("Recovery "+std::string(stage)+" failed win32="+std::to_string(error)+" path="+path);
+}
+inline void PublishPending(const std::string& path){
+    const auto started=GetTickCount64();Trace("replace_begin","path="+path);
+    if(!MoveFileExA((path+".pending").c_str(),path.c_str(),MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH))IoFail("replace",path,GetLastError());
+    Trace("replace_end","path="+path+" elapsed_ms="+std::to_string(GetTickCount64()-started));
+}
 inline void AtomicWrite(const std::string& path,const combat::Bytes& b){
-    const auto tmp=path+".pending";HANDLE h=CreateFileA(tmp.c_str(),GENERIC_WRITE,0,nullptr,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,nullptr);
-    if(h==INVALID_HANDLE_VALUE)throw std::runtime_error("Recovery cannot create durable file");
-    DWORD written=0;const bool ok=WriteFile(h,b.data(),static_cast<DWORD>(b.size()),&written,nullptr)&&written==b.size()&&FlushFileBuffers(h);CloseHandle(h);
-    if(!ok||!MoveFileExA(tmp.c_str(),path.c_str(),MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH))throw std::runtime_error("Recovery durable replace failed");
+    const auto started=GetTickCount64();const auto tmp=path+".pending";
+    Trace("write_begin","path="+path+" bytes="+std::to_string(b.size()));
+    HANDLE h=CreateFileA(tmp.c_str(),GENERIC_WRITE,0,nullptr,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,nullptr);
+    if(h==INVALID_HANDLE_VALUE)IoFail("create",path,GetLastError());
+    DWORD written=0;const bool ok=WriteFile(h,b.data(),static_cast<DWORD>(b.size()),&written,nullptr)!=FALSE;
+    if(!ok||written!=b.size()){const auto error=ok?ERROR_WRITE_FAULT:GetLastError();CloseHandle(h);IoFail("write",path,error);}
+    Trace("write_end","path="+path+" bytes="+std::to_string(written));
+    Trace("flush_begin","path="+path);
+    if(!FlushFileBuffers(h)){const auto error=GetLastError();CloseHandle(h);IoFail("flush",path,error);}
+    if(!CloseHandle(h))IoFail("close",path,GetLastError());
+    Trace("flush_end","path="+path+" elapsed_ms="+std::to_string(GetTickCount64()-started));
+    PublishPending(path);
 }
 struct Record {Tx tx;Role role=Role::Host;std::uint32_t ordinal=0;};
+struct StoreSnapshot {std::string profile;std::map<std::string,Record> records;};
+inline StoreSnapshot DecodeStore(combat::Bytes b){
+    b=Unseal(std::move(b));if(b[0]!=0xa7)throw std::runtime_error("Recovery store format mismatch");
+    combat::Reader r{b};const auto version=r.u();if(version<1||version>4)throw std::runtime_error("Recovery store version mismatch");
+    StoreSnapshot s;s.profile=r.text();const auto count=r.u();if(!Guid(s.profile)||count>MaxRecords)throw std::runtime_error("Recovery store bounds");
+    std::set<unsigned> ordinals;
+    for(unsigned i=0;i<count;++i){
+        const auto role=static_cast<Role>(r.u());const auto ordinal=r.u();auto tx=Read(r,version==1);
+        if((role!=Role::Host&&role!=Role::Owner&&role!=Role::Local)||!ordinal||ordinal>count||!ordinals.insert(ordinal).second||!s.records.emplace(tx.id,Record{tx,role,ordinal}).second)throw std::runtime_error("Recovery store records invalid");
+    }
+    if(!r.done())throw std::runtime_error("Recovery store invalid tail");return s;
+}
+inline StoreSnapshot ReadStore(const std::string& path){
+    try{return DecodeStore(ReadFile(path));}
+    catch(const std::exception& e){Trace("journal_invalid","path="+path+" reason="+e.what());throw std::runtime_error("Recovery journal invalid path="+path+" reason="+e.what());}
+}
+// One Store::Put changes one decision OR appends one immutable transaction.
+// CRC alone is insufficient: profile, payload, ordering and terminal decisions
+// must also agree before any interrupted publication can be completed.
+inline bool StoreSuccessor(const StoreSnapshot& newer,const StoreSnapshot& older){
+    if(newer.profile!=older.profile||newer.records.size()<older.records.size()||newer.records.size()>older.records.size()+1)return false;
+    unsigned changes=static_cast<unsigned>(newer.records.size()-older.records.size());
+    for(const auto& entry:older.records){
+        const auto found=newer.records.find(entry.first);if(found==newer.records.end())return false;
+        const auto& a=found->second;const auto& b=entry.second;
+        if(a.role!=b.role||a.ordinal!=b.ordinal||!Same(a.tx,b.tx))return false;
+        if(a.tx.decision!=b.tx.decision){if(b.tx.decision!=Decision::Prepared||a.tx.decision==Decision::Prepared)return false;++changes;}
+    }
+    for(const auto& entry:newer.records)if(!older.records.count(entry.first)&&entry.second.ordinal!=newer.records.size())return false;
+    return changes<=1;
+}
+enum class StoreRecovery {Clean,Identical,Promoted,Stale};
+inline bool UnknownCommitQuery(const Message& m){return m.op==Op::Query&&m.tx.decision==Decision::Commit;}
 class Store {
-    std::string path_,profile_;std::map<std::string,Record> records_;
+    std::string path_,profile_;std::map<std::string,Record> records_;bool open_=false;StoreRecovery recovery_=StoreRecovery::Clean;
     void Save(const std::map<std::string,Record>& candidate){combat::Writer w;w.data.push_back(0xa7);w.u(4);w.text(profile_);w.u(static_cast<unsigned>(candidate.size()));for(const auto& pair:candidate){w.u(static_cast<unsigned>(pair.second.role));w.u(pair.second.ordinal);Write(w,pair.second.tx);}AtomicWrite(path_,Seal(w));}
 public:
-    void Open(const std::string& path){path_=path;records_.clear();
-        if(GetFileAttributesA(path.c_str())==INVALID_FILE_ATTRIBUTES){profile_=NewGuid();Save(records_);return;}
-        auto b=Unseal(ReadFile(path));if(b[0]!=0xa7)throw std::runtime_error("Recovery store format mismatch");combat::Reader r{b};const auto version=r.u();if(version!=1&&version!=2&&version!=3&&version!=4)throw std::runtime_error("Recovery store version mismatch");profile_=r.text();const auto count=r.u();if(!Guid(profile_)||count>MaxRecords)throw std::runtime_error("Recovery store bounds");
-        std::set<unsigned> ordinals;
-        for(unsigned i=0;i<count;++i){const auto role=static_cast<Role>(r.u());auto ordinal=r.u();auto tx=Read(r,version==1);if((role!=Role::Host&&role!=Role::Owner&&role!=Role::Local)||!ordinal||ordinal>count||!ordinals.insert(ordinal).second||!records_.emplace(tx.id,Record{tx,role,ordinal}).second)throw std::runtime_error("Recovery store records invalid");}
-        if(!r.done())throw std::runtime_error("Recovery store invalid tail");
+    void Open(const std::string& path){path_=path;records_.clear();profile_.clear();open_=false;recovery_=StoreRecovery::Clean;
+        const auto pending=path+".pending";const bool mainExists=Exists(path),hasPending=Exists(pending);
+        if(!mainExists&&!hasPending){profile_=NewGuid();Save(records_);open_=true;return;}
+        StoreSnapshot main;if(mainExists)main=ReadStore(path);
+        if(hasPending){
+            const auto candidate=ReadStore(pending);
+            if(!mainExists&&!candidate.records.empty())throw std::runtime_error("Recovery main journal missing with nonempty pending; originals retained");
+            const bool same=mainExists&&StoreSuccessor(candidate,main)&&StoreSuccessor(main,candidate);
+            const bool forward=!mainExists||StoreSuccessor(candidate,main),backward=mainExists&&StoreSuccessor(main,candidate);
+            if(!forward&&!backward){Trace("journal_conflict","path="+path);throw std::runtime_error("Recovery main/pending conflict; originals retained");}
+            const auto evidence=path+".interrupted-"+NewGuid();
+            Trace("journal_pending","path="+path+" main_records="+std::to_string(main.records.size())+" pending_records="+std::to_string(candidate.records.size()));
+            if(forward&&!same){
+                if(mainExists&&!CopyFileA(path.c_str(),(evidence+".main").c_str(),TRUE))IoFail("archive_main",path,GetLastError());
+                if(!CopyFileA(pending.c_str(),(evidence+".pending").c_str(),TRUE))IoFail("archive_pending",path,GetLastError());
+                HANDLE h=CreateFileA(pending.c_str(),GENERIC_WRITE,FILE_SHARE_READ,nullptr,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,nullptr);
+                if(h==INVALID_HANDLE_VALUE)IoFail("open_pending",path,GetLastError());
+                if(!FlushFileBuffers(h)){const auto error=GetLastError();CloseHandle(h);IoFail("flush_pending",path,error);}if(!CloseHandle(h))IoFail("close_pending",path,GetLastError());
+                PublishPending(path);main=candidate;recovery_=StoreRecovery::Promoted;
+            }else{
+                if(!MoveFileExA(pending.c_str(),(evidence+".pending").c_str(),MOVEFILE_WRITE_THROUGH))IoFail("archive_pending",path,GetLastError());
+                recovery_=same?StoreRecovery::Identical:StoreRecovery::Stale;
+            }
+            Trace("journal_recovered","path="+path+" mode="+std::to_string(static_cast<unsigned>(recovery_))+" evidence="+evidence);
+        }
+        profile_=main.profile;records_=std::move(main.records);open_=true;
     }
+    StoreRecovery RecoveryStatus()const{return recovery_;}
     const std::string& Profile()const{return profile_;}
     const std::map<std::string,Record>& Records()const{return records_;}
     std::vector<Record> Ordered()const{std::vector<Record> out;for(const auto& p:records_)out.push_back(p.second);std::sort(out.begin(),out.end(),[](const Record& a,const Record& b){return a.ordinal<b.ordinal;});return out;}
     const Record* Find(const std::string& id)const{auto it=records_.find(id);return it==records_.end()?nullptr:&it->second;}
     bool Put(const Tx& t,Role role){
-        if(!Valid(t))return false;auto copy=records_;auto it=copy.find(t.id);
+        if(!open_||!Valid(t))return false;auto copy=records_;auto it=copy.find(t.id);
         if(it!=copy.end()){
             if(!Same(it->second.tx,t)||it->second.role!=role)return false;
             if(it->second.tx.decision!=Decision::Prepared&&it->second.tx.decision!=t.decision)return false;
+            if(it->second.tx.decision==t.decision){Trace("store_noop","tx="+t.id);return true;}
             it->second.tx=t;
         }else {if(copy.size()>=MaxRecords)return false;const auto ordinal=static_cast<unsigned>(copy.size()+1);copy.emplace(t.id,Record{t,role,ordinal});}
-        Save(copy);records_=std::move(copy);return true;
+        Trace("store_begin","tx="+t.id+" role="+std::to_string(static_cast<unsigned>(role))+" decision="+std::to_string(static_cast<unsigned>(t.decision)));
+        try{Save(copy);}catch(...){open_=false;throw;}records_=std::move(copy);Trace("store_end","tx="+t.id);return true;
     }
 };
 struct Checkpoint {std::string profile,timeline,fingerprint;std::set<std::string> effects;};
