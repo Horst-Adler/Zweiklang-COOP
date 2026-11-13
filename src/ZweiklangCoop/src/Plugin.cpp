@@ -76,6 +76,7 @@ int joinKey = KEY_F7;
 int leaveKey = KEY_F8;
 bool loading = true;
 bool saving = false;
+bool peerSaveActive=false;
 bool freshGamePending=false;
 bool proxyFailed = false;
 zCVob* remote = nullptr;
@@ -264,7 +265,7 @@ void RemoveProxy() {
 
 void Leave(const char* reason) {
     Log(reason);
-    network.Stop();
+    network.Stop();peerSaveActive=false;
     QolGuard(false);
     CombatReset();
     RemoveProxy();
@@ -415,7 +416,7 @@ void RenderStatus() {
     screen->SetFontColor(zCOLOR(210, 225, 255));
     const std::string role = network.GetRole() == net::Role::Host ? "HOST" :
                              network.GetRole() == net::Role::Guest ? "GUEST" : "OFFLINE";
-    screen->Print(180, 180, zSTRING(("Zweiklang Coop Alpha.29 | " + role + " | " + network.LastStatus()).c_str()));
+    screen->Print(180, 180, zSTRING(("Zweiklang Coop Alpha.30 | " + role + " | " + network.LastStatus()).c_str()));
     screen->Print(180, 390, zSTRING(notice.c_str()));
     if(!network.PeerName().empty())screen->Print(180,600,zSTRING(("Partner: "+ConvertText(network.PeerName(),CP_UTF8,CP_ACP)).c_str()));
     int y=810;for(const auto& line:SessionStatusLines()){screen->Print(180,y,zSTRING(line.c_str()));y+=210;}
@@ -672,7 +673,7 @@ void Initialize() {
     if(faultFile!=INVALID_HANDLE_VALUE)faultObserver=AddVectoredExceptionHandler(1,ObserveFault);
     LogRuntime();
     lastFrame = Now();
-    Log("Zweiklang Coop 0.1.0-alpha.29 initialized; protocol=10; engine=G2NotR; no auto-connect.");
+    Log("Zweiklang Coop 0.1.0-alpha.30 initialized; protocol=10; engine=G2NotR; no auto-connect.");
 }
 
 void Shutdown() {
@@ -689,15 +690,20 @@ void Frame() {
     lastFrame = now;
     network.Poll(now);
     ReportNetworkStatus();
-    if(network.PeerSaving()){notice="Partner speichert; Abgleich wartet kurz.";RenderStatus();return;}
+    // Disconnect must remain usable while waiting for a native peer save.
+    if(zinput&&zinput->KeyToggled(leaveKey))Leave("Disconnected. F6 host / F7 join");
+    if(network.PeerSaving()){
+        if(!peerSaveActive){peerSaveActive=true;Log("Peer save pause entered");}
+        notice="Partner speichert; Abgleich wartet kurz.";RenderStatus();return;
+    }
+    if(peerSaveActive){peerSaveActive=false;notice="Speicherpause beendet; Abgleich wird fortgesetzt.";Log("Peer save pause completed");}
     RecoveryFrame();
     ObserveState(now);
     if(network.GetState()!=net::State::Connected&&combatSession)CombatReset();
     if (network.GetState() != net::State::Idle && network.GetState() != net::State::Error &&
         !sessionWorld.empty() && CurrentWorld() != sessionWorld) Leave("World changed; reconnect in the same world.");
     if (zinput) {
-        if (zinput->KeyToggled(leaveKey)) Leave("Disconnected. F6 host / F7 join");
-        else if (zinput->KeyToggled(hostKey)) Start(true);
+        if (zinput->KeyToggled(hostKey)) Start(true);
         else if (zinput->KeyToggled(joinKey)) Start(false);
     }
     if (network.GetState() == net::State::Connected) {
@@ -738,6 +744,17 @@ void BeforeSave() {
     QuestRestoreConditions();
     saving = true;
     Log("Save started: session retained; inventory guarded");
+}
+bool BeginSavePause(){
+    if(!CombatConnected())return true;
+    const auto started=Now();if(!network.SetSaving(true,started))return false;
+    // Stay on the engine thread. A blocking native save must not start while
+    // the single initial pause datagram (or an earlier event) is still lost.
+    while(CombatConnected()&&!network.PeerSaving()&&!network.SavingReady()&&Now()-started<1000){network.Poll(Now());if(!network.SavingReady())Sleep(1);}
+    if(network.SavingReady()){LootLog("save_pause_confirmed","elapsed_ms="+std::to_string(Now()-started));return true;}
+    LootLog("save_pause_unconfirmed","pending="+std::to_string(network.PendingEvents())+" status="+network.LastStatus());
+    if(CombatConnected()&&!network.SetSaving(false,Now()))Leave("Cannot cancel save pause; reconnect before retrying save");
+    return false;
 }
 void AfterSave() {
     saving=false;lastFrame=Now();
@@ -792,18 +809,26 @@ void __fastcall SharedWriteSave(CGameManager* manager,void*,int slot){
     using namespace zweiklang::engine;
     if(!recoveryError.empty()||recoveryBlocked){notice="Speichern gesperrt: erst den Inventar-/Questabgleich klaeren.";LootLog("save_blocked",recoveryError);return;}
     if(slot<0){originalWriteSave(manager,slot);return;}
-    if(network.PeerSaving()||(SessionLocalReady().flags&zweiklang::session::Pending)||clientLootShown||clientOpenRequest){notice="Speichern wartet: Partner speichert oder Inventarvorgang ist offen. Erst abschliessen, dann erneut speichern.";LootLog("save_blocked","Active transfer/container/peer save");return;}
+    const auto saveBlock=zweiklang::session::SaveReadiness(SessionLocalReady(),havePeerReadiness?&peerReadiness:nullptr,CombatConnected(),network.PeerSaving(),clientLootShown||clientOpenRequest||(player&&player->inventory2.IsOpen()));
+    if(saveBlock!=zweiklang::session::SaveBlock::Allowed){notice=zweiklang::session::SaveText(saveBlock);LootLog("save_blocked",notice);return;}
     recoverySaveSlot=slot;recoverySaveStarted=false;recoveryNativeSaveCompleted=false;
     QuestRestoreConditions();
     recoverySavingCheckpoint=RecoveryBeforeSave(slot);
     if(!recoveryError.empty()){notice="Speichern vor Dateiaenderungen abgebrochen; siehe Recovery-Diagnose.";LootLog("save_blocked","Preflight failed before game manager write: "+recoveryError);recoverySaveSlot=-1;return;}
-    if(CombatConnected()&&!network.SetSaving(true,Now())){notice="Speichern wartet auf freien Sendekanal.";DeleteFileA((recoveryDir+"\\saving-slot"+std::to_string(slot)+".bin").c_str());recoverySaveSlot=-1;return;}
+    if(!BeginSavePause()){
+        notice="Speichern nicht begonnen: Partnerbestaetigung fehlt oder Partner speichert. Bitte erneut versuchen.";
+        try{zweiklang::native_save::CancelGuard(recoveryDir+"\\saving-slot"+std::to_string(slot)+".bin");}catch(const std::exception& e){RecoveryFail(e.what());}
+        recoverySaveSlot=-1;return;
+    }
     recoverySaveStarted=true;
     originalWriteSave(manager,slot);
     if(recoverySaveStarted)RecoveryAfterSave(slot,recoverySavingCheckpoint);
     if(CombatConnected()&&!network.SetSaving(false,Now()))Leave("Save resume failed; reconnect after checking logs");
     network.Poll(Now());
-    if(recoveryError.empty()&&recoveryReady){notice="Spielstand und Checkpoint gespeichert. Koop-Sitzung bleibt bestehen.";Log("Save completed and checkpoint verified");}
+    if(recoveryError.empty()&&recoveryReady){
+        notice=CombatConnected()?"Spielstand und Checkpoint gespeichert. Koop-Sitzung bleibt bestehen.":"Spielstand und Checkpoint gespeichert. Keine Koop-Verbindung aktiv.";
+        Log("Save completed and checkpoint verified; connected="+std::to_string(CombatConnected()));
+    }
     else {notice="Spielstand nicht vollstaendig bestaetigt; siehe Recovery-Diagnose.";Log("Save verification failed: "+recoveryError);}
     recoverySaveSlot=-1;recoverySaveStarted=false;
 }

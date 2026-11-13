@@ -24,5 +24,6 @@ private:
     unsigned int maxBytes_ = 8 * 1024 * 1024;
     unsigned long long lastFlush_ = 0;
     unsigned long long sequence_ = 0;
+    unsigned long long rotationRetryAfter_ = 0;
 };
 }

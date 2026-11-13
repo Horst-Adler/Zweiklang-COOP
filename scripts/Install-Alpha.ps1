@@ -15,6 +15,10 @@ $system=Join-Path $game 'System'
 $dll=Join-Path $root 'build\alpha\G2NotR\ZweiklangCoop.dll'
 foreach($path in @($dll,(Join-Path $system 'Gothic2.exe'),(Join-Path $system 'Shw32.dll'),(Join-Path $system 'Vdfs32g.dll'),(Join-Path $game 'Data\Union.vdf'),(Join-Path $game '_work\Data\Scripts\_compiled\GOTHIC.DAT'))){if(-not(Test-Path -LiteralPath $path -PathType Leaf)){throw ('Voraussetzung fehlt: '+$path)}}
 if((Get-Item -LiteralPath (Join-Path $system 'Shw32.dll')).VersionInfo.ProductName -ne 'Union'){throw 'Diese Installation hat keine erkannte Union-Laufzeit.'}
+$engineBytes=[IO.File]::ReadAllBytes((Join-Path $system 'Gothic2.exe'))
+if($engineBytes.Length -lt 64){throw 'Gothic2.exe ist keine unterstuetzte Spielbasis.'}
+$enginePe=[BitConverter]::ToInt32($engineBytes,60)
+if($enginePe -lt 0 -or $enginePe+24 -gt $engineBytes.Length -or ([BitConverter]::ToUInt16($engineBytes,$enginePe+22) -band 32) -eq 0){throw 'Der fuer diese Alpha erwartete 4-GB/LAA-Schalter fehlt. Spielbasis vor der Installation vorbereiten.'}
 if(Get-Process Gothic2 -ErrorAction SilentlyContinue){throw 'Gothic II muss vor der Installation geschlossen sein.'}
 $installed=Join-Path $system 'Autorun\ZweiklangCoop.dll'
 if(Test-Path -LiteralPath $installed){$probe=[IO.File]::Open($installed,[IO.FileMode]::Open,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None);$probe.Close()}

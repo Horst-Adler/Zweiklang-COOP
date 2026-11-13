@@ -51,6 +51,16 @@ void RunDiagnosticsTests() {
         logger.Write(1,"test_marker","step=C09");logger.Flush();
         {std::ifstream events(path+".events.jsonl");std::string savedMarkers((std::istreambuf_iterator<char>(events)),{});
          check(savedMarkers.find("step=C09")!=std::string::npos,"test markers durably retained in essential event stream");}
+        HANDLE locked=CreateFileA((path+".1").c_str(),GENERIC_READ,0,nullptr,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,nullptr);
+        check(locked!=INVALID_HANDLE_VALUE,"lock isolated log archive to simulate rotation failure");
+        for(int i=0;i<20;++i)logger.Write(2,"blocked_rotation",std::string(200,'x'));
+        logger.Write(1,"essential_during_rotation_failure","journal stage retained");logger.Flush();
+        WIN32_FILE_ATTRIBUTE_DATA bounded{};
+        check(GetFileAttributesExA(path.c_str(),GetFileExInfoStandard,&bounded)&&bounded.nFileSizeHigh==0&&bounded.nFileSizeLow<=4096,"main log remains bounded while an archive blocks rotation");
+        CloseHandle(locked);
+        {std::ifstream events(path+".events.jsonl");std::string saved((std::istreambuf_iterator<char>(events)),{});
+         check(saved.find("essential_during_rotation_failure")!=std::string::npos,"essential stream remains independent when main log rotation fails");}
+        logger.Write(1,"rotation_recovered","archive released");logger.Flush();
         logger.Configure(0,"Anna");logger.Write(1,"disabled","hidden");logger.Flush();
         std::ifstream tail(path);std::string final((std::istreambuf_iterator<char>(tail)),{});
         check(final.find("disabled")==std::string::npos,"logging off respected");

@@ -151,13 +151,14 @@ void WorldGroundChanged(oCItem* item){
     LootLog("ground_changed","id="+std::to_string(g.id)+" present="+std::to_string(g.present)+" amount="+std::to_string(g.amount));
 }
 oCItem* WorldGroundFor(const rc::Tx& tx){
-    oCItem* best=nullptr;float closest=2500,second=2500;auto* world=ogame->GetGameWorld();
+    std::vector<oCItem*> candidates;std::vector<float> distances;auto* world=ogame->GetGameWorld();
+    const bool tagged=tx.source.name.rfind("ZK_DROP_",0)==0;
     if(world->voblist_items)for(auto* it=world->voblist_items->GetNextInList();it;it=it->GetNextInList()){
         auto* item=it->GetData();if(!item||item->homeWorld!=world||static_cast<unsigned>(item->GetInstance())!=tx.item)continue;
-        if(tx.source.name.rfind("ZK_DROP_",0)==0){if(tx.source.name==item->GetObjectName().ToChar())return item;continue;}
-        const auto p=item->GetPositionWorld();const auto d=Distance2(p,zVEC3(tx.source.position[0],tx.source.position[1],tx.source.position[2]));if(d<closest){second=closest;closest=d;best=item;}else if(d<second)second=d;
+        if(tagged&&tx.source.name!=item->GetObjectName().ToChar())continue;
+        const auto p=item->GetPositionWorld();candidates.push_back(item);distances.push_back(Distance2(p,zVEC3(tx.source.position[0],tx.source.position[1],tx.source.position[2])));
     }
-    return best&&std::sqrt(second)-std::sqrt(closest)>10?best:nullptr;
+    const int resolved=ws::MatchGround(distances,tagged);return resolved>=0?candidates[resolved]:nullptr;
 }
 bool WorldRecoveryEffect(const rc::Record& record,bool desired,bool& handled){
     const auto& tx=record.tx;

@@ -6,6 +6,22 @@ inline Command Hotkey(unsigned scan,bool control,bool shift,bool blocked=false){
 enum Flag:unsigned {Checkpoint=1,Blocked=2,Rules=4,Actor=8,Quest=16,Pending=32,Incapacitated=64};
 enum class Reason:unsigned {Ready,Checkpoint,Recovery,Deferred,Rules,Actor,Quest,Snapshot,Peer,Transfer,Player,PeerPlayer};
 struct Ready {std::string profile,timeline;unsigned revision=0,flags=0;};
+enum class SaveBlock {Allowed,Recovery,LocalTransfer,PeerTransfer,PeerSaving,PeerUnknown};
+inline SaveBlock SaveReadiness(const Ready& local,const Ready* peer,bool connected,bool peerSaving,bool localOpen){
+    if(local.flags&Blocked)return SaveBlock::Recovery;
+    if((local.flags&Pending)||localOpen)return SaveBlock::LocalTransfer;
+    if(peerSaving)return SaveBlock::PeerSaving;
+    if(connected&&(!peer||!(peer->flags&Checkpoint)))return SaveBlock::PeerUnknown;
+    if(connected&&peer&&(peer->flags&(Blocked|Pending)))return SaveBlock::PeerTransfer;
+    return SaveBlock::Allowed;
+}
+inline const char* SaveText(SaveBlock block){switch(block){
+    case SaveBlock::Recovery:return "Speichern gesperrt: lokaler Inventar-/Questabgleich.";
+    case SaveBlock::LocalTransfer:return "Speichern wartet: eigenen Inventarvorgang zuerst beenden.";
+    case SaveBlock::PeerTransfer:return "Speichern wartet: Partner muss offenen Inventarvorgang beenden.";
+    case SaveBlock::PeerSaving:return "Speichern wartet: Partner speichert gerade.";
+    case SaveBlock::PeerUnknown:return "Speichern wartet: Partnerbereitschaft noch nicht bekannt.";
+    default:return "Speichern bereit.";}}
 struct Marker {std::string id,profile;unsigned step=1;std::uint64_t world=0;};
 struct Cavalorn {std::string hostTimeline,ownerTimeline;unsigned revision=0,mission=0,letter=0,told=0,dead=0,away=0;};
 inline combat::Bytes Encode(const Ready& s){combat::Writer w;w.data.push_back(60);w.text(s.profile);w.text(s.timeline);w.u(s.revision);w.u(s.flags);return w.data;}

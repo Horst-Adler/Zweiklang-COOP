@@ -31,6 +31,13 @@ void TestNativeSavePaths(){
     try{ns::PrepareDirectory(blocked+"\\savegame2");nativeCalled=true;}catch(const std::exception& e){refused=std::string(e.what()).find("win32=")!=std::string::npos;}
     Check(refused&&!nativeCalled,"failed destination preflight reports OS error before game manager mutation");
     {std::ifstream f(blocked);std::string text;f>>text;Check(text=="preserve","preflight never replaces an obstructing existing file");}
+    const auto guard=dir+"\\saving-slot2.bin";
+    ns::CancelGuard(guard);Check(!std::filesystem::exists(guard),"cancelling a missing save guard is idempotent");
+    HANDLE locked=CreateFileA(guard.c_str(),GENERIC_READ|GENERIC_WRITE,0,nullptr,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,nullptr);
+    Check(locked!=INVALID_HANDLE_VALUE,"create isolated locked save guard");
+    refused=false;try{ns::CancelGuard(guard);}catch(const std::exception& e){refused=std::string(e.what()).find("win32=")!=std::string::npos;}
+    Check(refused&&std::filesystem::exists(guard),"failed guard cancellation remains visible instead of silently poisoning later loads");
+    CloseHandle(locked);ns::CancelGuard(guard);Check(!std::filesystem::exists(guard),"cancelled preflight guard removed once writable");
     std::filesystem::current_path(original);
     std::filesystem::remove_all(dir);
 }

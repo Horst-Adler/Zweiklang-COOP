@@ -14,7 +14,7 @@ session::Ready SessionLocalReady(){
     session::Ready r;r.profile=recoveryStore.Profile();r.timeline=recoveryTimeline;
     if(recoveryReady&&!r.timeline.empty())r.flags|=session::Checkpoint;
     if(recoveryBlocked||!recoveryError.empty())r.flags|=session::Blocked;
-    if(clientQuickLoot||clientPendingTake||!worldGroundPending.empty()||lootLedger.HasUnapplied()||QuestPendingAwards())r.flags|=session::Pending;
+    if(clientQuickLoot||clientPendingTake||clientOpenRequest||clientLootShown||!worldGroundPending.empty()||lootLedger.HasUnapplied()||QuestPendingAwards())r.flags|=session::Pending;
     if(player&&!cv::EligibleForCredit(player->attribute[0],player->IsUnconscious()!=FALSE))r.flags|=session::Incapacitated;
     if(rulesReady)r.flags|=session::Rules;if(remote&&havePeerCombat)r.flags|=session::Actor;
     if(QuestSupported()&&questError.empty())r.flags|=session::Quest;return r;
@@ -78,7 +78,7 @@ std::vector<std::string> SessionStatusLines(){
     std::vector<std::string> lines;
     if(!CombatConnected()){lines.push_back("Nicht verbunden. Rolle/IP im Union-Menue; F6 Host / F7 Beitritt.");return lines;}
     const auto now=Now();const auto reason=session::Readiness(localReadiness,havePeerReadiness?&peerReadiness:nullptr,haveTarget&&now-lastSnapshotAt<=2000);
-    lines.push_back(session::Text(reason));
+    lines.push_back(network.PeerSaving()?"Partner speichert; Abgleich wartet kurz.":session::Text(reason));
     if(!diagnosticOverlay)return lines;
     lines.push_back("Protokoll "+std::to_string(net::ProtocolVersion)+" | Welt "+CurrentWorld()+" | Zustand "+(haveTarget?std::to_string(now-lastSnapshotAt)+" ms":"fehlt")+" | offen "+std::to_string(network.PendingEvents()+lootOutbox.size()+worldOutbox.size()+QuestPendingAwards()));
     lines.push_back("Abstand "+(haveTarget?std::to_string(static_cast<int>(std::sqrt(Distance2(player->GetPositionWorld(),zVEC3(target.x,target.y,target.z)))/100))+" m":"?")+" | Cavalorn "+std::to_string(QuestInt("MIS_ADDON_CAVALORN_KILLBRAGO"))+" | naechste Marke "+session::Step(markerStep));

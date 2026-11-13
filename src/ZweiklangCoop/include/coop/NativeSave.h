@@ -35,6 +35,10 @@ inline void PrepareDirectory(const std::string& input) {
     if(!DeleteFileA(file))throw Error("Cannot remove save preflight probe",file);
 }
 struct Stamp {bool exists=false;DWORD high=0,low=0,sizeHigh=0,sizeLow=0;};
+inline void CancelGuard(const std::string& path){
+    if(DeleteFileA(path.c_str()))return;const auto code=GetLastError();
+    if(code!=ERROR_FILE_NOT_FOUND&&code!=ERROR_PATH_NOT_FOUND)throw Error("Cannot cancel save checkpoint guard",path,code);
+}
 inline Stamp Capture(const std::string& path) {
     WIN32_FILE_ATTRIBUTE_DATA a{};if(!GetFileAttributesExA(path.c_str(),GetFileExInfoStandard,&a))return {};
     return {!(a.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY),a.ftLastWriteTime.dwHighDateTime,a.ftLastWriteTime.dwLowDateTime,a.nFileSizeHigh,a.nFileSizeLow};

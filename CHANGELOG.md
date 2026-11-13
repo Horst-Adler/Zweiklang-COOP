@@ -1,5 +1,9 @@
 # Versionshistorie
 
+## 0.1.0-alpha.30 – 2026-11-13
+
+Bestätigte Speicherpause vor nativem Schreiben, Partner-Inventarsperren, erreichbare Trennung und richtige Statusmeldungen während Savepausen; Bodenitem-Zuordnung und doppelte Drop-Tags korrigiert; Saveguard-Bereinigung geprüft; Logrotation bleibt bei Dateisperren begrenzt und Ereignisse unabhängig. 2.391 Netzwerktest-Assertions plus Diagnoseprüfungen. Native Abnahme offen. [Rundumcheck](docs/ALPHA-30.md).
+
 ## 0.1.0-alpha.29 – 2026-11-13
 
 Sichere Haupt-/Pending-Journalwiederherstellung mit Beweiserhalt und Konfliktsperre, Schutz gegen erfundene Aborts bei bestätigten Client-Commits, idempotente dauerhafte Schreibvorgänge, aktive Zeitlinien vor lokalem Rücksetzen prüfen und genaue Persistenz-/Itemdiagnosen. 2.342 technische Assertions. Native Abnahme offen; keine VM-/Treiberänderung. [Details](docs/ALPHA-29.md).

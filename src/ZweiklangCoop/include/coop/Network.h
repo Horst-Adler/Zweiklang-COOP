@@ -37,6 +37,7 @@ public:
     void Stop();
     bool SetSaving(bool saving, std::uint64_t nowMs);
     bool PeerSaving() const;
+    bool SavingReady() const;
 
     State GetState() const;
     Role GetRole() const;

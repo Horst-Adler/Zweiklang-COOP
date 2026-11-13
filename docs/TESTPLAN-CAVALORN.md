@@ -170,3 +170,8 @@ Vor der Route Partnerkollision, einzelne Bodenaufnahmen und anschließend aussch
 ## Alpha.29: Vorrangiger Plugin-Test
 
 Nach Versionsabgleich zuerst einzelne Bodenaufnahmen, Quickloot separat und Itemübergaben prüfen. Journalwiederherstellung wird in isolierten technischen Tests geprüft; keinen Rechnerabsturz erzwingen. Bei Sperren Logs und Journalpaare erhalten. [Änderungen und Grenzen](ALPHA-29.md).
+
+
+## Alpha.30 vor dem Routentest
+
+Einzelne Bodenfunde und Quickloot getrennt; anschließend nacheinander speichern und weiter aufnehmen. Fehlende Partnerbestätigung muss vor nativem Schreiben abbrechen. F8 während Partnerpause prüfen. Keine Systemabstürze erzwingen. [Befunde und Grenzen](ALPHA-30.md).

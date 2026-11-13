@@ -374,6 +374,7 @@ int main() {
         TestQolCompatibility();
         TestSessionReadiness();
         TestSaveTransport();
+        TestSaveAnnouncementLoss();
         TestSessionCodecsAndTransport();
         TestCavalornRewards();
         TestCombatTransport();

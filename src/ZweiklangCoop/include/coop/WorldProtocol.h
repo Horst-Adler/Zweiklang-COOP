@@ -2,7 +2,15 @@
 #include "coop/CombatProtocol.h"
 #include <map>
 #include <type_traits>
+#include <limits>
 namespace zweiklang::worldsync {
+inline int MatchGround(const std::vector<float>& distances,bool tagged=false){
+    if(tagged)return distances.size()==1&&std::isfinite(distances[0])?0:-1;
+    int best=-1;float first=(std::numeric_limits<float>::infinity)(),second=first;
+    for(std::size_t i=0;i<distances.size();++i){const auto d=distances[i];if(!std::isfinite(d)||d<0)continue;if(d<first){second=first;first=d;best=static_cast<int>(i);}else if(d<second)second=d;}
+    if(best<0||first>=2500)return -1;
+    return std::sqrt(second)-std::sqrt(first)>10?best:-1;
+}
 inline int MatchAnchor(const std::vector<float>& distances) {
     int exact=-1,exactCount=0,best=-1;float first=4000000,second=4000000;
     for(std::size_t i=0;i<distances.size();++i){const float d=distances[i];if(!std::isfinite(d)||d<0)continue;if(d<=1){exact=static_cast<int>(i);++exactCount;}if(d<first){second=first;first=d;best=static_cast<int>(i);}else if(d<second)second=d;}

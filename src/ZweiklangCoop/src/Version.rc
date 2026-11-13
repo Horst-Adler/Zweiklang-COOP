@@ -1,7 +1,7 @@
 #include <winver.h>
 1 VERSIONINFO
- FILEVERSION 0,1,0,29
- PRODUCTVERSION 0,1,0,29
+ FILEVERSION 0,1,0,30
+ PRODUCTVERSION 0,1,0,30
  FILEFLAGSMASK 0x3fL
  FILEFLAGS VS_FF_PRERELEASE
  FILEOS VOS_NT_WINDOWS32
@@ -13,9 +13,9 @@ BEGIN
   BLOCK "040904b0"
   BEGIN
    VALUE "FileDescription", "Zweiklang Coop - two-player presence alpha\0"
-   VALUE "FileVersion", "0.1.0-alpha.29\0"
+   VALUE "FileVersion", "0.1.0-alpha.30\0"
    VALUE "ProductName", "Zweiklang Coop\0"
-   VALUE "ProductVersion", "0.1.0-alpha.29\0"
+   VALUE "ProductVersion", "0.1.0-alpha.30\0"
    VALUE "OriginalFilename", "ZweiklangCoop.dll\0"
   END
  END

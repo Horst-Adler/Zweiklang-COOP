@@ -306,6 +306,7 @@ struct Network::Impl {
 Network::Network() : impl_(new Impl) {}
 Network::~Network() { Stop(); }
 bool Network::PeerSaving() const {return impl_->peerSaving;}
+bool Network::SavingReady() const {return impl_->state==State::Connected&&impl_->localSaving&&!impl_->peerSaving&&impl_->pending.empty();}
 bool Network::SetSaving(bool saving,std::uint64_t now){
     if(impl_->state!=State::Connected)return false;
     if(impl_->localSaving==saving)return true;

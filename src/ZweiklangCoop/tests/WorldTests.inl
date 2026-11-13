@@ -7,6 +7,17 @@ struct List {std::vector<Node*> nodes;int GetNumInList()const{return static_cast
 struct Manager {List spawnList;std::array<float,3> camPos{};float insertTime=0;};
 }
 void TestWorldCodecAndLifecycle(){
+    {
+        namespace ws=zweiklang::worldsync;
+        Check(ws::MatchGround({2025})==0&&ws::MatchGround({2401})==0,"single ground candidate remains identifiable near outer search boundary");
+        Check(ws::MatchGround({2500})==-1&&ws::MatchGround({2601})==-1,"ground pickup source cannot exceed existing search radius");
+        Check(ws::MatchGround({2401,2601})==-1,"close competing source stays ambiguous even just beyond radius");
+        Check(ws::MatchGround({0,0})==-1&&ws::MatchGround({0,100})==-1,"overlapping or insufficiently separated identical items are never guessed");
+        Check(ws::MatchGround({400,0})==1,"nearest sufficiently separated source is stable across enumeration order");
+        Check(ws::MatchGround({})==-1&&ws::MatchGround({-1,std::numeric_limits<float>::quiet_NaN()})==-1,"invalid source positions cannot bind");
+        Check(ws::MatchGround({0},true)==0&&ws::MatchGround({0,0},true)==-1,"unique drop tag resolves once; duplicate drop tags are refused");
+        Check(ws::MatchGround({std::numeric_limits<float>::infinity()},true)==-1,"tagged source still requires a finite position");
+    }
     namespace ws=zweiklang::worldsync;
     Check(ws::MatchAnchor({0,2500,4900})==0,"unique exact creature spawn wins even with close same-instance neighbours");
     Check(ws::MatchAnchor({0,0,40000})==-1,"coincident spawn anchors do not bind a guessed creature");
