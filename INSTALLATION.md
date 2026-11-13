@@ -1,6 +1,6 @@
 # Installation und Verwendung der Entwickler-Alpha
 
-Diese Anleitung beschreibt die vorhandene **Alpha.26**, kein öffentlich
+Diese Anleitung beschreibt die vorhandene **Alpha.30**, kein öffentlich
 abgenommenes Fertigpaket. Es wird kein GitHub-Release vorausgesetzt oder erzeugt.
 Spiele, Union, SDK und fremde Modarchive sind nicht enthalten.
 
@@ -172,3 +172,5 @@ migriert keine neueren Journale zurück in beliebige alte Pluginformate.
 Alte Testslots mit neuem Vorschaubild, aber fehlendem neuen Welt-/Charakterstand nicht als bestätigte Ausgangsbasis verwenden. Beide beginnen einen frischen Testzweig und speichern zunächst getrennt in freie Slots. Danach diese neuen Stände laden, verbinden und vollständige Bereitschaft abwarten. Bei Recovery-/Speicherfehlern hier stoppen und lokale Diagnose sichern. Alpha.27 umgeht keine Inventarsperre und repariert frühere Teil-Saves nicht automatisch.
 
 Ab Alpha.28 erhält reguläres Speichern die Verbindung. Nacheinander und ohne offene Transfers speichern; während der angekündigten Pause warten. [Befunde und Wiederholungstest](docs/ALPHA-28.md).
+
+Die Inhaltskennung wird seit dem Installationsnachtrag zu Alpha.30 ordinal und kulturunabhängig berechnet. Den vollständigen Installationshelfer einschließlich `scripts/ContentIdentity.ps1` verwenden; beide PCs mit demselben Build aktualisieren.

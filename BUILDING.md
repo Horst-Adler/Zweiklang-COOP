@@ -79,7 +79,7 @@ Dateien unter `src/ZweiklangCoop/tests/fixtures` gefunden werden.
 | `build/logs/tests.log` | Testausgabe |
 
 Die aktuelle Veröffentlichungsvorbereitung wurde mit der genannten lokalen
-Werkzeugkette neu gebaut. **2.250 Assertions bestanden**; Menü-Strukturprüfung
+Werkzeugkette neu gebaut. **2.391 Assertions bestanden**; Menü-Strukturprüfung
 und der zusätzliche Python-Check wurden ebenfalls ausgeführt. Die Tests prüfen
 unter anderem echte Loopback-UDP-Verbindungen, begrenzte Codecs, Wiederholungen,
 Recovery-Entscheidungen, Altformatdateien, Tastatureingaben und Konfiguration.
@@ -102,3 +102,5 @@ dieselben DLL-/Skriptdateien auf beiden PCs verwenden.** Zwei getrennte Builds
 können trotz gleicher Versionsnummer unterschiedliche Binärhashes besitzen;
 die Inhaltsprüfung darf dann den Beitritt ablehnen. Buildprodukte und Protokolle
 bleiben lokal und sind durch `.gitignore` sowie die Publikationspositivliste ausgeschlossen.
+
+In nichtinteraktiven Windows-Dienstsitzungen kann das Testprogramm ausdrücklich mit `--headless` laufen. Nur der interaktive Tastaturlayouttest wird dabei sichtbar ausgelassen; den Standardlauf auf einem Desktop zusätzlich ausführen. `scripts/Test-ContentIdentity.ps1` prüft die kulturunabhängige Kennung auf PowerShell 5.1 und 7.

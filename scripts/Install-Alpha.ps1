@@ -10,6 +10,7 @@ param(
 )
 $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot 'ContentIdentity.ps1')
 $game=[IO.Path]::GetFullPath($GamePath).TrimEnd('\')
 $system=Join-Path $game 'System'
 $dll=Join-Path $root 'build\alpha\G2NotR\ZweiklangCoop.dll'
@@ -69,9 +70,8 @@ try{
         Get-Item -LiteralPath (Join-Path $system 'Gothic2.exe'),(Join-Path $system 'Shw32.dll'),(Join-Path $system 'Vdfs32g.dll'),(Join-Path $system 'Ninja.dll')
         Get-ChildItem -LiteralPath (Join-Path $system 'Autorun') -File -Recurse|Where-Object {$_.Extension -in '.dll','.d'}
     )|Sort-Object FullName -Unique
-    $canonical=($contentFiles|ForEach-Object {$_.FullName.Substring($game.Length+1).ToLowerInvariant()+'|'+$_.Length+'|'+(Get-FileHash -LiteralPath $_.FullName).Hash}) -join "`n"
-    $hasher=[Security.Cryptography.SHA256]::Create()
-    try{$contentId=([BitConverter]::ToString($hasher.ComputeHash([Text.Encoding]::UTF8.GetBytes($canonical)))).Replace('-','')}finally{$hasher.Dispose()}
+    $contentRows=@($contentFiles | ForEach-Object {[ordered]@{File=$_.FullName.Substring($game.Length+1);Bytes=$_.Length;SHA256=(Get-FileHash -LiteralPath $_.FullName).Hash}})
+    $contentId=Get-CoopContentIdentity -Rows $contentRows
     if(Test-Path -LiteralPath $iniPath){
         $raw=[IO.File]::ReadAllBytes($iniPath)
         $skip=0

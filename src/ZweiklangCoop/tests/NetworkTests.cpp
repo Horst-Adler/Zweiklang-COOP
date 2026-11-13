@@ -337,12 +337,18 @@ void TestKeyboardLayout() {
 #include "WorldTests.inl"
 #include "SessionTests.inl"
 #include "QolTests.inl"
-int main() {
+int main(int argc,char** argv) {
+    const bool headless=argc==2&&std::strcmp(argv[1],"--headless")==0;
+    if(argc>2||(argc==2&&!headless)){
+        std::cerr<<"Usage: ZweiklangNetworkTests [--headless]\n";
+        return 2;
+    }
     WSADATA data{};
     if (WSAStartup(MAKEWORD(2, 2), &data) != 0) return 2;
     int result = 0;
     try {
-        TestKeyboardLayout();
+        if(headless)std::cout<<"SKIP: interactive keyboard layout checks (explicit --headless service-session run)\n";
+        else TestKeyboardLayout();
         TestPrimaryAddress();
         TestAppearance();
         TestLocalAddresses();

@@ -56,3 +56,7 @@ Der Alpha.26-Test endete vor dem Questabschluss: zwei als Fehler markierte Schri
 Native Savepfade, frühe Schreibvorprüfung, Prüfung der eigentlichen Save-Dateien und eindeutige Abschlussmeldungen korrigiert. Gastdialogübergang freigegeben, Partnerkollision entfernt, NPC-Physik beim Trennen wiederhergestellt, Sprint-Partyguard auf beide PCs erweitert, identische eindeutige Spawnanker berücksichtigt. Wesentliche Ereignisse und Sitzungsanfang haben eigene Logaufbewahrung; Protokollanzeige korrigiert. Testplan durch konkrete Marker-Anleitung ergänzt.
 
 **2.228 technische Assertions und Win32-Build bestanden. Native Abnahme der Korrekturen offen.** Protokoll 9, Journal 4, Checkpointformat 2 unverändert; kein Fertig-Release. [Details](docs/ALPHA-27.md).
+
+### Alpha.30 – Installationsnachprüfung
+
+Inhaltskennung über PowerShell-/Windows-Kollationsgrenzen vereinheitlicht; doppelte Inhaltsdateien abgewiesen; 20 Kultur-/Reihenfolgeregressionen. Expliziter Headless-Testlauf für Windows-Dienstsitzungen. Technischer Zwei-PC-Abgleich erfolgreich, native Spielabnahme offen.

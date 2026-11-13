@@ -25,7 +25,7 @@ Stand: 13. November 2026. Protokoll 10, Journal 4, Save-Checkpoint 2. Technisch 
 - Native G2-ABI-/Hookeinträge, NPC-Template, Körper-/Kopf-/Textur- und Animationsressourcen, Sprint-/Quicklootbrücken und Cavalorn-Bytecodeprofil geprüft.
 - 89 Dateien gegen die eigene GOG-Hashdatenbank geprüft: keine fehlt. Einzige erwartete Abweichung ist die unterstützte 2.6-fix-/LAA-EXE. Die ursprüngliche GOG-EXE ist durch die vorhandene Sicherung belegt; gegen die bekannte 2.6-fix-Basis unterscheiden sich nur LAA-Schalter und PE-Prüfsumme.
 - Installierte Basis bleibt erhalten. Persönliche Optionen, Save-/State-/Loginhalte werden beim lokalen Update gesichert und gegen Hashes geprüft.
-- Alpha.29-Recoverykorrekturen und bestätigte Kollisionskorrektur bleiben enthalten. Keine neuen VM-Zugriffe; Client-VM bleibt auf ihrem bisherigen Stand.
+- Alpha.29-Recoverykorrekturen und bestätigte Kollisionskorrektur bleiben enthalten. Beim ersten lokalen Check blieb der tatsächliche Client unverändert; anschließend wurde auch dessen Installation gesichert, aktualisiert und geprüft (Installationsnachtrag unten).
 
 ## Grenzen und nächster Test
 
@@ -34,3 +34,11 @@ Die Änderung behauptet keine Behebung von Windows-Bluescreens oder des Unraid-N
 Vor gemeinsamem Test beide echten Installationen auf identischen Stand bringen. Zuerst C09: einzelne gewöhnliche Bodenfunde nacheinander. Danach Quickloot separat sowie C06/C07. A07: nur eine Person speichert, dann bewegen und erneut aufnehmen; Rollen tauschen. Während einer Partnerpause einmal F8 prüfen und anschließend regulär wieder verbinden. Nicht gleichzeitig speichern. Bei fehlender Bestätigung Anzeige notieren und später erneut versuchen. Keine absichtlichen Systemabstürze für die Recoveryprüfung provozieren.
 
 Laden und Weltwechsel trennen weiterhin; allgemeines gemeinsames Speichern/Laden mit einem Klick ist nicht freigegeben. Andere Questadapter und eine vollständige Kampagne bleiben außerhalb der aktuellen Abnahme.
+
+
+## Installationsnachtrag vom 13. November 2026
+
+- Ein tatsächlicher Abgleich zwischen PowerShell 7 und Windows PowerShell 5.1 deckte eine unterschiedliche kulturabhängige Sortierung identischer Dateien auf. Die erste Installation wurde vom Fingerprintcheck abgebrochen und zurückgesetzt. Der neue gemeinsame Helfer `ContentIdentity.ps1` normalisiert relative Namen, verwendet ordinale Sortierung und prüft doppelte/ungültige Einträge. Dateireihenfolge und Betriebssystem-Kollation ändern die Kennung nicht mehr; echte Inhaltsänderungen weiterhin schon.
+- 20 gezielte Prüfungen pro Umgebung unter PowerShell 7 und Windows PowerShell 5.1 auf Host sowie Windows PowerShell 5.1 auf tatsächlichem Client bestanden. Der echte 39-Dateien-Manifestabgleich stimmt überein. Installation, persönliche Einstellungen und Save-/State-/Loginhalte separat nachgeprüft.
+- Die eigenständigen Netzwerktests bestehen mit 2.391 Assertions auf beiden Windows-PCs. Der VM-Gastagent läuft in Sitzung 0 ohne interaktive Tastaturlayouts; der neue ausdrücklich gewählte Testparameter `--headless` lässt ausschließlich diese Prüfung aus und meldet sie als SKIP. Auf dem Host besteht der vollständige Standardlauf einschließlich Tastatur. Kein automatisches Überspringen im Standardlauf.
+- Die Dokumentation und Testliste wurden dem tatsächlichen Installationsstand angepasst. Diese technische Vorbereitung ist keine native Gameplay- oder LAN-Freigabe. Ein separater UDP-Test mit anderen Programmen war nicht erfolgreich; Gothic-Verbindung und native Aktionen werden beim nächsten gemeinsamen Spielstart abgenommen. Keine öffentlichen Spiel-/Modarchive und keine echten Diagnoselogs veröffentlicht.

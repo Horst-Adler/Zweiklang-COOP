@@ -12,6 +12,7 @@ if(-not $MSBuildPath){
 }
 if(-not $MSBuildPath -or -not(Test-Path -LiteralPath $MSBuildPath)){throw 'MSBuild fehlt. VS/Build Tools mit MSVC v142 installieren oder -MSBuildPath angeben.'}
 & (Join-Path $PSScriptRoot 'Check-UnionMenu.ps1')
+& (Join-Path $PSScriptRoot 'Test-ContentIdentity.ps1')
 $source=Join-Path $root 'src\ZweiklangCoop'
 $logs=Join-Path $root 'build\logs';New-Item -ItemType Directory -Path $logs -Force|Out-Null
 if(-not $TestsOnly){
