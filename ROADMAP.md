@@ -73,6 +73,12 @@ keine offenen kritischen Stabilitäts-, Duplikat-, Verlust- oder Persistenzfehle
 - Bedienhilfe, Diagnose und bekannte Einschränkungen abschließen.
 - Herkunft und zulässigen Verteilungsumfang aller tatsächlich ausgelieferten Dateien prüfen.
 
+### Geplant: eigene Koop-Achievements
+
+- Erster Gegner als Team besiegt, erste gemeinsame Quest abgeschlossen und beide Spieler in Khorinis angekommen.
+- Bestätigte Kampf-/Quest-/Gebietsereignisse, Hostabgleich und dauerhafter Fortschritt je Koopprofil; eindeutige Vergaben trotz Reconnect oder Laden.
+- Eigenes Erfolgsmenü und optionale Benachrichtigungen. Beteiligung, Fraktionsquests und nachträgliche Vergabe vor Umsetzung definieren; noch nicht implementiert.
+
 **Freigabe:** Nur die ausdrücklich abgenommenen Kombinationen werden unterstützt.
 Die Versionsnummer allein ist kein Nachweis einer fertigen gemeinsamen Kampagne.
 
