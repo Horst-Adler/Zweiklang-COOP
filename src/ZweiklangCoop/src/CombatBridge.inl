@@ -10,7 +10,7 @@ std::map<oCNpc*,NpcBinding*> npcByPointer;
 std::map<std::uint32_t,NpcBinding*> npcById;
 std::map<std::uint32_t,unsigned long long> mappingWarnings;
 co::Peer peerCombat;
-bool combatSession=false,havePeerCombat=false,rulesReady=false,sessionFriendlyFire=false,replayingCombat=false;
+bool combatSession=false,combatSessionHost=false,havePeerCombat=false,rulesReady=false,sessionFriendlyFire=false,replayingCombat=false;
 std::uint32_t combatRevision=0,ruleRevision=0,nextNpcId=1;
 unsigned long long lastCombatSend=0,lastNpcScan=0,lastAggro=0;
 unsigned long long lastAggroLog=0;
@@ -25,7 +25,8 @@ bool HostCombat(){return network.GetRole()==net::Role::Host;}
 float Distance2(const zVEC3& a,const zVEC3& b){const auto d=a-b;return d[0]*d[0]+d[1]*d[1]+d[2]*d[2];}
 void CombatLog(const char* event,const std::string& detail){diagnostics.Write(1,event,detail);}
 void CombatReset(){
-    LootReset();WorldReset();SessionReset();
+    const bool resetHost=combatSessionHost;
+    LootReset();WorldReset();SessionReset();CharacterSessionReset();
     auto* partner=PartnerNpc();
     if(partner&&player){if(player->enemy==partner)player->SetEnemy(nullptr);if(player->GetFocusVob()==partner)player->SetFocusVob(nullptr);}
     for(auto& entry:npcBindings){
@@ -36,15 +37,15 @@ void CombatReset(){
         if(entry->modelDefaultsCaptured&&(entry->mirror||entry->pausedByPeer)){auto* model=zDYNAMIC_CAST<zCModel>(n->GetVisual());if(model){model->aniTransScale=entry->rootScale;if(entry->mirror)model->doVobRot=entry->originalRotation;}}
         entry->pausedByPeer=false;
         if(entry->mirror)n->SetPhysicsEnabled(entry->originalPhysics);
-        if(entry->owned&&n->homeWorld)n->RemoveVobFromWorld();
+        if(entry->owned&&n->homeWorld){if(resetHost&&entry->desired.owner==co::GuestPlayer&&ogame&&ogame->spawnman)ogame->spawnman->DeleteNpc(n);else n->RemoveVobFromWorld();}
         n->Release();
     }
     npcBindings.clear();npcByPointer.clear();npcById.clear();mappingWarnings.clear();deferredHits.clear();
-    combatSession=false;havePeerCombat=false;rulesReady=false;ruleRevision=0;combatRevision=0;nextNpcId=1;npcCursor=0;
+    combatSession=false;combatSessionHost=false;havePeerCombat=false;rulesReady=false;ruleRevision=0;combatRevision=0;nextNpcId=1;npcCursor=0;
     lastCombatSend=lastNpcScan=lastAggro=lastAggroLog=0;combatFailure.clear();peerCombat=co::Peer{};
 }
 NpcBinding* RegisterCombatNpc(oCNpc* npc){
-    if(!npc||npc==player||npc==PartnerNpc()||npc->GetInstance()<0)return nullptr;
+    if(!npc||CharacterFormSwitch()||CharacterLocal(npc)||npc==PartnerNpc()||npc->GetInstance()<0)return nullptr;
     const auto found=npcByPointer.find(npc);if(found!=npcByPointer.end())return found->second;
     if(npcBindings.size()>=8192){combatFailure="NPC registry limit reached";return nullptr;}
     auto entry=std::make_unique<NpcBinding>();entry->npc=npc;npc->AddRef();entry->anchor=npc->GetPositionWorld();
@@ -54,6 +55,7 @@ NpcBinding* RegisterCombatNpc(oCNpc* npc){
     entry->originalPhysics=npc->physicsEnabled!=FALSE;
     entry->modelDefaultsCaptured=model!=nullptr;
     if(HostCombat()){entry->id=nextNpcId++;npcById[entry->id]=entry.get();}
+    CharacterRestoreSummon(*entry);
     auto* value=entry.get();npcByPointer[npc]=value;npcBindings.push_back(std::move(entry));return value;
 }
 void ScanCombatNpcs(){
@@ -66,15 +68,15 @@ co::Stats ReadCombatStats(oCNpc* npc){
     for(int i=0;i<8;++i){s.attributes[i]=(std::max)(0,(std::min)(1000000,npc->attribute[i]));s.protection[i]=(std::max)(-1,(std::min)(1000000,npc->protection[i]));s.damage[i]=(std::max)(0,(std::min)(1000000,npc->damage[i]));}
     s.attributes[1]=(std::max)(1,s.attributes[1]);s.attributes[0]=(std::min)(s.attributes[0],s.attributes[1]);
     for(int i=0;i<5;++i)s.hit[i]=(std::max)(0,(std::min)(1000000,npc->hitChance[i]));
-    s.weapon=npc->GetWeaponMode();s.guild=npc->guild;s.damageType=npc->damagetype;s.bodyState=npc->GetBodyState()&0x7ffff;
+    s.weapon=npc->GetWeaponMode();s.guild=npc->guild;s.trueGuild=npc->guildTrue;s.damageType=npc->damagetype;s.bodyState=npc->GetBodyState()&0x7ffff;
     return s;
 }
 void WriteCombatStats(oCNpc* npc,const co::Stats& s){
     // Only called for the proxy or bound world NPCs, NEVER for the local player.
-    if(!npc||npc==player)return;
+    if(!npc||CharacterLocal(npc))return;
     for(int i=0;i<8;++i){npc->attribute[i]=s.attributes[i];npc->protection[i]=s.protection[i];npc->damage[i]=s.damage[i];}
     for(int i=0;i<5;++i)npc->hitChance[i]=s.hit[i];
-    npc->guild=s.guild;npc->guildTrue=s.guild;npc->damagetype=s.damageType;npc->fmode=s.weapon;
+    npc->guild=s.guild;npc->guildTrue=s.trueGuild;npc->damagetype=s.damageType;npc->fmode=s.weapon;
     if(!WorldLocalTalksTo(npc)&&static_cast<std::uint32_t>(npc->GetBodyState())!=s.bodyState)npc->SetBodyState(s.bodyState);
 }
 std::string CombatAnimation(zCModel* model){
@@ -90,7 +92,7 @@ bool SetCombatAnimation(zCModel* model,const std::string& name){
     return true;
 }
 bool CombatMirror(oCNpc* npc){
-    if(!npc||npc==player||!CombatConnected())return false;
+    if(!npc||CharacterLocal(npc)||!CombatConnected())return false;
     if(npc==PartnerNpc())return true;
     if(HostCombat())return WorldTradePaused(npc);
     return rulesReady&&!WorldLocalTalksTo(npc);
@@ -104,8 +106,11 @@ oCNpc* CreateCombatActor(){
     return npc;
 }
 void UpdateCombatActor(){
-    auto* npc=PartnerNpc();if(!npc||!havePeerCombat)return;
-    WriteCombatStats(npc,peerCombat.stats);QolApplySprint(npc,peerCombat.sprint);npc->name[0]=zSTRING(ConvertText(network.PeerName(),CP_UTF8,CP_ACP).c_str());
+    auto* npc=PartnerNpc();if(!npc||CharacterLocal(npc)||!havePeerCombat)return;
+    WriteCombatStats(npc,peerCombat.stats);npc->aiscriptvars[46]=peerCombat.absolution;
+    npc->level=peerCombat.level;npc->learn_points=peerCombat.learnPoints;npc->experience_points=peerCombat.experience;npc->experience_points_next_level=peerCombat.nextExperience;
+    for(int i=0;i<24&&i<oCNpcTalent::NPC_TAL_MAX;++i){auto* talent=npc->GetTalent(i,1);if(talent){talent->m_skill=peerCombat.skills[i];talent->m_value=peerCombat.talents[i];}}
+    QolApplySprint(npc,peerCombat.sprint);npc->name[0]=zSTRING(ConvertText(network.PeerName(),CP_UTF8,CP_ACP).c_str());
     // noFocus is global and also hides the partner from enemy AI. Filter only
     // the local player's focus through the hooks, never enemy perception.
     npc->noFocus=0;
@@ -114,6 +119,11 @@ void UpdateCombatActor(){
 NpcBinding* ResolveCombatNpc(const co::Npc& message){
     auto existing=npcById.find(message.id);if(existing!=npcById.end())return existing->second;
     const zVEC3 anchor(message.anchor[0],message.anchor[1],message.anchor[2]);
+    if(!message.spawnToken.empty()){
+        NpcBinding* tagged=nullptr;
+        for(auto& entry:npcBindings)if(!entry->desired.spawnToken.empty()&&entry->desired.spawnToken==message.spawnToken){if(tagged||entry->npc->GetInstance()!=message.instance){combatFailure="Ambiguous summon identity";return nullptr;}tagged=entry.get();}
+        if(tagged){tagged->id=message.id;tagged->mirror=true;npcById[message.id]=tagged;return tagged;}
+    }
     NpcBinding* best=nullptr;float closest=4000000.0f;
     std::vector<NpcBinding*> candidates;std::vector<float> distances;
     NpcBinding* unique=nullptr;int matches=0;
@@ -147,10 +157,11 @@ bool QueueCombatHit(const co::Damage& hit){
 }
 bool InterceptCombatDamage(oCNpc* victim,oCNpc::oSDamageDescriptor& damage){
     if(!CombatConnected()||replayingCombat||!victim)return false;
+    if(!CharacterReady()&&(victim==PartnerNpc()||!CharacterLocal(victim))){notice="Persoenliche Spielerzustaende werden abgeglichen.";return true;}
     auto* partner=PartnerNpc();
     auto* attacker=(damage.dwFieldsValid&oCNpc::oEDamageDescFlag_Npc)?damage.pNpcAttacker:nullptr;
     if(!attacker&&(damage.dwFieldsValid&oCNpc::oEDamageDescFlag_Attacker)&&damage.pVobAttacker)attacker=zDYNAMIC_CAST<oCNpc>(damage.pVobAttacker);
-    if(!sessionFriendlyFire&&((victim==partner&&attacker==player)||(victim==player&&attacker==partner))){CombatLog("friendly_fire_block","partner damage suppressed");return true;}
+    if(!sessionFriendlyFire&&CharacterAllied(victim,attacker)){CombatLog("friendly_fire_block","partner damage suppressed");return true;}
     if(victim==partner){
         if(attacker==player){
             if(sessionFriendlyFire)QueueCombatHit(CaptureCombatDamage(HostCombat()?co::Kind::Injury:co::Kind::Attack,HostCombat()?co::GuestPlayer:0,HostCombat()?co::HostPlayer:co::GuestPlayer,damage));
@@ -218,7 +229,7 @@ bool ExecuteCombatHit(const co::Damage& hit){
 }
 void CombatFrame(unsigned long long now,float elapsed){
     if(network.GetState()!=net::State::Connected){if(combatSession)CombatReset();return;}
-    if(!combatSession){combatSession=true;rulesReady=HostCombat();sessionFriendlyFire=options.friendlyFire;ScanCombatNpcs();CombatLog("combat_start","world="+CurrentWorld()+" authority="+(HostCombat()?"HOST":"CLIENT")+" friendly_fire="+std::to_string(sessionFriendlyFire));}
+    if(!combatSession){combatSession=true;combatSessionHost=HostCombat();rulesReady=HostCombat();sessionFriendlyFire=options.friendlyFire;ScanCombatNpcs();CombatLog("combat_start","world="+CurrentWorld()+" authority="+(HostCombat()?"HOST":"CLIENT")+" friendly_fire="+std::to_string(sessionFriendlyFire));}
     if(now-lastNpcScan>=1000){lastNpcScan=now;ScanCombatNpcs();}
     co::Bytes bytes;
     for(int i=0;i<256&&network.ConsumeWorldState(bytes);++i){
@@ -233,12 +244,12 @@ void CombatFrame(unsigned long long now,float elapsed){
         }
     }
     UpdateCombatActor();
-    for(int i=0;i<64&&network.ConsumeEvent(bytes);++i){if(!bytes.empty()&&bytes[0]>=60&&bytes[0]<=62){SessionReceive(bytes);continue;}if(!bytes.empty()&&(bytes[0]>=48&&bytes[0]<=51)){WorldReceive(bytes);continue;}if(recovery::IsMessage(bytes)){RecoveryReceive(bytes);continue;}if(loot::IsMessage(bytes)){LootReceive(bytes);continue;}co::Damage hit;if(co::Decode(bytes,hit)){if(deferredHits.size()>=64){combatFailure="Combat application queue full";break;}deferredHits.push_back({hit,now});}else CombatLog("combat_reject","malformed reliable payload");}
+    for(int i=0;i<64&&network.ConsumeEvent(bytes);++i){if(!bytes.empty()&&bytes[0]>=70&&bytes[0]<=73){CharacterReceive(bytes);continue;}if(!bytes.empty()&&bytes[0]>=60&&bytes[0]<=62){SessionReceive(bytes);continue;}if(!bytes.empty()&&(bytes[0]>=48&&bytes[0]<=51)){WorldReceive(bytes);continue;}if(recovery::IsMessage(bytes)){RecoveryReceive(bytes);continue;}if(loot::IsMessage(bytes)){LootReceive(bytes);continue;}co::Damage hit;if(co::Decode(bytes,hit)){if(deferredHits.size()>=64){combatFailure="Combat application queue full";break;}deferredHits.push_back({hit,now});}else CombatLog("combat_reject","malformed reliable payload");}
     while(!deferredHits.empty()){
         auto& hit=deferredHits.front();if(!ExecuteCombatHit(hit.damage)){if(now-hit.at>3000)combatFailure="Combat target not mapped before event timeout";break;}deferredHits.pop_front();
     }
     if(!HostCombat())for(auto& entry:npcBindings){
-        auto* npc=entry->npc;if(entry->life!=1||!entry->mirror||!entry->last||npc->homeWorld!=ogame->GetWorld()||!npc->GetModel()||WorldLocalTalksTo(npc))continue;
+        auto* npc=entry->npc;if(CharacterLocal(npc)||entry->life!=1||!entry->mirror||!entry->last||npc->homeWorld!=ogame->GetWorld()||!npc->GetModel()||WorldLocalTalksTo(npc))continue;
         npc->GetModel()->aniTransScale=zVEC3(0,0,0);
         const auto& p=entry->desired.pose;const auto old=npc->GetPositionWorld();
         const float blend=Distance2(old,zVEC3(p.x,p.y,p.z))>4000000?1.0f:1.0f-std::exp(-elapsed*15.0f);
@@ -246,13 +257,13 @@ void CombatFrame(unsigned long long now,float elapsed){
         npc->GetModel()->doVobRot=FALSE;npc->SetSleepingMode(zVOB_AWAKE);SetCombatAnimation(npc->GetModel(),entry->desired.animation);
     }
     if(now-lastCombatSend>=100){
-        lastCombatSend=now;co::Peer p;p.revision=++combatRevision;p.interaction=WorldLocalInteraction();p.stats=ReadCombatStats(player);p.sprint=QolSprint(player);p.animation=CombatAnimation(player->GetModel());network.SendWorldState(co::Encode(p));
+        lastCombatSend=now;co::Peer p;p.revision=++combatRevision;p.interaction=WorldLocalInteraction();p.stats=ReadCombatStats(player);p.visual=CharacterVisual(player);p.absolution=player->aiscriptvars[46];p.level=player->level;p.learnPoints=player->learn_points;p.experience=player->experience_points;p.nextExperience=player->experience_points_next_level;for(int i=0;i<24&&i<oCNpcTalent::NPC_TAL_MAX;++i){auto* t=player->GetTalent(i,0);if(t){p.skills[i]=t->m_skill;p.talents[i]=t->m_value;}}p.sprint=character::LocalVisualAllowed(player->IsHuman()!=FALSE,static_cast<unsigned>(player->GetBodyState()))?QolSprint(player):0;p.animation=CombatAnimation(player->GetModel());network.SendWorldState(co::Encode(p));
         if(HostCombat()){
             network.SendWorldState(co::Rules(++combatRevision,options.friendlyFire));sessionFriendlyFire=options.friendlyFire;
             int sent=0;std::size_t visited=0;
             while(!npcBindings.empty()&&visited++<npcBindings.size()&&sent<32){
                 auto& e=*npcBindings[(npcCursor++)%npcBindings.size()];auto* n=e.npc;
-                if(e.life==3)continue;if(n->homeWorld!=ogame->GetWorld()||!n->GetModel())continue;const auto pos=n->GetPositionWorld();
+                if(e.life==3||CharacterLocal(n))continue;if(n->homeWorld!=ogame->GetWorld()||!n->GetModel())continue;const auto pos=n->GetPositionWorld();
                 const bool nearbyPlayers=haveTarget&&Distance2(pos,zVEC3(target.x,target.y,target.z))<64000000.0f;if(!nearbyPlayers)continue;
                 co::Npc s;s.id=e.id;s.revision=++combatRevision;s.generation=e.generation;s.life=1;WorldNpcVisual(s,n);s.instance=n->GetInstance();s.anchor={e.anchor[0],e.anchor[1],e.anchor[2]};const auto direction=n->GetAtVectorWorld();s.pose={pos[0],pos[1],pos[2],std::atan2(direction[0],direction[2])*57.295779513f};s.stats=ReadCombatStats(n);s.animation=CombatAnimation(n->GetModel());
                 if(!co::Valid(s.stats)){CombatLog("combat_reject","invalid native NPC stats id="+std::to_string(e.id));continue;}

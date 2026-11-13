@@ -5,6 +5,7 @@
 #include <ws2tcpip.h>
 #include "coop/Network.h"
 #include "coop/CombatProtocol.h"
+#include "coop/CharacterPolicy.h"
 #include "coop/ActiveAnimations.h"
 #include "coop/NetworkMotion.h"
 #include "coop/LootProtocol.h"
@@ -331,6 +332,7 @@ void TestKeyboardLayout() {
     std::cout<<"PASS: German/US Y/Z, umlaut, AltGr, Shift, Caps Lock, IPv4 punctuation and unchanged active keyboard layout\n";
 }
 #include "CombatTests.inl"
+#include "CharacterTests.inl"
 #include "LootTests.inl"
 #include "RecoveryTests.inl"
 #include "NativeSaveTests.inl"
@@ -383,6 +385,7 @@ int main(int argc,char** argv) {
         TestSaveAnnouncementLoss();
         TestSessionCodecsAndTransport();
         TestCavalornRewards();
+        TestCharacterRules();
         TestCombatTransport();
         TestReliableReorderingAndLoss();
         TestCompatibility();

@@ -103,3 +103,11 @@ Separate Zwei-PC-Kampagnen- und Stabilitätsabnahme vor einer eigenen Freigabe.
 ## Unmittelbare Wiederholungsprüfung nach Alpha.26
 
 Zuerst die Alpha.27-Korrekturen für Speicherung, Bereitschaft, Einzelaufnahmen, Gastdialoge und Spielerkollision oben im Turm abnehmen. Dann den unterbrochenen Cavalorn-Ablauf fortsetzen. Frühere grüne Haken ersetzen diese Regression nicht; eine technische Korrektur ist noch keine bestätigte gemeinsame Spielabnahme.
+
+
+Aktueller Charakterstand: [Alpha.31](docs/ALPHA-31.md), Protokoll 11. Persönliche NPC-Zustände, Schutz lokaler Fortschritte, besondere Bewegungen, Verwandlungen und reguläre Beschwörungen sind technisch implementiert; native Zwei-PC-Abnahme bleibt offen. Zusätzliche [Charakter-Testliste](docs/TEST-ALPHA31-CHARAKTERE.md).
+
+
+## Bestätigte weitere Ideen
+
+Beta: Partner-Pings und gemeinsame Kartenmarkierungen/Notizen. Vollversion: ausgewählte NPC-Reaktionen auf das Duo und gemeinsames Reisetagebuch. Diese Ideen sind geplant, noch nicht implementiert. Die vier Charakter-Alpha-Punkte sind technisch in Alpha.31 enthalten, native Abnahme offen.

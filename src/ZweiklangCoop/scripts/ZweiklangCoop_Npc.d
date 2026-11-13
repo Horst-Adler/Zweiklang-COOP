@@ -79,3 +79,19 @@ func void ZK_COOP_CAVALORN_LOG()
         ZK_COOP_CAV_LOG_LETTER = 1;
     };
 };
+
+
+// Spawn only the creature. The casting player's native spell already paid
+// mana/scroll costs; never replay Spell_Cast_* on the other PC.
+var int ZK_COOP_SUMMON_SPELL;
+func void ZK_COOP_REPLAY_SUMMON()
+{
+    if (ZK_COOP_SUMMON_SPELL == 22) { Wld_SpawnNpcRange(self, SUMMONED_GOBBO_SKELETON, 1, 500.0); };
+    if (ZK_COOP_SUMMON_SPELL == 25) { Wld_SpawnNpcRange(self, SUMMONED_WOLF, 1, 500.0); };
+    if (ZK_COOP_SUMMON_SPELL == 31) { Wld_SpawnNpcRange(self, SUMMONED_SKELETON, 1, 500.0); };
+    if (ZK_COOP_SUMMON_SPELL == 35) { Wld_SpawnNpcRange(self, SUMMONED_GOLEM, 1, 500.0); };
+    if (ZK_COOP_SUMMON_SPELL == 40) { Wld_SpawnNpcRange(self, SUMMONED_DEMON, 1, 500.0); };
+    if (ZK_COOP_SUMMON_SPELL == 45) { Wld_SpawnNpcRange(self, SUMMONED_SKELETON, 6, 800.0); };
+    if (ZK_COOP_SUMMON_SPELL == 84) { Wld_SpawnNpcRange(self, SUMMONED_GUARDIAN, 1, 500.0); };
+    if (ZK_COOP_SUMMON_SPELL == 88) { Wld_SpawnNpcRange(self, SUMMONED_ZOMBIE, 1, 500.0); };
+};

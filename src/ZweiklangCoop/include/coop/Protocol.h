@@ -6,10 +6,10 @@
 
 namespace zweiklang { namespace net {
 
-constexpr std::uint16_t ProtocolVersion = 10;
+constexpr std::uint16_t ProtocolVersion = 11;
 constexpr std::uint32_t ProtocolMagic = 0x5A434F50u;
 constexpr std::size_t ProtocolHeaderBytes = 32;
-constexpr std::size_t MaximumDatagramBytes = 512;
+constexpr std::size_t MaximumDatagramBytes = 1024;
 
 // Stable content identifiers, not cryptographic signatures.
 inline std::uint64_t HashString(const std::string& value) {

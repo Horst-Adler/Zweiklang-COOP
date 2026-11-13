@@ -1,5 +1,9 @@
 # Versionshistorie
 
+## 0.1.0-alpha.31 – 2026-11-14
+
+Persönliche Straftat-/NPC-Zustände mit gesicherter Charakterdatei; lokale Fortschritts- und Formschutzregeln; besondere Bewegungsprioritäten und Overlays; Gestaltübertragung und besitzergebundene Standardbeschwörungen. Protokoll 11, 3.413 technische Assertions, native Abnahme offen. [Details](docs/ALPHA-31.md).
+
 ## 0.1.0-alpha.30 – 2026-11-13
 
 Bestätigte Speicherpause vor nativem Schreiben, Partner-Inventarsperren, erreichbare Trennung und richtige Statusmeldungen während Savepausen; Bodenitem-Zuordnung und doppelte Drop-Tags korrigiert; Saveguard-Bereinigung geprüft; Logrotation bleibt bei Dateisperren begrenzt und Ereignisse unabhängig. 2.391 Netzwerktest-Assertions plus Diagnoseprüfungen. Native Abnahme offen. [Rundumcheck](docs/ALPHA-30.md).

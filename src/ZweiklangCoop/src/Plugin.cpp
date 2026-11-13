@@ -16,6 +16,7 @@
 #include <deque>
 #include <memory>
 #include "coop/CombatProtocol.h"
+#include "coop/CharacterPolicy.h"
 #include "coop/ActiveAnimations.h"
 #include "coop/NetworkMotion.h"
 #include "coop/LootProtocol.h"
@@ -212,6 +213,32 @@ bool RecoveryCanLoot();
 void RecoveryReceive(const std::vector<std::uint8_t>&);
 void RecoverySessionReset();
 struct NpcBinding;
+bool CharacterLocal(oCNpc*);
+bool CharacterFormSwitch();
+character::Counters CharacterCounters();
+void CharacterCounters(const character::Counters&);
+bool CharacterReady();
+bool CharacterBusy();
+void CharacterSessionReset();
+void CharacterClearForms();
+void CharacterNewGame();
+void CharacterObserve(unsigned long long);
+void CharacterFrame(unsigned long long);
+void CharacterReceive(const std::vector<std::uint8_t>&);
+void CharacterQueue(const std::vector<std::uint8_t>&);
+void CharacterReceiveSummon(const std::vector<std::uint8_t>&);
+void CharacterRestoreSummon(NpcBinding&);
+bool CharacterWaitingForOwner(oCNpc*);
+void CharacterRemoveOldSummons(const std::string&);
+unsigned CharacterOwner(oCNpc*);
+bool CharacterAllied(oCNpc*,oCNpc*);
+void CharacterGroundTheft(oCItem*,const std::string&);
+combat::Visual CharacterVisual(oCNpc*);
+void CharacterNpcCapture(combat::Npc&,oCNpc*);
+void CharacterNpcApply(NpcBinding&,const combat::Npc&);
+void CharacterSave(const std::string&,const std::string&,const std::string&,const std::string&);
+void CharacterLoad(const std::string&,const std::string&,const std::string&,const std::string&);
+
 void WorldReset();
 void WorldReceive(const std::vector<std::uint8_t>&);
 void WorldNpcVisual(combat::Npc&,oCNpc*);
@@ -247,6 +274,8 @@ void QolNotify(unsigned,unsigned);
 #include "CavalornBridge.inl"
 #include "SessionBridge.inl"
 #include "QolBridge.inl"
+#include "CharacterBridge.inl"
+#include "SummonBridge.inl"
 
 void RemoveProxy() {
     if (remote) {
@@ -374,7 +403,7 @@ void Animate(bool moving) {
 }
 
 void ApplyRemote(unsigned long long now, float seconds) {
-    if(remote&&remoteAppearance!=network.PeerAppearance()){
+    if(remote&&remoteAppearance!=network.PeerAppearance()&&(!havePeerCombat||!peerCombat.visual.transformed)){
         // Keep the combat actor's identity and any enemy references intact.
         remoteAppearance=network.PeerAppearance();const bool female=remoteAppearance==net::Appearance::Velaya;
         if(auto* npc=PartnerNpc()){
@@ -385,6 +414,7 @@ void ApplyRemote(unsigned long long now, float seconds) {
         }
     }
     if (!haveTarget || !CreateProxy()) return;
+    CharacterApplyPeerVisual();
     remote->SetCollDetStat(FALSE);remote->SetCollDetDyn(FALSE);
     const zVEC3 old = remote->GetPositionWorld();
     const float dx = target.x - old[0], dy = target.y - old[1], dz = target.z - old[2];
@@ -397,7 +427,7 @@ void ApplyRemote(unsigned long long now, float seconds) {
     const auto placed=PlaceNetworkActor(*remote,zVEC3(old[0]+dx*fraction,old[1]+dy*fraction,old[2]+dz*fraction),oldYaw+delta*fraction);
     if(havePeerCombat)QolApplySprint(PartnerNpc(),peerCombat.sprint);
     if(remoteModel){remoteModel->aniTransScale=zVEC3(0,0,0);remoteModel->doVobRot=FALSE;}
-    if(!havePeerCombat||!SetCombatAnimation(remoteModel,peerCombat.animation))Animate(now < movingUntil);
+    if(!havePeerCombat||!SetCombatAnimation(remoteModel,peerCombat.animation)){if(!havePeerCombat||!character::SpecialMovement(peerCombat.stats.bodyState))Animate(now < movingUntil);}
     if(now-lastRemoteLog>=1000){
         lastRemoteLog=now;auto* active=remoteModel->numActiveAnis>0&&remoteModel->numActiveAnis<=6?remoteModel->aniChannels[0]:nullptr;
         std::ostringstream text;text<<"target="<<target.x<<","<<target.y<<","<<target.z<<" yaw="<<target.yaw<<" error="<<std::sqrt(distanceSquared)
@@ -455,10 +485,10 @@ void Start(bool asHost) {
     }
     if(QuestInt("NINJA_QUICKLOOT_ZK_BRIDGE_REV",-1)!=1){notice="Quickloot fehlt oder hat keine Koop-Bruecke; passende Alpha-Dateien und Ninja pruefen.";Log(notice);return;}
     if(QuestInt("NINJA_SPRINT_ZK_BRIDGE_REV",-1)!=1){notice="Sprint fehlt oder hat keine Koop-Bruecke; passende Alpha-Dateien und Ninja pruefen.";Log(notice);return;}
-    diagnostics.Write(1,"qol_profile","quickloot=1.9.5 bridge=1 sprint=2.4.0 party_guard=1 protocol=10 journal=4");
+    diagnostics.Write(1,"qol_profile","quickloot=1.9.5 bridge=1 sprint=2.4.0 party_guard=1 protocol=11 journal=4");
     const net::Compatibility compatibility{kEngine, net::HashString(contentId), net::HashString(sessionWorld)};
     diagnostics.Role(asHost?"HOST":"CLIENT");
-    diagnostics.Write(1,"session_start","name="+options.name+" host="+hostAddress+" port="+std::to_string(port)+" world="+sessionWorld+" content="+contentId+" protocol=10");
+    diagnostics.Write(1,"session_start","name="+options.name+" host="+hostAddress+" port="+std::to_string(port)+" world="+sessionWorld+" content="+contentId+" protocol=11");
     const bool started = asHost ? network.StartHost(port, compatibility, Now(),hostAddress) :
                                  network.Connect(hostAddress, port, compatibility, Now(),options.client);
     Log(std::string("Session role=")+(asHost?"Host":"Client")+" bind="+(asHost?hostAddress:options.client));
@@ -471,7 +501,9 @@ const zSTRING kMenuSection("ZWEIKLANGCOOP_MENU");
 
 void ApplyLocalAppearance() {
     const int wanted=options.female?1:0;
-    if(!player||!player->GetModel()||(appearancePlayer==player&&appliedAppearance==wanted))return;
+    if(!player||!player->GetModel())return;
+    if(!character::LocalVisualAllowed(player->IsHuman()!=FALSE,static_cast<unsigned>(player->GetBodyState()))){appearancePlayer=nullptr;appliedAppearance=-1;return;}
+    if(appearancePlayer==player&&appliedAppearance==wanted)return;
     zSTRING body(options.female?"HUM_BODY_BABE0":"HUM_BODY_NAKED0");
     zSTRING head(options.female?"HUM_HEAD_BABE":"HUM_HEAD_PONY");
     // -1 creates/equips no item; retain the currently equipped armor.
@@ -673,19 +705,20 @@ void Initialize() {
     if(faultFile!=INVALID_HANDLE_VALUE)faultObserver=AddVectoredExceptionHandler(1,ObserveFault);
     LogRuntime();
     lastFrame = Now();
-    Log("Zweiklang Coop 0.1.0-alpha.30 initialized; protocol=10; engine=G2NotR; no auto-connect.");
+    Log("Zweiklang Coop 0.1.0-alpha.31 initialized; protocol=11; engine=G2NotR; no auto-connect.");
 }
 
 void Shutdown() {
-    Leave("Session closed");rc::SetTraceSink({});diagnostics.Flush();diagnosticsReady=false;
+    Leave("Session closed");CharacterClearForms();rc::SetTraceSink({});diagnostics.Flush();diagnosticsReady=false;
     if(faultObserver){RemoveVectoredExceptionHandler(faultObserver);faultObserver=nullptr;}
     if(faultFile!=INVALID_HANDLE_VALUE){CloseHandle(faultFile);faultFile=INVALID_HANDLE_VALUE;}
 }
 
 void Frame() {
     if (loading || saving || !player || !ogame || !ogame->GetWorld()) return;
-    ApplyLocalAppearance();
     const auto now = Now();
+    CharacterObserve(now);
+    ApplyLocalAppearance();
     const float elapsed = static_cast<float>((now - lastFrame) > 250 ? 250 : now - lastFrame) / 1000.0f;
     lastFrame = now;
     network.Poll(now);
@@ -721,6 +754,7 @@ void Frame() {
             lastSend = now;
         }
         CombatFrame(now,elapsed);
+        CharacterFrame(now);
         LootFrame(now);
         ApplyRemote(now, elapsed);
         WorldFrame(now);
@@ -770,8 +804,8 @@ void BeforeLoad() {
     Leave("Loading: presence session closed; reconnect after loading.");
     QolReset();
 }
-void BeforeNewGame(){BeforeLoad();freshGamePending=true;recoveryTimeline.clear();recoveryEffects.clear();recoveryReady=false;recoveryLastReplay=0;recoveryLastWorld.clear();if(recoveryStoreReady){recoveryError.clear();recoveryBlocked=false;}}
-void AfterLoad() { QolReset();appearancePlayer=nullptr;appliedAppearance=-1; loading = false; saving = false;
+void BeforeNewGame(){BeforeLoad();CharacterNewGame();freshGamePending=true;recoveryTimeline.clear();recoveryEffects.clear();recoveryReady=false;recoveryLastReplay=0;recoveryLastWorld.clear();if(recoveryStoreReady){recoveryError.clear();recoveryBlocked=false;}}
+void AfterLoad() { CharacterClearForms();QolReset();appearancePlayer=nullptr;appliedAppearance=-1; loading = false; saving = false;
     if(freshGamePending){freshGamePending=false;try{
         if(!recoveryStoreReady||!recoveryError.empty())throw std::runtime_error("Fresh game recovery store unavailable");
         recoveryTimeline=rc::NewGuid();recoveryEffects.clear();recoveryReady=true;
@@ -783,6 +817,7 @@ void AfterLoad() { QolReset();appearancePlayer=nullptr;appliedAppearance=-1; loa
 // The exact G2 2.6-fix methods come from the external Union/ZenGin SDK.
 namespace {
 using namespace gothic;
+#include "CharacterHooks.inl"
 int __fastcall CoopCanCollide(oCAIHuman*,void*,zCVob*);
 CInvoke<int(__thiscall*)(oCAIHuman*,zCVob*)> originalCanCollide(0x0069D890,&CoopCanCollide);
 int __fastcall CoopCanCollide(oCAIHuman* ai,void*,zCVob* other){
@@ -869,7 +904,7 @@ void __fastcall SharedDamage(oCNpc* npc,void*,oCNpc::oSDamageDescriptor& damage)
 }
 int __fastcall SharedAIState(oCNpc_States*,void*);
 CInvoke<int(__thiscall*)(oCNpc_States*)> originalAIState(0x0076D1A0,&SharedAIState);
-int __fastcall SharedAIState(oCNpc_States* state,void*){if(zweiklang::engine::CombatMirror(state->npc))return FALSE;return originalAIState(state);}
+int __fastcall SharedAIState(oCNpc_States* state,void*){using namespace zweiklang::engine;if(CombatMirror(state->npc)||CharacterWaitingForOwner(state->npc))return FALSE;CharacterGuestScope context(CharacterGuestTarget(state->npc),state->npc);if(context.failed)return FALSE;return originalAIState(state);}
 void __fastcall SharedHumanAI(oCAIHuman*,void*,zCVob*,int&);
 CInvoke<void(__thiscall*)(oCAIHuman*,zCVob*,int&)> originalHumanAI(0x0069BAB0,&SharedHumanAI);
 void __fastcall SharedHumanAI(oCAIHuman* ai,void*,zCVob* vob,int& remove){
@@ -913,7 +948,7 @@ void __fastcall SharedEnemy(oCNpc*,void*,oCNpc*);
 CInvoke<void(__thiscall*)(oCNpc*,oCNpc*)> originalEnemy(0x00734BC0,&SharedEnemy);
 void __fastcall SharedEnemy(oCNpc* npc,void*,oCNpc* target){
     using namespace zweiklang::engine;
-    if(CombatConnected()&&npc==player&&target==PartnerNpc()&&!sessionFriendlyFire)target=nullptr;
+    if(CombatConnected()&&CharacterAllied(npc,target))target=nullptr;
     originalEnemy(npc,target);
 }
 void __fastcall SharedLoot(oCNpc*,void*);
@@ -1092,3 +1127,9 @@ CApplication* application = Union.GetEngineVersion() != kEngine ? nullptr :
         zweiklang::engine::AfterLoad, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr);
 }
+
+
+
+
+
+

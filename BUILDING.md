@@ -79,7 +79,7 @@ Dateien unter `src/ZweiklangCoop/tests/fixtures` gefunden werden.
 | `build/logs/tests.log` | Testausgabe |
 
 Die aktuelle Veröffentlichungsvorbereitung wurde mit der genannten lokalen
-Werkzeugkette neu gebaut. **2.391 Assertions bestanden**; Menü-Strukturprüfung
+Werkzeugkette neu gebaut. **3.413 Assertions bestanden**; Menü-Strukturprüfung
 und der zusätzliche Python-Check wurden ebenfalls ausgeführt. Die Tests prüfen
 unter anderem echte Loopback-UDP-Verbindungen, begrenzte Codecs, Wiederholungen,
 Recovery-Entscheidungen, Altformatdateien, Tastatureingaben und Konfiguration.
@@ -104,3 +104,6 @@ die Inhaltsprüfung darf dann den Beitritt ablehnen. Buildprodukte und Protokoll
 bleiben lokal und sind durch `.gitignore` sowie die Publikationspositivliste ausgeschlossen.
 
 In nichtinteraktiven Windows-Dienstsitzungen kann das Testprogramm ausdrücklich mit `--headless` laufen. Nur der interaktive Tastaturlayouttest wird dabei sichtbar ausgelassen; den Standardlauf auf einem Desktop zusätzlich ausführen. `scripts/Test-ContentIdentity.ps1` prüft die kulturunabhängige Kennung auf PowerShell 5.1 und 7.
+
+
+Aktueller Charakterstand: [Alpha.31](docs/ALPHA-31.md), Protokoll 11. Persönliche NPC-Zustände, Schutz lokaler Fortschritte, besondere Bewegungen, Verwandlungen und reguläre Beschwörungen sind technisch implementiert; native Zwei-PC-Abnahme bleibt offen. Zusätzliche [Charakter-Testliste](docs/TEST-ALPHA31-CHARAKTERE.md).

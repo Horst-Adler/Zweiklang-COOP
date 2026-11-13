@@ -56,7 +56,7 @@ void RecoveryBeginLoad(int slot){
             if(c.profile!=recoveryStore.Profile()||c.fingerprint!=fp)throw std::runtime_error("Recovery baseline mismatch");
         }
         for(const auto& id:c.effects)if(!recoveryStore.Find(id.substr(0,32)))throw std::runtime_error("Checkpoint references missing transaction; state files must be restored together");
-        recoveryTimeline=c.timeline;recoveryEffects=c.effects;
+        recoveryTimeline=c.timeline;recoveryEffects=c.effects;CharacterLoad(dir,c.profile,c.timeline,fp);
         LootLog("recovery_checkpoint_load","slot="+std::to_string(slot)+" effects="+std::to_string(c.effects.size()));
     }catch(const std::exception& e){RecoveryFail(e.what());}
 }
@@ -79,7 +79,7 @@ rc::Checkpoint RecoveryBeforeSave(int slot){
 }
 void RecoveryAfterSave(int slot,rc::Checkpoint c){
     if(!recoveryError.empty())return;
-    try{const auto dir=RecoverySlot(slot);const auto fp=RecoveryFingerprint(dir);if(!recoveryNativeSaveCompleted||!native_save::Advanced(recoverySavedatBefore,native_save::Capture(dir+"SAVEDAT.SAV"))||!native_save::Advanced(recoveryWorldBefore,native_save::Capture(dir+recoverySavingWorld)))throw std::runtime_error("Native save incomplete: world/character files not advanced");if(!c.fingerprint.empty()&&fp==c.fingerprint)throw std::runtime_error("Native save header unchanged; checkpoint not advanced");c.fingerprint=fp;rc::AtomicWrite(dir+"ZWEIKLANG_RECOVERY.BIN",rc::Encode(c));if(!DeleteFileA((recoveryDir+"\\saving-slot"+std::to_string(slot)+".bin").c_str()))throw std::runtime_error("Cannot finish save checkpoint guard");recoveryReady=true;LootLog("recovery_checkpoint_save","slot="+std::to_string(slot)+" effects="+std::to_string(c.effects.size()));}
+    try{const auto dir=RecoverySlot(slot);const auto fp=RecoveryFingerprint(dir);if(!recoveryNativeSaveCompleted||!native_save::Advanced(recoverySavedatBefore,native_save::Capture(dir+"SAVEDAT.SAV"))||!native_save::Advanced(recoveryWorldBefore,native_save::Capture(dir+recoverySavingWorld)))throw std::runtime_error("Native save incomplete: world/character files not advanced");if(!c.fingerprint.empty()&&fp==c.fingerprint)throw std::runtime_error("Native save header unchanged; checkpoint not advanced");c.fingerprint=fp;CharacterSave(dir,c.profile,c.timeline,fp);rc::AtomicWrite(dir+"ZWEIKLANG_RECOVERY.BIN",rc::Encode(c));if(!DeleteFileA((recoveryDir+"\\saving-slot"+std::to_string(slot)+".bin").c_str()))throw std::runtime_error("Cannot finish save checkpoint guard");recoveryReady=true;LootLog("recovery_checkpoint_save","slot="+std::to_string(slot)+" effects="+std::to_string(c.effects.size()));}
     catch(const std::exception& e){RecoveryFail(e.what());}
 }
 LootSource RecoverySource(const rc::Tx& tx){
@@ -141,6 +141,7 @@ std::string RecoveryBlockReason(){
     return {};
 }
 bool RecoveryCanLoot(){
+    if(!CharacterReady()){notice="Inventar wartet auf persoenliche Spielerzustaende.";return false;}
     if(saving||network.PeerSaving()){notice="Inventar wartet: Speichervorgang laeuft.";return false;}
     if(!recoveryError.empty()||recoveryBlocked){notice="Inventarabgleich gesperrt; konkrete Ursache in der Diagnose (Strg+Umschalt+D).";return false;}
     if(CombatConnected()&&!recoveryReady){notice="Bitte Testspielstand laden oder einmal speichern, damit Inventar-Recovery gebunden ist.";return false;}

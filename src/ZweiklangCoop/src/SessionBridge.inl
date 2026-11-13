@@ -14,7 +14,7 @@ session::Ready SessionLocalReady(){
     session::Ready r;r.profile=recoveryStore.Profile();r.timeline=recoveryTimeline;
     if(recoveryReady&&!r.timeline.empty())r.flags|=session::Checkpoint;
     if(recoveryBlocked||!recoveryError.empty())r.flags|=session::Blocked;
-    if(clientQuickLoot||clientPendingTake||clientOpenRequest||clientLootShown||!worldGroundPending.empty()||lootLedger.HasUnapplied()||QuestPendingAwards())r.flags|=session::Pending;
+    if(CharacterBusy()||clientQuickLoot||clientPendingTake||clientOpenRequest||clientLootShown||!worldGroundPending.empty()||lootLedger.HasUnapplied()||QuestPendingAwards())r.flags|=session::Pending;
     if(player&&!cv::EligibleForCredit(player->attribute[0],player->IsUnconscious()!=FALSE))r.flags|=session::Incapacitated;
     if(rulesReady)r.flags|=session::Rules;if(remote&&havePeerCombat)r.flags|=session::Actor;
     if(QuestSupported()&&questError.empty())r.flags|=session::Quest;return r;

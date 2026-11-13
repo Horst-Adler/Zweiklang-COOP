@@ -86,7 +86,7 @@ void WorldNpcVisual(co::Npc& s,oCNpc* npc){
     s.sprint=QolSprint(npc);s.model=npc->mds_name.ToChar();s.body=npc->body_visualName.ToChar();s.head=npc->head_visualName.ToChar();
     if(s.model.size()>63)s.model.clear();if(s.body.size()>63)s.body.clear();if(s.head.size()>63)s.head.clear();
     s.bodyTex=npc->body_TexVarNr;s.headTex=npc->head_TexVarNr;s.bodyColor=npc->body_TexColorNr;
-    s.headColor=0;auto* armor=npc->GetEquippedArmor();s.armor=armor?armor->GetInstance():-1;
+    s.headColor=0;auto* armor=npc->GetEquippedArmor();s.armor=armor?armor->GetInstance():-1;CharacterNpcCapture(s,npc);
 }
 co::Npc WorldNpcState(NpcBinding& e){
     co::Npc s=e.desired;s.id=e.id;s.generation=e.generation;s.life=e.life;s.revision=++combatRevision;s.instance=e.npc->GetInstance();s.anchor={e.anchor[0],e.anchor[1],e.anchor[2]};
@@ -119,7 +119,7 @@ NpcBinding* WorldCreateNpc(const co::Npc& message){
     LootLog("npc_created","instance="+std::to_string(message.instance)+" id="+std::to_string(message.id));return entry;
 }
 void WorldApplyNpc(NpcBinding& entry,const co::Npc& state){
-    auto* npc=entry.npc;
+    auto* npc=entry.npc;if(CharacterLocal(npc))return;CharacterNpcApply(entry,state);
     if(state.life!=1){if(player){if(player->GetFocusVob()==npc)player->SetFocusVob(nullptr);if(player->enemy==npc)player->SetEnemy(nullptr);}if(!entry.hidden){npc->Disable();entry.hidden=true;}return;}
     if(!npc->homeWorld){zVEC3 p(state.pose.x,state.pose.y,state.pose.z);npc->Enable(p);if(!npc->homeWorld)ogame->GetWorld()->AddVob(npc);}
     entry.hidden=false;
@@ -176,7 +176,7 @@ bool WorldRecoveryEffect(const rc::Record& record,bool desired,bool& handled){
     auto* item=WorldGroundFor(tx);if(!desired)return false;
     if(!item||item->amount<static_cast<int>(tx.amount))return false;
     LootLog("ground_effect_begin","tx="+tx.id+" item="+std::to_string(tx.item)+" amount="+std::to_string(tx.amount));
-    RegisterGround(item);if(item->amount>static_cast<int>(tx.amount))item->amount-=tx.amount;else item->RemoveVobFromWorld();WorldGroundChanged(item);LootLog("ground_effect_end","tx="+tx.id);return true;
+    RegisterGround(item);CharacterGroundTheft(item,tx.ownerTimeline);if(item->amount>static_cast<int>(tx.amount))item->amount-=tx.amount;else item->RemoveVobFromWorld();WorldGroundChanged(item);LootLog("ground_effect_end","tx="+tx.id);return true;
 }
 bool WorldHostRequest(rc::Message& m){
     if(m.tx.action!=rc::Action::GroundTake&&m.tx.action!=rc::Action::Drop)return false;
@@ -318,7 +318,7 @@ void WorldFrame(unsigned long long now){
         }
     }else if(now-worldConnectedAt>2000&&now-lastWorldSend>=250){
         lastWorldSend=now;int groundSent=0;for(auto& e:groundBindings){if(e->bound||e->probed||!e->item->homeWorld||!ws::Within(e->state.position,{player->GetPositionWorld()[0],player->GetPositionWorld()[1],player->GetPositionWorld()[2]},8000))continue;e->probed=true;auto probe=e->state;probe.id=static_cast<unsigned>(groundSent+1);probe.revision=1;auto b=ws::Encode(probe);b[0]=50;QueueWorld(std::move(b));if(++groundSent>=4)break;}
-        int sent=0;for(auto& e:npcBindings){if(e->mirror||e->owned||Distance2(e->anchor,player->GetPositionWorld())>64000000.0f)continue;
+        int sent=0;for(auto& e:npcBindings){if(e->mirror||e->owned||CharacterLocal(e->npc)||Distance2(e->anchor,player->GetPositionWorld())>64000000.0f)continue;
             const auto key=std::to_string(e->npc->GetInstance())+":"+std::to_string(e->anchor[0])+":"+std::to_string(e->anchor[2]);if(npcProbes.count(key)&&now-npcProbes[key]<5000)continue;
             npcProbes[key]=now;if(e->probeCookie)npcProbeTargets.erase(e->probeCookie);if(npcProbeSerial>=999999){combatFailure="NPC probe sequence exhausted";break;}const auto serial=++npcProbeSerial;e->probeCookie=serial;npcProbeTargets[serial]=e.get();co::Npc probe;probe.id=serial;probe.instance=e->npc->GetInstance();probe.anchor={e->anchor[0],e->anchor[1],e->anchor[2]};probe.stats=ReadCombatStats(e->npc);auto b=co::Encode(probe);b[0]=49;QueueWorld(std::move(b));if(++sent>=4)break;
         }

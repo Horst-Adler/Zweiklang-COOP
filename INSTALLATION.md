@@ -174,3 +174,6 @@ Alte Testslots mit neuem Vorschaubild, aber fehlendem neuen Welt-/Charakterstand
 Ab Alpha.28 erhält reguläres Speichern die Verbindung. Nacheinander und ohne offene Transfers speichern; während der angekündigten Pause warten. [Befunde und Wiederholungstest](docs/ALPHA-28.md).
 
 Die Inhaltskennung wird seit dem Installationsnachtrag zu Alpha.30 ordinal und kulturunabhängig berechnet. Den vollständigen Installationshelfer einschließlich `scripts/ContentIdentity.ps1` verwenden; beide PCs mit demselben Build aktualisieren.
+
+
+Aktueller Charakterstand: [Alpha.31](docs/ALPHA-31.md), Protokoll 11. Persönliche NPC-Zustände, Schutz lokaler Fortschritte, besondere Bewegungen, Verwandlungen und reguläre Beschwörungen sind technisch implementiert; native Zwei-PC-Abnahme bleibt offen. Zusätzliche [Charakter-Testliste](docs/TEST-ALPHA31-CHARAKTERE.md).

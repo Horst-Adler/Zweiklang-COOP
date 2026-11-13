@@ -28,7 +28,8 @@ unsigned QolSprint(oCNpc* npc){
     return 0;
 }
 void QolApplySprint(oCNpc* npc,unsigned id){
-    if(!npc||npc==player||id>5||QolSprint(npc)==id)return;
+    if(!npc||CharacterLocal(npc)||id>5||QolSprint(npc)==id)return;
+    if(!npc->IsHuman())return;
     for(int i=npc->activeOverlays.GetNumInList()-1;i>=0;--i){
         zSTRING name=npc->activeOverlays[i];
         for(unsigned old=1;old<=5;++old)if(_stricmp(name.ToChar(),qol::SprintOverlay(old))==0){npc->RemoveOverlay(name);break;}

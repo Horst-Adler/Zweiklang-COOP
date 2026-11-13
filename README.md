@@ -2,7 +2,7 @@
 
 **Gothic II: Die Nacht des Raben gemeinsam zu zweit erleben – mit eigenem Charakter auf jedem PC.**
 
-![Version](https://img.shields.io/badge/Version-0.1.0--alpha.30-b08d48)
+![Version](https://img.shields.io/badge/Version-0.1.0--alpha.31-b08d48)
 ![Entwicklung](https://img.shields.io/badge/Status-Entwickler--Alpha-orange)
 ![Plattform](https://img.shields.io/badge/Ziel-Windows%20%2F%20x86-466647)
 ![Lizenz](https://img.shields.io/badge/Eigener%20Code-AGPL--3.0--only-blue)
@@ -10,7 +10,7 @@
 Zweiklang COOP ist eine eigenständige Union-Erweiterung für **Zwei-Spieler-Koop über ein Netzwerk**. Ein PC übernimmt die Hostrolle, der andere verbindet sich als Gast. Beide spielen mit eigener Gothic-Installation und eigener normaler Spielansicht. Der Host verwaltet die gemeinsamen Weltzustände.
 
 > **Stand vom 13. November 2026: Entwickler-Alpha, keine freigegebene gemeinsame Kampagne.**
-> Aktuell ist `0.1.0-alpha.30`, Netzwerkprotokoll **10**, Journalformat **4**, Save-Checkpointformat **2**. **2.391 technische Assertions** bestehen. Der erste Alpha.26-Durchlauf bestätigte Teile von Bewegung und Kampf, brach aber mit einer Inventarsperre und zusätzlich einem externen Infrastrukturabbruch ab. Alpha.27 bestätigte im Folgetest den Gastdialog, ließ aber Aufnahme und Kollision weiter blockiert. Alpha.28 bestätigte im Folgetest die Kollisionskorrektur; der Lauf endete bei einer Itemtransaktion mit einem Systemausfall. Alpha.29 korrigiert belegte Journal-/Recoveryfehler und ergänzt Itemdiagnosen. Native Abnahme offen.
+> Aktuell ist `0.1.0-alpha.31`, Netzwerkprotokoll **10**, Journalformat **4**, Save-Checkpointformat **2**. **3.413 technische Assertions** bestehen. Der erste Alpha.26-Durchlauf bestätigte Teile von Bewegung und Kampf, brach aber mit einer Inventarsperre und zusätzlich einem externen Infrastrukturabbruch ab. Alpha.27 bestätigte im Folgetest den Gastdialog, ließ aber Aufnahme und Kollision weiter blockiert. Alpha.28 bestätigte im Folgetest die Kollisionskorrektur; der Lauf endete bei einer Itemtransaktion mit einem Systemausfall. Alpha.29 korrigiert belegte Journal-/Recoveryfehler und ergänzt Itemdiagnosen. Native Abnahme offen.
 
 **Wichtig für die Einrichtung:** Diese Alpha setzt beim Sitzungsstart ausdrücklich die Koop-Brücken für **Sprint 2.4.0 und Quickloot 1.9.5** voraus. Die unveränderten Originalarchive allein reichen nicht. Fremdarchive, SDK, Union-Laufzeit und Originalspiele sind **nicht enthalten**. Es gibt kein über GitHub veröffentlichtes Fertig-Release; der dokumentierte Weg führt über den eigenen Build und separat beschaffte Abhängigkeiten.
 
@@ -197,3 +197,6 @@ Aktuelle Befundkorrekturen und Grenzen: [Alpha.28](docs/ALPHA-28.md).
 Aktuelle Plugin-Korrekturen: [Alpha.29](docs/ALPHA-29.md).
 
 Aktueller Rundumcheck: [Alpha.30](docs/ALPHA-30.md).
+
+
+Aktueller Charakterstand: [Alpha.31](docs/ALPHA-31.md), Protokoll 11. Persönliche NPC-Zustände, Schutz lokaler Fortschritte, besondere Bewegungen, Verwandlungen und reguläre Beschwörungen sind technisch implementiert; native Zwei-PC-Abnahme bleibt offen. Zusätzliche [Charakter-Testliste](docs/TEST-ALPHA31-CHARAKTERE.md).
