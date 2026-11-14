@@ -111,3 +111,8 @@ Aktueller Charakterstand: [Alpha.31](docs/ALPHA-31.md), Protokoll 11. Persönlic
 ## Bestätigte weitere Ideen
 
 Beta: Partner-Pings und gemeinsame Kartenmarkierungen/Notizen. Vollversion: ausgewählte NPC-Reaktionen auf das Duo und gemeinsames Reisetagebuch. Diese Ideen sind geplant, noch nicht implementiert. Die vier Charakter-Alpha-Punkte sind technisch in Alpha.31 enthalten, native Abnahme offen.
+
+
+## Alpha.32: Union-/Ninja-Modularisierung
+
+Technisch umgesetzt: Union-Hauptkern, eigener Ninja-Befehlsvertrag ABI 1 und automatische optionale Modulprofile. Pflichtkern ohne Komfortmods; bedingte Toolkit-Abhängigkeiten und vollständiger Contentvergleich erhalten. Native Abnahme beider Profile noch offen. [Architektur und Testmatrix](docs/UNION-NINJA.md).

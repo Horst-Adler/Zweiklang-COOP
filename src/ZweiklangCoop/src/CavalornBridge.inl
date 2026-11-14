@@ -43,7 +43,7 @@ bool QuestSupported(){
 void QuestCall(const char* name){
     const int index=parser->GetIndex(zSTRING(name));if(index<0)throw std::runtime_error("Own quest helper missing");
     QuestBindings bindings;
-    parser->SetInstance(zSTRING("HERO"),player);parser->CallFunc(index);
+    parser->SetInstance(zSTRING("HERO"),player);if(std::string(name)=="ZK_COOP_APPLY_QUEST_XP")ExtensionCall(extensions::Command::QuestXp,QuestInt("ZK_COOP_QUEST_XP"));else parser->CallFunc(index);
 }
 unsigned QuestInventory(unsigned instance){
     if(!player)return 0;QuestBindings bindings;player->inventory2.UnpackAllItems();LootSource source;source.vob=source.corpse=player;std::uint64_t amount=0;

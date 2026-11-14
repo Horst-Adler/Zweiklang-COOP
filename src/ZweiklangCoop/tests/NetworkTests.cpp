@@ -14,6 +14,8 @@
 #include "coop/SessionProtocol.h"
 #include "coop/CavalornPolicy.h"
 #include "coop/QolPolicy.h"
+#include "coop/Extensions.h"
+#include "coop/FileHash.h"
 #include <filesystem>
 #include "coop/KeyboardText.h"
 #include "coop/LocalAddress.h"
@@ -335,6 +337,7 @@ void TestKeyboardLayout() {
 #include "CharacterTests.inl"
 #include "LootTests.inl"
 #include "RecoveryTests.inl"
+#include "ExtensionTests.inl"
 #include "NativeSaveTests.inl"
 #include "WorldTests.inl"
 #include "SessionTests.inl"
@@ -386,6 +389,7 @@ int main(int argc,char** argv) {
         TestSessionCodecsAndTransport();
         TestCavalornRewards();
         TestCharacterRules();
+        TestExtensions();
         TestCombatTransport();
         TestReliableReorderingAndLoss();
         TestCompatibility();

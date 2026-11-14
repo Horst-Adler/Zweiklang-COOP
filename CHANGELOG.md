@@ -1,5 +1,9 @@
 # Versionshistorie
 
+## 0.1.0-alpha.32 – 2026-11-14
+
+Eigene Ninja-Core-VDF und versionierte Union-Schnittstelle; Quickloot/Sprint/Toolkit/PatchMenu für den Kern optional, bekannte Varianten automatisch erkannt und bedingte Bibliotheksabhängigkeiten erhalten. Installer/Build/Rückbau angepasst, Händlerbindungen bei Fehlern geschützt. 3.671 technische Assertions, native Profilabnahme offen. [Details](docs/ALPHA-32.md).
+
 ## 0.1.0-alpha.31 – 2026-11-14
 
 Persönliche Straftat-/NPC-Zustände mit gesicherter Charakterdatei; lokale Fortschritts- und Formschutzregeln; besondere Bewegungsprioritäten und Overlays; Gestaltübertragung und besitzergebundene Standardbeschwörungen. Protokoll 11, 3.413 technische Assertions, native Abnahme offen. [Details](docs/ALPHA-31.md).

@@ -7,6 +7,7 @@ import argparse,struct,hashlib,json,shutil,difflib
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--input',type=Path,required=True,help='Ordner mit fünf separat beschafften Originaldateien')
 parser.add_argument('--output',type=Path,required=True,help='Lokaler Ausgabeordner außerhalb des Git-Index')
+parser.add_argument('--modules',nargs='*',choices=['Quickloot','Sprint','Toolkit','PatchMenu'],default=['Quickloot','Sprint','Toolkit','PatchMenu'],help='Nur gewählte Komfortmodule vorbereiten; Toolkit für abhängige Module automatisch ergänzen')
 args=parser.parse_args();source=args.input.resolve();dest=args.output.resolve()
 if source==dest:raise SystemExit('Eingabe und Ausgabe müssen verschieden sein.')
 expected={
@@ -15,7 +16,12 @@ expected={
  'Toolkit.vdf':'08A8873043AE3E95C808E0AD519E00F302239BF58A561F3CA22EA6D00F5DC260',
  'PatchMenu.vdf':'8DA288D5FCFF42EDDC2CBA99548A9C03A464E146DD9C5CFE39F7DAD2FFD08F7A',
  'Ninja.dll':'38CE2836A74227BEAF08C6972CD263389BC3D6F591BFF35AE812C83C6241CA8B'}
-for name,digest in expected.items():
+selected=set(args.modules)
+if selected&{'Quickloot','Sprint','PatchMenu'}:selected.add('Toolkit')
+needed={name+'.vdf' for name in selected}
+if (source/'Ninja.dll').is_file():needed.add('Ninja.dll')
+for name in needed:
+    digest=expected[name]
     path=source/name
     if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest().upper()!=digest:
         raise SystemExit('Fehlende oder abweichende Originaldatei: '+name)
@@ -65,10 +71,14 @@ def adapt(name,file,function,marker,guard):
     diff=''.join(difflib.unified_diff(before.splitlines(True),after.splitlines(True),fromfile=name+'/'+file,tofile='Zweiklang/'+file))
     (dest/(name+'.compat.patch')).write_text(diff,encoding='utf-8')
     return {'File':name,'OriginalSHA256':hashlib.sha256(original).hexdigest().upper(),'AdaptedSHA256':hashlib.sha256(raw).hexdigest().upper(),'ChangedScript':file,'Guard':guard,'Marker':marker}
-changes=[adapt('Quickloot.vdf','INIT.D','func void _Ninja_Quickloot_Loot()','NINJA_QUICKLOOT_ZK_BRIDGE_REV','ZK_COOP_QOL_BLOCK_QUICKLOOT'),
-         adapt('Sprint.vdf','NINJA_SPRINT_INIT.D','func void Ninja_Sprint_getPartyMembers(var C_NPC slf)','NINJA_SPRINT_ZK_BRIDGE_REV','ZK_COOP_QOL_BLOCK_PARTYSPRINT')]
-for name in ['Toolkit.vdf','PatchMenu.vdf']:shutil.copy2(source/name,dest/'Data'/name)
-(dest/'System').mkdir(exist_ok=True);shutil.copy2(source/'Ninja.dll',dest/'System/Ninja.dll')
+changes=[]
+if 'Quickloot' in selected:changes.append(adapt('Quickloot.vdf','INIT.D','func void _Ninja_Quickloot_Loot()','NINJA_QUICKLOOT_ZK_BRIDGE_REV','ZK_COOP_QOL_BLOCK_QUICKLOOT'))
+if 'Sprint' in selected:changes.append(adapt('Sprint.vdf','NINJA_SPRINT_INIT.D','func void Ninja_Sprint_getPartyMembers(var C_NPC slf)','NINJA_SPRINT_ZK_BRIDGE_REV','ZK_COOP_QOL_BLOCK_PARTYSPRINT'))
+(dest/'Data').mkdir(exist_ok=True,parents=True)
+for name in ['Toolkit.vdf','PatchMenu.vdf']:
+    if name in needed:shutil.copy2(source/name,dest/'Data'/name)
+(dest/'System').mkdir(exist_ok=True)
+if 'Ninja.dll' in needed:shutil.copy2(source/'Ninja.dll',dest/'System/Ninja.dll')
 files=[]
 for folder in ['Data','System']:
     for path in sorted((dest/folder).iterdir()):

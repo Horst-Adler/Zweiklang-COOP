@@ -1,38 +1,42 @@
 {
-  "version": "0.1.0-alpha.27",
-  "protocol": 9,
-  "journal_format": 4,
-  "checkpoint_format": 2,
-  "sdk": {
-    "repository": "https://gitlab.com/gothiccoop/gothiccoop.git",
-    "commit": "0255381eeb86ea4b888f420fafaa4a10ee4d85e3",
-    "included": false
+  "Schema": 1,
+  "Ninja": {
+    "File": "System/Ninja.dll",
+    "Version": "4.1.16",
+    "SHA256": "38CE2836A74227BEAF08C6972CD263389BC3D6F591BFF35AE812C83C6241CA8B"
   },
-  "runtime": {
-    "game": "Gothic II: Die Nacht des Raben",
-    "executable": "2.6 (fix)",
-    "union": "1.0m",
-    "architecture": "x86",
-    "union_menu": "zUnionMenu.d aus der eigenen Union-Installation; nicht enthalten"
-  },
-  "qol": {
-    "ninja": "4.1.16",
-    "toolkit": "16.0",
-    "quickloot": "1.9.5",
-    "sprint": "2.4.0",
-    "patchmenu": "1.1.1",
-    "bridge_revision": 1,
-    "original_archives_included": false
-  },
-  "compiler": {
-    "toolset": "v142",
-    "language": "C++17",
-    "windows_sdk": "10.0.19041.0",
-    "target": "Release|Win32"
-  },
-  "optional_renderer": {
-    "name": "GD3D11",
-    "tested_profile": "17.9.7",
-    "included": false
-  }
+  "Modules": [
+    {
+      "Id": "Quickloot",
+      "File": "Data/Quickloot.vdf",
+      "Version": "Quickloot 1.9.5 + bridge 1",
+      "SHA256": "0352BC03B6E9C53CB2D3D4DC89426073C7E45AEE9272A994C7C9E178108B772F",
+      "BridgeMarker": "NINJA_QUICKLOOT_ZK_BRIDGE_REV",
+      "RequiresToolkit": true
+    },
+    {
+      "Id": "Sprint",
+      "File": "Data/Sprint.vdf",
+      "Version": "Sprint 2.4.0 + bridge 1",
+      "SHA256": "9D06C29735810D9D07F551F9409ADE23494E983FF6F560C157855B82B8C77967",
+      "BridgeMarker": "NINJA_SPRINT_ZK_BRIDGE_REV",
+      "RequiresToolkit": true
+    },
+    {
+      "Id": "Toolkit",
+      "File": "Data/Toolkit.vdf",
+      "Version": "Toolkit 16.0",
+      "SHA256": "08A8873043AE3E95C808E0AD519E00F302239BF58A561F3CA22EA6D00F5DC260",
+      "BridgeMarker": "",
+      "RequiresToolkit": false
+    },
+    {
+      "Id": "PatchMenu",
+      "File": "Data/PatchMenu.vdf",
+      "Version": "PatchMenu 1.1.1",
+      "SHA256": "8DA288D5FCFF42EDDC2CBA99548A9C03A464E146DD9C5CFE39F7DAD2FFD08F7A",
+      "BridgeMarker": "",
+      "RequiresToolkit": true
+    }
+  ]
 }

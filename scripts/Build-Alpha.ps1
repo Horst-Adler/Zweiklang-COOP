@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$SdkRoot,[string]$MSBuildPath,[switch]$TestsOnly)
+param([string]$SdkRoot,[string]$MSBuildPath,[string]$PythonPath="python",[switch]$TestsOnly)
 $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
 if(-not $MSBuildPath){
@@ -16,6 +16,8 @@ if(-not $MSBuildPath -or -not(Test-Path -LiteralPath $MSBuildPath)){throw 'MSBui
 $source=Join-Path $root 'src\ZweiklangCoop'
 $logs=Join-Path $root 'build\logs';New-Item -ItemType Directory -Path $logs -Force|Out-Null
 if(-not $TestsOnly){
+    & $PythonPath (Join-Path $PSScriptRoot "Build-NinjaModule.py")
+    if($LASTEXITCODE -ne 0){throw "Ninja-Modul nicht gebaut. Python + zenkit und -PythonPath pruefen."}
     if(-not $SdkRoot){$SdkRoot=Join-Path $root 'local\sdk\GothicCoop'}
     $SdkRoot=[IO.Path]::GetFullPath($SdkRoot).TrimEnd('\')+'\'
     foreach($relative in @('UnionAfx.h','ZenGin\Gothic_II_Addon\ClassDeclarators_G2A.cpp','SDK\Union\v1.0l\Lib\Shw32.lib')){

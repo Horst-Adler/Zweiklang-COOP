@@ -2,7 +2,7 @@
 param([Parameter(Mandatory=$true)][string]$Manifest,[Parameter(Mandatory=$true)][string]$GamePath)
 $ErrorActionPreference='Stop'
 $game=[IO.Path]::GetFullPath($GamePath).TrimEnd('\')
-$allowed=@('System\Autorun\ZweiklangCoop.dll','System\Autorun\ZweiklangCoop_Menu.d','System\Autorun\ZweiklangCoop_Npc.d','System\Autorun\Menu\zUnionMenu.d','System\ZweiklangCoop.ini','System\Ninja.dll','Data\Quickloot.vdf','Data\Sprint.vdf','Data\Toolkit.vdf','Data\PatchMenu.vdf')
+$allowed=@('Data\ZweiklangCoop_Core.vdf','System\Autorun\ZweiklangCoop.dll','System\Autorun\ZweiklangCoop_Menu.d','System\Autorun\ZweiklangCoop_Npc.d','System\Autorun\Menu\zUnionMenu.d','System\ZweiklangCoop.ini','System\Ninja.dll','Data\Quickloot.vdf','Data\Sprint.vdf','Data\Toolkit.vdf','Data\PatchMenu.vdf')
 if(Get-Process Gothic2 -ErrorAction SilentlyContinue){throw 'Gothic II muss geschlossen sein.'}
 $entries=Get-Content -LiteralPath $Manifest -Raw|ConvertFrom-Json
 foreach($entry in $entries){

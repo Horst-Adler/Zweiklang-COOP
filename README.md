@@ -2,17 +2,17 @@
 
 **Gothic II: Die Nacht des Raben gemeinsam zu zweit erleben – mit eigenem Charakter auf jedem PC.**
 
-![Version](https://img.shields.io/badge/Version-0.1.0--alpha.31-b08d48)
+![Version](https://img.shields.io/badge/Version-0.1.0--alpha.32-b08d48)
 ![Entwicklung](https://img.shields.io/badge/Status-Entwickler--Alpha-orange)
 ![Plattform](https://img.shields.io/badge/Ziel-Windows%20%2F%20x86-466647)
 ![Lizenz](https://img.shields.io/badge/Eigener%20Code-AGPL--3.0--only-blue)
 
 Zweiklang COOP ist eine eigenständige Union-Erweiterung für **Zwei-Spieler-Koop über ein Netzwerk**. Ein PC übernimmt die Hostrolle, der andere verbindet sich als Gast. Beide spielen mit eigener Gothic-Installation und eigener normaler Spielansicht. Der Host verwaltet die gemeinsamen Weltzustände.
 
-> **Stand vom 13. November 2026: Entwickler-Alpha, keine freigegebene gemeinsame Kampagne.**
-> Aktuell ist `0.1.0-alpha.31`, Netzwerkprotokoll **10**, Journalformat **4**, Save-Checkpointformat **2**. **3.413 technische Assertions** bestehen. Der erste Alpha.26-Durchlauf bestätigte Teile von Bewegung und Kampf, brach aber mit einer Inventarsperre und zusätzlich einem externen Infrastrukturabbruch ab. Alpha.27 bestätigte im Folgetest den Gastdialog, ließ aber Aufnahme und Kollision weiter blockiert. Alpha.28 bestätigte im Folgetest die Kollisionskorrektur; der Lauf endete bei einer Itemtransaktion mit einem Systemausfall. Alpha.29 korrigiert belegte Journal-/Recoveryfehler und ergänzt Itemdiagnosen. Native Abnahme offen.
+> **Stand vom 14. November 2026: Entwickler-Alpha, keine freigegebene gemeinsame Kampagne.**
+> Aktuell ist `0.1.0-alpha.32`, Netzwerkprotokoll **11**, Journalformat **4**, Save-Checkpointformat **2**. **3.671 technische Assertions** bestehen. Der erste Alpha.26-Durchlauf bestätigte Teile von Bewegung und Kampf, brach aber mit einer Inventarsperre und zusätzlich einem externen Infrastrukturabbruch ab. Alpha.27 bestätigte im Folgetest den Gastdialog, ließ aber Aufnahme und Kollision weiter blockiert. Alpha.28 bestätigte im Folgetest die Kollisionskorrektur; der Lauf endete bei einer Itemtransaktion mit einem Systemausfall. Alpha.29 korrigiert belegte Journal-/Recoveryfehler und ergänzt Itemdiagnosen. Native Abnahme offen.
 
-**Wichtig für die Einrichtung:** Diese Alpha setzt beim Sitzungsstart ausdrücklich die Koop-Brücken für **Sprint 2.4.0 und Quickloot 1.9.5** voraus. Die unveränderten Originalarchive allein reichen nicht. Fremdarchive, SDK, Union-Laufzeit und Originalspiele sind **nicht enthalten**. Es gibt kein über GitHub veröffentlichtes Fertig-Release; der dokumentierte Weg führt über den eigenen Build und separat beschaffte Abhängigkeiten.
+**Einrichtung:** Union 1.0m und Ninja 4.1.16 bleiben Pflicht. Die eigene Ninja-Core-VDF wird aus eigenem Quellcode gebaut. Quickloot, Sprint, Toolkit und PatchMenu sind für den Koop-Kern optional; die untersuchten Komfortmodule benötigen bedingt Toolkit. Unterstützte Varianten werden anhand Hash, geladenem Patch und Brückenrevision erkannt. Unbekannte Varianten sperren den Koop-Start. Beide PCs brauchen aktuell dasselbe optionale Profil. Siehe [Modulvertrag](docs/UNION-NINJA.md).
 
 [Installation](INSTALLATION.md) · [Selbst kompilieren](BUILDING.md) · [Roadmap](ROADMAP.md) · [Versionshistorie](CHANGELOG.md) · [Architektur](docs/ARCHITECTURE.md) · [Testplan](docs/TESTPLAN-CAVALORN.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -72,7 +72,7 @@ Alpha.27 bearbeitet den ersten abgebrochenen Test: native Savepfade, Vorprüfung
 | Laufzeit | **Union 1.0m**, dazu das zugehörige Menüskript `zUnionMenu.d` |
 | Betriebssystem | Windows; das Plugin wird als **Win32/x86-DLL** gebaut. Die lokale Entwicklung erfolgte unter Windows 11. Andere Betriebssysteme sind nicht nachgewiesen. |
 | Visual-C++-Laufzeit | Zur verwendeten MSVC-Toolchain passende **x86**-Laufzeit; das Projekt verwendet `/MD` |
-| QoL-Abhängigkeiten | Ninja **4.1.16**, Toolkit **16.0**, Quickloot **1.9.5**, Sprint **2.4.0**, PatchMenu **1.1.1**; Quickloot/Sprint mit Brückenrevision 1 |
+| Ninja und optionale Module | Ninja **4.1.16** erforderlich; Quickloot **1.9.5**, Sprint **2.4.0**, PatchMenu **1.1.1** optional, mit Toolkit **16.0** als bedingter Bibliotheksabhängigkeit. Quickloot/Sprint mit Brückenrevision 1. |
 | Netzwerk | Zwei kompatible Installationen, dieselbe geladene Welt, erreichbare Host-IPv4 und gleicher UDP-Port; Standard **12345** |
 | Optionaler Renderer | GD3D11 **17.9.7** im dokumentierten lokalen Testprofil; nicht Bestandteil des Plugins |
 | Entwicklung | MSVC **v142**, Windows-10-SDK, MSBuild, C++17; externe Union-/ZenGin-SDK-Abhängigkeit; Python 3 für Hilfswerkzeuge |
@@ -85,8 +85,8 @@ Der vollständige Ablauf steht in [INSTALLATION.md](INSTALLATION.md). Kurzfassun
 
 1. Zwei passende G2-DNdR-/Union-Installationen vorbereiten und sichern. Für diese Alpha gesicherte Testspielstände verwenden.
 2. Den Quellstand aus diesem Repository beziehen und das Plugin nach [BUILDING.md](BUILDING.md) bauen. Ein öffentliches Fertig-Release wird hier nicht behauptet.
-3. Die fünf erforderlichen QoL-Originaldateien separat beschaffen. Mit `scripts/Prepare-QolCompatibility.py` lokale kompatible Archive erzeugen; fremde Originale bleiben unverändert.
-4. Das vorhandene Union-Menüskript separat bereitstellen. `scripts/Install-Alpha.ps1` kopiert die eigene DLL, die beiden eigenen Autorun-Skripte und die lokal vorbereiteten QoL-Dateien in die gewählte Installation und berechnet deren Inhaltskennung.
+3. Ninja separat installieren. Komfortmodule sind optional; nur bei deren Nutzung Originaldateien beschaffen und mit `scripts/Prepare-QolCompatibility.py --modules ...` passende lokale Brücken erzeugen.
+4. Das vorhandene Union-Menüskript separat bereitstellen. `scripts/Install-Alpha.ps1` kopiert die eigene DLL, die beiden eigenen Autorun-Skripte, die eigene Ninja-Core-VDF und ausdrücklich gewählte optionale Dateien in die gewählte Installation und berechnet deren Inhaltskennung.
 5. Ninja über die Union-Pluginliste laden lassen und die QoL-Voreinstellungen mit `scripts/Configure-Qol.py` ergänzen. Vorhandene Grafik-/Tasteneinstellungen werden von diesem Hilfswerkzeug nicht ersetzt.
 6. Auf beiden PCs dieselben Inhalte installieren. Eigene Namen, Rolle, lokale Adressen und Hostadresse im Union-Menü konfigurieren.
 7. Gothic normal starten, passende Welt laden, Host-Sitzung starten und Gast verbinden. Erst bei vollständiger Bereitschaft testen; `Connected` allein ist noch kein vollständiger Abgleich.
@@ -196,7 +196,10 @@ Aktuelle Befundkorrekturen und Grenzen: [Alpha.28](docs/ALPHA-28.md).
 
 Aktuelle Plugin-Korrekturen: [Alpha.29](docs/ALPHA-29.md).
 
-Aktueller Rundumcheck: [Alpha.30](docs/ALPHA-30.md).
+Historischer Rundumcheck: [Alpha.30](docs/ALPHA-30.md).
 
 
 Aktueller Charakterstand: [Alpha.31](docs/ALPHA-31.md), Protokoll 11. Persönliche NPC-Zustände, Schutz lokaler Fortschritte, besondere Bewegungen, Verwandlungen und reguläre Beschwörungen sind technisch implementiert; native Zwei-PC-Abnahme bleibt offen. Zusätzliche [Charakter-Testliste](docs/TEST-ALPHA31-CHARAKTERE.md).
+
+
+Aktuell: [Alpha.32](docs/ALPHA-32.md) – Union-/Ninja-Schnittstelle und optionale Komfortprofile. 3.671 technische Assertions; native Abnahme offen.

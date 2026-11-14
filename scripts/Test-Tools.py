@@ -27,6 +27,11 @@ with tempfile.TemporaryDirectory(prefix='zweiklang-config-test-') as directory:
         assert after['Gothic.ini'].count(b'[NINJA_SPRINT]')==1
         module.configure(game)
         assert after=={path.name:path.read_bytes() for path in system.iterdir()},number
+    original=b'; minimal profile\r\n[VIDEO]\r\nvalue=42\r\n'
+    (system/'Gothic.ini').write_bytes(original)
+    module.configure(game,loader_only=True)
+    assert (system/'Gothic.ini').read_bytes()==original,'minimal loader setup changed gameplay/graphics settings'
+    assert b'Ninja.dll**' in (system/'SystemPack.ini').read_bytes()
     (system/'Gothic.ini').write_bytes('[NINJA_SPRINT]\r\nStrength=55\r\n'.encode('utf-16'))
     before={path.name:path.read_bytes() for path in system.iterdir()}
     try:module.configure(game)

@@ -64,12 +64,11 @@ void WorldPrepareMerchant(oCNpc* npc){
     auto* scriptItem=parser->GetSymbol(zSTRING("ITEM"));auto* victim=parser->GetSymbol(zSTRING("VICTIM"));
     void* oldSelf=self?self->GetInstanceAdr():nullptr;void* oldOther=other?other->GetInstanceAdr():nullptr;
     void* oldItem=scriptItem?scriptItem->GetInstanceAdr():nullptr;void* oldVictim=victim?victim->GetInstanceAdr():nullptr;
+    struct RestoreTradeBindings {zCParser* p;void* s;void* o;void* item;void* victim;bool hasItem;bool hasVictim;~RestoreTradeBindings(){if(p!=parser)return;p->SetInstance(zSTRING("SELF"),s);p->SetInstance(zSTRING("OTHER"),o);if(hasItem)p->SetInstance(zSTRING("ITEM"),item);if(hasVictim)p->SetInstance(zSTRING("VICTIM"),victim);}} restore{parser,oldSelf,oldOther,oldItem,oldVictim,scriptItem!=nullptr,victim!=nullptr};
     const int helper=parser->GetIndex(zSTRING("ZK_COOP_PREPARE_TRADE"));
     if(helper<0){combatFailure="Trade preparation script missing";return;}
     parser->SetInstance(zSTRING("SELF"),npc);parser->SetInstance(zSTRING("OTHER"),npc);
-    parser->CallFunc(helper);
-    parser->SetInstance(zSTRING("SELF"),oldSelf);parser->SetInstance(zSTRING("OTHER"),oldOther);
-    if(scriptItem)parser->SetInstance(zSTRING("ITEM"),oldItem);if(victim)parser->SetInstance(zSTRING("VICTIM"),oldVictim);
+    ExtensionCall(extensions::Command::PrepareTrade);
     npc->inventory2.UnpackAllItems();
     LootLog("trade_prepare","npc="+std::string(npc->GetObjectName().ToChar()));
 }

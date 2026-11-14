@@ -26,7 +26,7 @@ Spielimplementierung des Referenzprojekts werden nicht eingebunden.
 - GD3D11 `17.9.7` ist im lokalen Testprofil installiert, aber keine mitgelieferte
   oder pauschal freigegebene Voraussetzung für beliebige Rendererfassungen.
 
-## Pflichtprofil für die aktuellen Koop-Brücken
+## Pflichtkern und optionale Koop-Brücken
 
 | Komponente | Untersuchte Fassung | Herkunft |
 |---|---|---|
@@ -36,7 +36,7 @@ Spielimplementierung des Referenzprojekts werden nicht eingebunden.
 | Dauerhaft Rennen / Sprint | 2.4.0 | Separat aus der Autorenveröffentlichung bzw. über Spine beschafft |
 | PatchMenu | 1.1.1 | Separat aus der Autorenveröffentlichung bzw. über Spine beschafft |
 
-Der laufende Pluginstand verlangt Brückenrevision 1 für Quickloot und Sprint.
+Nur Ninja 4.1.16 ist für den Kern Pflicht. Die vier Komfortarchive sind optional; bei Quickloot, Sprint oder PatchMenu ist Toolkit 16.0 bedingt erforderlich. Verwendetes Quickloot/Sprint verlangt Brückenrevision 1.
 Die Originaldateien werden deshalb mit dem eigenen, veröffentlichten
 `Prepare-QolCompatibility.py` **lokal** transformiert. Deren Daten werden nicht
 als neue eigene Mod veröffentlicht. Das Werkzeug kennt die Hashes des untersuchten
@@ -55,3 +55,6 @@ Das weibliche Profil wurde anhand der lokal installierten Velaya-Mod untersucht;
 deren Welt-, Dialog-, Modell- oder Texturdateien werden hier nicht mitgeliefert.
 Die zurückgezogenen Outfit-/Startbildexperimente sind kein Bestandteil der
 aktiven Alpha-Veröffentlichung.
+
+
+Aktuelle Profile und automatische Erkennung: [Union/Ninja](UNION-NINJA.md). Python 3.12 mit zenkit 1.3.0.4 ist eine reine Build-Abhängigkeit für das eigene Ninja-VDF, keine zusätzliche Spiel-Laufzeit.

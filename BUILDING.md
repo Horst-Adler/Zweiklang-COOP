@@ -6,7 +6,7 @@
 - Visual Studio 2019 Build Tools bzw. Visual Studio mit **MSVC v142** und Windows-10-SDK.
 - C++17, Release-Konfiguration und dynamische Visual-C++-Laufzeit `/MD`.
 - MSBuild; `config/buildtools2019.vsconfig` nennt die verwendeten Installationskomponenten einschließlich SDK 19041.
-- Python 3 für die Archiv-/Konfigurations-/Publikationswerkzeuge. Der Plugin-Build selbst benötigt Python nicht.
+- Python 3 für die Archiv-/Konfigurations-/Publikationswerkzeuge. Der vollständige Build benötigt Python 3.12 und `zenkit==1.3.0.4` zum Bauen des eigenen Ninja-Archivs.
 
 Die Projektdateien wählen `WindowsTargetPlatformVersion=10.0`. Eine andere Compiler-/SDK-Kombination ist damit nicht automatisch als kompatibel bestätigt.
 
@@ -48,7 +48,8 @@ Ein geeigneter lokaler, ignorierter Ablageort ist `local/sdk/GothicCoop`.
 # Eigenständige Tests ohne Union-/Gothic-SDK:
 .\scripts\Build-Alpha.ps1 -TestsOnly
 
-# DLL und Tests mit eigenem, separat beschafftem SDK:
+# Eigene Ninja-VDF, DLL und Tests mit separat beschafftem SDK:
+python -m pip install zenkit==1.3.0.4
 .\scripts\Build-Alpha.ps1 -SdkRoot .\local\sdk\GothicCoop
 
 # Falls MSBuild nicht automatisch gefunden wird:
@@ -57,9 +58,10 @@ Ein geeigneter lokaler, ignorierter Ablageort ist `local/sdk/GothicCoop`.
 
 Das letzte Beispiel bezeichnet einen selbst gewählten Werkzeugpfad, keine mitgelieferte Datei.
 
-Direkter Projektaufruf als Alternative:
+Direkter Projektaufruf als Alternative (vorher eigene Ninja-VDF und Hashheader erzeugen):
 
 ```powershell
+python .\scripts\Build-NinjaModule.py
 MSBuild .\src\ZweiklangCoop\ZweiklangCoop.vcxproj /m /p:Configuration=Release /p:Platform=Win32 /p:Game=G2NotR /p:SdkRoot="D:\SDK\GothicCoop\"
 MSBuild .\src\ZweiklangCoop\NetworkTests.vcxproj /m /p:Configuration=Release /p:Platform=Win32
 .\build\alpha\tests\ZweiklangNetworkTests.exe
@@ -107,3 +109,6 @@ In nichtinteraktiven Windows-Dienstsitzungen kann das Testprogramm ausdrücklich
 
 
 Aktueller Charakterstand: [Alpha.31](docs/ALPHA-31.md), Protokoll 11. Persönliche NPC-Zustände, Schutz lokaler Fortschritte, besondere Bewegungen, Verwandlungen und reguläre Beschwörungen sind technisch implementiert; native Zwei-PC-Abnahme bleibt offen. Zusätzliche [Charakter-Testliste](docs/TEST-ALPHA31-CHARAKTERE.md).
+
+
+Alpha.32 erzeugt außerdem `build/alpha/ninja/ZweiklangCoop_Core.vdf` und ein Manifest. Kein Fremdinhalt wird eingebaut. Für einen bestimmten Interpreter `-PythonPath <python.exe>` angeben. `-TestsOnly` benötigt kein zenkit/SDK. Der automatisch erzeugte `NinjaArchiveHash.h` muss zum eigenen Archiv passen; Buildreihenfolge beibehalten. Native Ninja-/Union-Skriptparser und Zwei-PC-Spielabnahme bleiben offen.

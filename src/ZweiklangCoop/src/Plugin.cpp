@@ -26,6 +26,9 @@
 #include "coop/SessionProtocol.h"
 #include "coop/CavalornPolicy.h"
 #include "coop/QolPolicy.h"
+#include "coop/Extensions.h"
+#include "coop/FileHash.h"
+#include "coop/NinjaArchiveHash.h"
 #include "coop/Network.h"
 #include "coop/Protocol.h"
 #include "coop/Diagnostics.h"
@@ -239,6 +242,10 @@ void CharacterNpcApply(NpcBinding&,const combat::Npc&);
 void CharacterSave(const std::string&,const std::string&,const std::string&,const std::string&);
 void CharacterLoad(const std::string&,const std::string&,const std::string&,const std::string&);
 
+bool ExtensionValidate();
+void ExtensionReset();
+bool ExtensionEnabled(extensions::Module);
+void ExtensionCall(extensions::Command,int=0);
 void WorldReset();
 void WorldReceive(const std::vector<std::uint8_t>&);
 void WorldNpcVisual(combat::Npc&,oCNpc*);
@@ -273,6 +280,7 @@ void QolNotify(unsigned,unsigned);
 #include "WorldBridge.inl"
 #include "CavalornBridge.inl"
 #include "SessionBridge.inl"
+#include "ExtensionsBridge.inl"
 #include "QolBridge.inl"
 #include "CharacterBridge.inl"
 #include "SummonBridge.inl"
@@ -483,9 +491,7 @@ void Start(bool asHost) {
     for(const auto* name:{"ZK_COOP_QOL_ACTIVE","ZK_COOP_QOL_GUEST"}){
         auto* value=parser->GetSymbol(zSTRING(name));if(!value||value->type!=2){notice="Koop-QoL-Schutzvariablen fehlen; Gothic nach Update neu starten.";Log(notice);return;}
     }
-    if(QuestInt("NINJA_QUICKLOOT_ZK_BRIDGE_REV",-1)!=1){notice="Quickloot fehlt oder hat keine Koop-Bruecke; passende Alpha-Dateien und Ninja pruefen.";Log(notice);return;}
-    if(QuestInt("NINJA_SPRINT_ZK_BRIDGE_REV",-1)!=1){notice="Sprint fehlt oder hat keine Koop-Bruecke; passende Alpha-Dateien und Ninja pruefen.";Log(notice);return;}
-    diagnostics.Write(1,"qol_profile","quickloot=1.9.5 bridge=1 sprint=2.4.0 party_guard=1 protocol=11 journal=4");
+    if(!ExtensionValidate())return;
     const net::Compatibility compatibility{kEngine, net::HashString(contentId), net::HashString(sessionWorld)};
     diagnostics.Role(asHost?"HOST":"CLIENT");
     diagnostics.Write(1,"session_start","name="+options.name+" host="+hostAddress+" port="+std::to_string(port)+" world="+sessionWorld+" content="+contentId+" protocol=11");
@@ -805,7 +811,7 @@ void BeforeLoad() {
     QolReset();
 }
 void BeforeNewGame(){BeforeLoad();CharacterNewGame();freshGamePending=true;recoveryTimeline.clear();recoveryEffects.clear();recoveryReady=false;recoveryLastReplay=0;recoveryLastWorld.clear();if(recoveryStoreReady){recoveryError.clear();recoveryBlocked=false;}}
-void AfterLoad() { CharacterClearForms();QolReset();appearancePlayer=nullptr;appliedAppearance=-1; loading = false; saving = false;
+void AfterLoad() { CharacterClearForms();ExtensionReset();QolReset();appearancePlayer=nullptr;appliedAppearance=-1; loading = false; saving = false;
     if(freshGamePending){freshGamePending=false;try{
         if(!recoveryStoreReady||!recoveryError.empty())throw std::runtime_error("Fresh game recovery store unavailable");
         recoveryTimeline=rc::NewGuid();recoveryEffects.clear();recoveryReady=true;

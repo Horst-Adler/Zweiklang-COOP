@@ -1,7 +1,8 @@
 [CmdletBinding(SupportsShouldProcess=$true)]
 param(
     [Parameter(Mandatory=$true)][string]$GamePath,
-    [Parameter(Mandatory=$true)][string]$QolDirectory,
+    [string]$QolDirectory,
+    [ValidateSet("Quickloot","Sprint","Toolkit","PatchMenu")][string[]]$OptionalModules=@(),
     [string]$UnionMenuScriptPath,
     [ValidateSet('Host','Client')][string]$Role='Host',
     [ValidateLength(1,63)][ValidatePattern('^[^\r\n\x00=]+$')][string]$PlayerName='Spieler',
@@ -11,6 +12,7 @@ param(
 $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
 . (Join-Path $PSScriptRoot 'ContentIdentity.ps1')
+. (Join-Path $PSScriptRoot 'Check-Dependencies.ps1')
 $game=[IO.Path]::GetFullPath($GamePath).TrimEnd('\')
 $system=Join-Path $game 'System'
 $dll=Join-Path $root 'build\alpha\G2NotR\ZweiklangCoop.dll'
@@ -25,7 +27,11 @@ $installed=Join-Path $system 'Autorun\ZweiklangCoop.dll'
 if(Test-Path -LiteralPath $installed){$probe=[IO.File]::Open($installed,[IO.FileMode]::Open,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None);$probe.Close()}
 $parsed=$null
 if(-not [Net.IPAddress]::TryParse($HostAddress,[ref]$parsed) -or $parsed.AddressFamily -ne [Net.Sockets.AddressFamily]::InterNetwork -or $HostAddress -eq '0.0.0.0'){throw 'HostAddress muss eine konkrete IPv4-Adresse sein.'}
+$core=Join-Path $root 'build\alpha\ninja\ZweiklangCoop_Core.vdf'
+$coreManifest=Get-Content -LiteralPath (Join-Path $root 'build\alpha\ninja\manifest.json') -Raw|ConvertFrom-Json
+if(-not(Test-Path -LiteralPath $core) -or (Get-FileHash -LiteralPath $core).Hash -ne $coreManifest.SHA256 -or $coreManifest.ABI -ne 1){throw 'Eigenes Ninja-Core-Modul fehlt oder wurde nach Build veraendert.'}
 $files=@(
+    @{Source=$core;Relative='Data\ZweiklangCoop_Core.vdf'},
     @{Source=$dll;Relative='System\Autorun\ZweiklangCoop.dll'},
     @{Source=(Join-Path $root 'src\ZweiklangCoop\scripts\ZweiklangCoop_Menu.d');Relative='System\Autorun\ZweiklangCoop_Menu.d'},
     @{Source=(Join-Path $root 'src\ZweiklangCoop\scripts\ZweiklangCoop_Npc.d');Relative='System\Autorun\ZweiklangCoop_Npc.d'}
@@ -35,18 +41,33 @@ if($UnionMenuScriptPath){
     if(-not(Test-Path -LiteralPath $UnionMenuScriptPath -PathType Leaf)){throw 'Separat bereitgestelltes zUnionMenu.d fehlt.'}
     $files+=@{Source=[IO.Path]::GetFullPath($UnionMenuScriptPath);Relative='System\Autorun\Menu\zUnionMenu.d'}
 }elseif(-not(Test-Path -LiteralPath $menuTarget)){throw 'zUnionMenu.d aus der eigenen Union-Installation separat über -UnionMenuScriptPath bereitstellen. Fremdes Skript ist nicht im Repository enthalten.'}
-$expected=@{
-    'Data\Quickloot.vdf'='0352BC03B6E9C53CB2D3D4DC89426073C7E45AEE9272A994C7C9E178108B772F'
-    'Data\Sprint.vdf'='9D06C29735810D9D07F551F9409ADE23494E983FF6F560C157855B82B8C77967'
-    'Data\Toolkit.vdf'='08A8873043AE3E95C808E0AD519E00F302239BF58A561F3CA22EA6D00F5DC260'
-    'Data\PatchMenu.vdf'='8DA288D5FCFF42EDDC2CBA99548A9C03A464E146DD9C5CFE39F7DAD2FFD08F7A'
-    'System\Ninja.dll'='38CE2836A74227BEAF08C6972CD263389BC3D6F591BFF35AE812C83C6241CA8B'
+$catalog=Get-Content -LiteralPath (Join-Path $root 'config\dependencies.json') -Raw|ConvertFrom-Json
+$selection=@($OptionalModules)
+if(@($selection|Where-Object {$_ -in 'Quickloot','Sprint','PatchMenu'}).Count -and 'Toolkit' -notin $selection){$selection+='Toolkit'}
+foreach($module in $catalog.Modules){
+    if($module.Id -in $selection){
+        if(-not $QolDirectory){throw 'Fuer gewaehlte Komfortmodule -QolDirectory mit separat beschafften, vorbereiteten Dateien angeben.'}
+        $path=Join-Path $QolDirectory $module.File
+        if(-not(Test-Path -LiteralPath $path -PathType Leaf) -or (Get-FileHash -LiteralPath $path).Hash -ne $module.SHA256){throw ('Unbekannte optionale Quelldatei: '+$module.File)}
+        $files+=@{Source=$path;Relative=$module.File.Replace('/','\')}
+    }
 }
-foreach($relative in $expected.Keys){
-    $path=Join-Path $QolDirectory $relative
-    if(-not(Test-Path -LiteralPath $path) -or (Get-FileHash -LiteralPath $path).Hash -ne $expected[$relative]){throw ('Vorbereitete QoL-Datei fehlt oder weicht ab: '+$relative)}
-    $files+=@{Source=$path;Relative=$relative}
+if($QolDirectory -and (Test-Path -LiteralPath (Join-Path $QolDirectory $catalog.Ninja.File))){
+    $ninja=Join-Path $QolDirectory $catalog.Ninja.File
+    if((Get-FileHash -LiteralPath $ninja).Hash -ne $catalog.Ninja.SHA256){throw 'Ninja-Quelldatei nicht unterstuetzt.'}
+    $files+=@{Source=$ninja;Relative='System\Ninja.dll'}
+}else{
+    $ninja=Join-Path $game $catalog.Ninja.File
+    if(-not(Test-Path -LiteralPath $ninja) -or (Get-FileHash -LiteralPath $ninja).Hash -ne $catalog.Ninja.SHA256){throw 'Ninja 4.1.16 separat installieren oder -QolDirectory bereitstellen.'}
 }
+# Validate the effective profile before writing, including retained optional files.
+$effective=@()
+foreach($module in $catalog.Modules){
+    $incoming=@($files|Where-Object {$_.Relative -eq $module.File.Replace('/','\')})
+    $path=if($incoming.Count){$incoming[0].Source}else{Join-Path $game $module.File}
+    if(Test-Path -LiteralPath $path){if((Get-FileHash -LiteralPath $path).Hash -ne $module.SHA256){throw ('Nicht unterstuetztes beibehaltenes Archiv: '+$module.File)};$effective+=$module}
+}
+if(@($effective|Where-Object RequiresToolkit).Count -and 'Toolkit' -notin @($effective.Id)){throw 'Aktive Komfortmodule benoetigen Toolkit 16.0.'}
 if(-not $PSCmdlet.ShouldProcess($game,'Eigenes Alpha-Plugin und separat bereitgestellte Abhängigkeiten sichern/installieren; ContentId aktualisieren')){return}
 $backup=Join-Path $root ('local\install-backups\'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
 New-Item -ItemType Directory -Path $backup -Force|Out-Null
@@ -64,6 +85,7 @@ try{
         if([IO.Path]::GetFullPath($entry.Source) -ne [IO.Path]::GetFullPath($target)){Copy-Item -LiteralPath $entry.Source -Destination $target -Force}
         if((Get-FileHash -LiteralPath $entry.Source).Hash -ne (Get-FileHash -LiteralPath $target).Hash){throw 'Dateikopie fehlgeschlagen.'}
     }
+    $profile=Test-CoopDependencies -GamePath $game -CatalogPath (Join-Path $root "config\dependencies.json")
     $contentFiles=@(
         Get-ChildItem -LiteralPath (Join-Path $game 'Data') -File|Where-Object {$_.Extension -in '.vdf','.mod'}
         Get-ChildItem -LiteralPath (Join-Path $game '_work\Data\Scripts\_compiled') -File
@@ -88,6 +110,7 @@ try{
         $ansi=[Text.Encoding]::GetEncoding([Globalization.CultureInfo]::CurrentCulture.TextInfo.ANSICodePage,[Text.EncoderFallback]::ExceptionFallback,[Text.DecoderFallback]::ExceptionFallback)
         [IO.File]::WriteAllText($iniPath,$text,$ansi)
     }
+    Write-Output ('Optionales Profil: '+($profile.OptionalModules -join ', '))
     Write-Output ('Installiert. Bestehende persönliche Einstellungen erhalten; neue Einstellungen im Union-Menü prüfen. ContentId='+$contentId)
     Write-Output ('Runtime-Sicherung: '+$manifest)
     Write-Output 'Ninja-Loader muss in SystemPack.ini/Union.ini als Ninja.dll** registriert sein. INSTALLATION.md beachten. Kein Spiel gestartet.'

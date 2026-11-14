@@ -175,3 +175,8 @@ Nach Versionsabgleich zuerst einzelne Bodenaufnahmen, Quickloot separat und Item
 ## Alpha.30 vor dem Routentest
 
 Einzelne Bodenfunde und Quickloot getrennt; anschließend nacheinander speichern und weiter aufnehmen. Fehlende Partnerbestätigung muss vor nativem Schreiben abbrechen. F8 während Partnerpause prüfen. Keine Systemabstürze erzwingen. [Befunde und Grenzen](ALPHA-30.md).
+
+
+## Aktuell: Alpha.32 / Protokoll 11
+
+Union und Ninja-Core-VDF erforderlich, Komfortmodule optional. Beide PCs brauchen dasselbe Profil. Beim Minimaltest entfallende Quickloot-/Sprintpunkte mit Profilnotiz auslassen; reguläres Aufheben, Behälter, Speichern/Recovery und Cavalorn-EP bleiben zu prüfen. Der eigenständige Parser-/Händlernachweis und die Alpha.31-Sonderfälle sind zusätzliche Testzweige. [Vertrag und Testmatrix](UNION-NINJA.md).

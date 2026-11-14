@@ -26,18 +26,18 @@ def set_option(path,section,key,value,merge=False):
         if stop and not lines[stop-1].endswith(b'\n'):lines[stop-1]+=b'\r\n'
         lines.insert(stop,(key+'='+value+'\r\n').encode('ascii'));raw=b''.join(lines)
     path.write_bytes(raw)
-def configure(game):
+def configure(game,loader_only=False):
     for relative in ['System/Gothic.ini','System/SystemPack.ini','System/Union.ini']:
         path=game/relative
         if path.exists() and path.read_bytes().startswith((b'\xff\xfe',b'\xfe\xff')):
             raise ValueError('UTF-16-Laufzeitkonfiguration nicht unterstützt; keine Änderungen vorgenommen.')
     gothic=game/'System/Gothic.ini'
-    for key,value in [('Strength','0'),('Perma','1'),('Anim','0'),('Weapon','1'),('Party','1')]:set_option(gothic,'NINJA_SPRINT',key,value)
-    for key,value in [('Key','RMB'),('Prefix','Erhalten:'),('UseAnimations','1'),('AnimSpeed','700')]:set_option(gothic,'NINJA_QUICKLOOT',key,value)
+    for key,value in ([] if loader_only else [('Strength','0'),('Perma','1'),('Anim','0'),('Weapon','1'),('Party','1')]):set_option(gothic,'NINJA_SPRINT',key,value)
+    for key,value in ([] if loader_only else [('Key','RMB'),('Prefix','Erhalten:'),('UseAnimations','1'),('AnimSpeed','700')]):set_option(gothic,'NINJA_QUICKLOOT',key,value)
     set_option(game/'System/SystemPack.ini','PLUGINS','PluginList','Ninja.dll**',merge=True)
     if (game/'System/Union.ini').exists():set_option(game/'System/Union.ini','PLUGINS','PluginList','Ninja.dll**',merge=True)
 if __name__=='__main__':
     game=Path(sys.argv[1]).resolve()
     if not (game/'System/Gothic2.exe').is_file():raise SystemExit('GamePath enthält keine Gothic2.exe.')
-    configure(game)
+    configure(game,loader_only="--loader-only" in sys.argv[2:])
     print('QoL defaults and Union Ninja loader configured; existing personal/graphics/key settings preserved:',game)

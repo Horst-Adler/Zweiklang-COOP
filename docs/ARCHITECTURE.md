@@ -105,3 +105,8 @@ Ein Gast-Gesprächsversuch gibt die KI nur des angefragten NPCs kurzzeitig frei;
 Die Diagnose behält zusätzlich Level-1-Ereignisse in `.events.jsonl` (16 MiB, vier Rotationen) und den ersten MiB der Sitzung in `.begin.jsonl`. Beide verwenden dieselbe Sequenz wie das Hauptlog. Zusammenführungen müssen doppelte Sequenzen derselben Sitzung verwerfen. Diese Dateien und die native Spielabnahme sind in [Alpha.27](ALPHA-27.md) beschrieben.
 
 Alpha.28 verwendet Protokoll 10 und interne geordnete Savekontrollen (Payload 63). Die Speicherpause ist auf 120 Sekunden begrenzt; ACK-Fristen werden beim Fortsetzen neu angesetzt. Kollisionsausschluss nach Weltaufnahme und gezielter KI-Paarfilter ergänzen sich.
+
+
+## Alpha.32: Union-/Ninja-Modularisierung
+
+Technisch umgesetzt: Union-Hauptkern, eigener Ninja-Befehlsvertrag ABI 1 und automatische optionale Modulprofile. Pflichtkern ohne Komfortmods; bedingte Toolkit-Abhängigkeiten und vollständiger Contentvergleich erhalten. Native Abnahme beider Profile noch offen. [Architektur und Testmatrix](UNION-NINJA.md).

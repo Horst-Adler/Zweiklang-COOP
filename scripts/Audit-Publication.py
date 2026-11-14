@@ -8,6 +8,7 @@ args=parser.parse_args()
 policy=json.loads((root/'publication-allowlist.json').read_text(encoding='utf-8'))
 allowed=policy['allowed_paths']
 assert len(allowed)==len(set(allowed)), 'Doppelte Positivlistenpfade'
+assert len(allowed)==len({value.casefold() for value in allowed}), 'Positivliste enthaelt unter Windows kollidierende Gross-/Kleinschreibung'
 forbidden_parts={'games','website','client','backups','downloads','local','work','build','dist','references','__pycache__'}
 binary=policy['synthetic_fixtures']
 problems=[];records=[]

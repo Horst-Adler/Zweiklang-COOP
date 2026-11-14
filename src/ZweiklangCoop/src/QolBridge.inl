@@ -22,13 +22,13 @@ void QolRender(){
     int y=5900;for(const auto& line:qolMessages){screen->Print(4200,y,zSTRING(line.second.c_str()));y+=210;}
 }
 unsigned QolSprint(oCNpc* npc){
-    if(!npc||npc->activeOverlays.GetNumInList()>64)return 0;
+    if(!ExtensionEnabled(extensions::Module::Sprint)||!npc||npc->activeOverlays.GetNumInList()>64)return 0;
     for(unsigned id=1;id<=5;++id)for(int i=0;i<npc->activeOverlays.GetNumInList();++i)
         if(_stricmp(npc->activeOverlays[i].ToChar(),qol::SprintOverlay(id))==0)return id;
     return 0;
 }
 void QolApplySprint(oCNpc* npc,unsigned id){
-    if(!npc||CharacterLocal(npc)||id>5||QolSprint(npc)==id)return;
+    if(!ExtensionEnabled(extensions::Module::Sprint)||!npc||CharacterLocal(npc)||id>5||QolSprint(npc)==id)return;
     if(!npc->IsHuman())return;
     for(int i=npc->activeOverlays.GetNumInList()-1;i>=0;--i){
         zSTRING name=npc->activeOverlays[i];
@@ -42,7 +42,7 @@ bool QolPrepareCorpse(oCNpc* npc){
     auto* fn=parser->GetSymbol(zSTRING("ZK_COOP_PREPARE_QUICKLOOT"));
     if(!fn||fn->type!=5||fn->ele!=0){notice="Quickloot-Helfer fehlt; beide Installationen aktualisieren.";return false;}
     QuestBindings bindings;parser->SetInstance(zSTRING("OTHER"),npc);
-    parser->CallFunc(parser->GetIndex(zSTRING("ZK_COOP_PREPARE_QUICKLOOT")));
+    ExtensionCall(extensions::Command::PrepareCorpse);
     npc->inventory2.UnpackAllItems();return true;
 }
 void QolCommitLocal(const rc::Tx& prepared){
@@ -58,7 +58,7 @@ bool QolItem(oCItem* item,bool corpse=false){return item&&qol::QuickItem(LootEli
 void QolFrame(unsigned long long now){
     const bool session=network.GetState()!=net::State::Idle&&network.GetState()!=net::State::Error;
     QolGuard(session);
-    if(!CombatConnected()||!player||!zinput)return;
+    if(!ExtensionEnabled(extensions::Module::Quickloot)||!CombatConnected()||!player||!zinput)return;
     const qol::Context context{true,recoveryReady&&RecoveryCanLoot()&&(HostCombat()||rulesReady)&&haveTarget&&now-lastSnapshotAt<=2000,
         zCMenu::GetActive()!=nullptr,player->talkOther!=nullptr,player->inventory2.IsOpen()!=FALSE,
         player->interactMob!=nullptr,player->attribute[0]>0&&player->IsUnconscious()==FALSE,
