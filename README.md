@@ -4,7 +4,7 @@
 
 Updates preserve existing character profiles, saves and inventory journals.
 
-**Current development build: 0.1.0-alpha.33 · protocol 11 · Ninja script ABI 2.** This is a developer alpha. Native two-PC acceptance is still open; a completed co-op campaign is not claimed.
+**Current development build: 0.1.0-alpha.34 · protocol 11 · Ninja script ABI 2.** This is a developer alpha. Native two-PC acceptance is still open; a completed co-op campaign is not claimed.
 
 [Install](INSTALLATION.md) · [Build](BUILDING.md) · [Roadmap](ROADMAP.md) · [Architecture](docs/ARCHITECTURE.md) · [Languages](docs/LOCALIZATION.md) · [Changelog](CHANGELOG.md) · [Deutsch](README.de.md)
 
@@ -19,6 +19,8 @@ Each player runs a separate licensed Gothic II installation. One plugin supports
 - A narrow first quest adapter for Cavalorn's bandits; general quest and campaign synchronization remains unfinished.
 - Personal NPC/character state, special movement, transformations and supported summons, implemented with additional native tests still required.
 - English/German plugin UI, selected locally through **Union & Plugins → Orebound Co-op → Language / Sprache**. Host and client can use different UI languages.
+
+Optional own start-menu artwork uses the existing native full-screen background, with the inner menu background transparent and the original Gothic II logos retained. It requires the matching separately supplied own artwork archive. See [menu artwork](docs/MENU-ARTWORK.md). Native visual acceptance is still open.
 
 Technical implementation is distinguished from gameplay acceptance. Previous tests confirmed parts of connection, movement, combat, guest dialogue and player collision handling. Loot, saves and subsequent extensions need the current regression run.
 

@@ -38,6 +38,7 @@ for relative in allowed:
         try:text=raw.decode('utf-8-sig')
         except UnicodeDecodeError:problems.append(relative+': unapproved binary file');continue
         if '\0' in text:problems.append(relative+': binary NUL data')
+        if any(ord(c)<32 and c not in '\t\r\n' for c in text):problems.append(relative+': unexpected text control character')
         for pattern in secret_patterns:
             if pattern.search(text):problems.append(relative+': possible private data/secret (value not printed)')
     if raw.startswith((b'MZ',b'DDS ',b'ZTEX',b'PK\x03\x04')):problems.append(relative+': executable, image or archive')

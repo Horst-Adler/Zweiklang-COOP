@@ -29,6 +29,8 @@
 #include "coop/Extensions.h"
 #include "coop/FileHash.h"
 #include "coop/NinjaArchiveHash.h"
+#include "coop/MenuArtwork.h"
+#include "coop/MenuArtworkHash.h"
 #include "coop/Network.h"
 #include "coop/Protocol.h"
 #include "coop/Diagnostics.h"
@@ -510,6 +512,7 @@ void Start(bool asHost) {
 
 const zSTRING kMenuSection("ZWEIKLANGCOOP_MENU");
 #include "LocalizationBridge.inl"
+#include "MenuArtworkBridge.inl"
 
 void ApplyLocalAppearance() {
     const int wanted=options.female?1:0;
@@ -723,10 +726,11 @@ void Initialize() {
     if(faultFile!=INVALID_HANDLE_VALUE)faultObserver=AddVectoredExceptionHandler(1,ObserveFault);
     LogRuntime();
     lastFrame = Now();
-    Log("Orebound Co-op 0.1.0-alpha.33 initialized; protocol=11; engine=G2NotR; no auto-connect.");
+    Log("Orebound Co-op 0.1.0-alpha.34 initialized; protocol=11; engine=G2NotR; no auto-connect.");
 }
 
 void Shutdown() {
+    ReleaseMenuArtworkCopies();
     Leave("Session closed");CharacterClearForms();rc::SetTraceSink({});diagnostics.Flush();diagnosticsReady=false;
     if(faultObserver){RemoveVectoredExceptionHandler(faultObserver);faultObserver=nullptr;}
     if(faultFile!=INVALID_HANDLE_VALUE){CloseHandle(faultFile);faultFile=INVALID_HANDLE_VALUE;}
@@ -1016,6 +1020,7 @@ void __fastcall MenuInit(zCMenu* menu,void*) {
     // mutation in C++; only seed our own option section before native init.
     if(IsCoopMenu(menu))orebound::engine::UnionMenuEnter();
     originalMenuInit(menu);
+    orebound::engine::ApplyMenuArtwork(menu);
     orebound::engine::LocalizeUnionMenu(menu);
     if(IsCoopMenu(menu)){
         orebound::engine::PreviewUnionLanguage(menu);
@@ -1024,6 +1029,7 @@ void __fastcall MenuInit(zCMenu* menu,void*) {
     }
 }
 void __fastcall MenuDone(zCMenu* menu,void*) {
+    orebound::engine::RestoreMenuArtwork(menu);
     if(IsCoopMenu(menu)){
         orebound::engine::Log("Native Union plugin menu closed.");
         orebound::engine::ReadConfiguration();

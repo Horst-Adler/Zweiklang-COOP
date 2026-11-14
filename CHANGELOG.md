@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.34 — 2026-11-14
+
+- Add an optional Union/Ninja main-menu artwork contract. Use the existing native full-screen window for the image, clear only the inner window background, and retain original Gothic II logos and menu items.
+- Restore original background texture references before native menu teardown; no per-frame texture clearing, custom rendering callback or global texture override.
+- Build a uniquely named opaque BC1 texture with independently verified mip colors and VDF contents. Validate the optional archive before use/install.
+- Preserve in-game pause menus, native text/alpha, settings and saves. Add apply/restore/fallback diagnostics, optional source-only fallback and installer rollback checks.
+- 4,735 technical assertions pass. Native Ninja parsing and visual selection/submenu checks remain open; no game launched.
+
 ## 0.1.0-alpha.33 — 2026-11-14
 
 - Rename current product/source artifacts to Orebound Co-op / OreboundCoop; preserve legacy save and script identifiers.

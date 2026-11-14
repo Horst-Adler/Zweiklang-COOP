@@ -23,3 +23,5 @@ Outputs: `build/alpha/G2NotR/OreboundCoop.dll`, `build/alpha/ninja/OreboundCoop_
 Default tests include interactive DE/US keyboard checks. `--headless` explicitly skips only that check for a service session; the normal interactive run remains required. Real loopback UDP and file recovery tests do not execute Gothic. A successful build/static script check is not native Ninja/Union parser or two-PC gameplay acceptance.
 
 `scripts/Test-Tools.py` tests configuration preservation. `scripts/Audit-Publication.py --staged` verifies the complete explicit publication allowlist. Never stage original games, third-party archives, SDK binaries, real logs or website files.
+
+Optional own main-menu artwork: install Pillow and pass `-MenuArtworkSource <your-image.png>`. The converter updates the own hash catalogue before the DLL build. See [artwork instructions](docs/MENU-ARTWORK.md). Without the optional archive, the native menu is retained.

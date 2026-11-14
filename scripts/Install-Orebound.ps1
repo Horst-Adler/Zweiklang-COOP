@@ -1,10 +1,11 @@
-[CmdletBinding(SupportsShouldProcess=$true)]
+﻿[CmdletBinding(SupportsShouldProcess=$true)]
 param(
     [Parameter(Mandatory=$true)][string]$GamePath,
     [string]$SourceRoot=(Split-Path -Parent $PSScriptRoot),
     [string]$QolDirectory,
     [ValidateSet('Quickloot','Sprint','Toolkit','PatchMenu')][string[]]$OptionalModules=@(),
     [string]$UnionMenuScriptPath,
+    [string]$MenuArtworkDirectory,
     [ValidateSet('Host','Client')][string]$Role='Host',
     [ValidateLength(1,32)][ValidatePattern('^[^\r\n\x00=]+$')][string]$PlayerName='Player',
     [string]$HostAddress='127.0.0.1',
@@ -30,9 +31,21 @@ $files=@(
  @{Source=Join-Path $root 'build\alpha\ninja\OreboundCoop_Core.vdf';Relative='Data\OreboundCoop_Core.vdf'}
 )
 foreach($file in $files){if(-not(Test-Path -LiteralPath $file.Source -PathType Leaf)){throw ('Build output missing: '+$file.Source)}}
-if((Get-Item -LiteralPath $files[0].Source).VersionInfo.FileVersion -ne '0.1.0-alpha.33'){throw 'Build Alpha.33 before installing.'}
+if((Get-Item -LiteralPath $files[0].Source).VersionInfo.FileVersion -ne '0.1.0-alpha.34'){throw 'Build Alpha.34 before installing.'}
 $core=Get-Content -LiteralPath (Join-Path $root 'build\alpha\ninja\manifest.json') -Raw|ConvertFrom-Json
 if($core.ABI -ne 2 -or (Get-FileHash -LiteralPath $files[3].Source).Hash -ne $core.SHA256){throw 'Own Ninja module hash/ABI does not match the build manifest.'}
+
+# Own artwork is optional for public source-only builds. A present archive must
+# match the compiled catalogue, whether supplied or retained in the game.
+$artCatalog=Get-Content -LiteralPath (Join-Path $root 'config\menu-artwork.json') -Raw|ConvertFrom-Json
+if($artCatalog.Schema -ne 1 -or $artCatalog.MenuABI -ne 1 -or $artCatalog.File -ne 'Data/OreboundCoop_Menu.vdf'){throw 'Invalid own menu artwork catalogue.'}
+if(-not $MenuArtworkDirectory -and (Test-Path -LiteralPath (Join-Path $root 'build\alpha\menu\OreboundCoop_Menu.vdf'))){$MenuArtworkDirectory=Join-Path $root 'build\alpha\menu'}
+$artPath=if($MenuArtworkDirectory){Join-Path $MenuArtworkDirectory 'OreboundCoop_Menu.vdf'}else{Join-Path $game 'Data\OreboundCoop_Menu.vdf'}
+if($MenuArtworkDirectory -or (Test-Path -LiteralPath $artPath)){
+ if(-not(Test-Path -LiteralPath $artPath -PathType Leaf) -or (Get-FileHash -LiteralPath $artPath).Hash -ne $artCatalog.SHA256){throw 'Menu artwork missing or does not match the compiled catalogue.'}
+ if($MenuArtworkDirectory){$files+=@{Source=[IO.Path]::GetFullPath($artPath);Relative='Data\OreboundCoop_Menu.vdf'}}
+}
+
 $menuTarget=$system+'\Autorun\Menu\zUnionMenu.d'
 if($UnionMenuScriptPath){if(-not(Test-Path -LiteralPath $UnionMenuScriptPath -PathType Leaf)){throw 'Separately supplied Union menu script is missing.'};$files+=@{Source=[IO.Path]::GetFullPath($UnionMenuScriptPath);Relative='System\Autorun\Menu\zUnionMenu.d'}}elseif(-not(Test-Path -LiteralPath $menuTarget)){throw 'Supply your own Union zUnionMenu.d with -UnionMenuScriptPath.'}
 $catalogPath=Join-Path $root 'config\dependencies.json';$catalog=Get-Content -LiteralPath $catalogPath -Raw|ConvertFrom-Json
@@ -65,7 +78,7 @@ try{
  $contentFiles=@(Get-ChildItem -LiteralPath ($game+'\Data') -File|Where-Object {$_.Extension -in '.vdf','.mod'};Get-ChildItem -LiteralPath ($game+'\_work\Data\Scripts\_compiled') -File;Get-Item -LiteralPath ($system+'\Gothic2.exe'),($system+'\Shw32.dll'),($system+'\Vdfs32g.dll'),($system+'\Ninja.dll');Get-ChildItem -LiteralPath ($system+'\Autorun') -File -Recurse|Where-Object {$_.Extension -in '.dll','.d'})|Sort-Object FullName -Unique
  $rows=@($contentFiles|ForEach-Object {[ordered]@{File=$_.FullName.Substring($game.Length+1).ToLowerInvariant();Bytes=$_.Length;SHA256=(Get-FileHash -LiteralPath $_.FullName).Hash}});$id=Get-CoopContentIdentity -Rows $rows
  if($ExpectedContentId -and $id -ne $ExpectedContentId){throw 'Final content does not match the expected peer installation.'}
- if($null -eq $text){$text="[Network]`r`nHost=$HostAddress`r`nClient=0.0.0.0`r`nRole=$Role`r`nPort=$Port`r`nContentId=$id`r`n`r`n[Player]`r`nName=$PlayerName`r`n`r`n[Logging]`r`nLevel=2`r`nEngineMessages=1`r`n`r`n[Controls]`r`nHostKey=F6`r`nJoinKey=F7`r`nLeaveKey=F8`r`n`r`n[Combat]`r`nFriendlyFire=0`r`n`r`n[Avatar]`r`nGender=0`r`n`r`n[Diagnostics]`r`nOverlay=1`r`nNextTestStep=1`r`n"}else{$text=[regex]::Replace($text,'(?m)^ContentId=[^\r\n]*','ContentId='+$id);$text=[regex]::Replace($text,'(?m)^; Zweiklang Coop [^\r\n]*','; Orebound Co-op 0.1.0-alpha.33')}
+ if($null -eq $text){$text="[Network]`r`nHost=$HostAddress`r`nClient=0.0.0.0`r`nRole=$Role`r`nPort=$Port`r`nContentId=$id`r`n`r`n[Player]`r`nName=$PlayerName`r`n`r`n[Logging]`r`nLevel=2`r`nEngineMessages=1`r`n`r`n[Controls]`r`nHostKey=F6`r`nJoinKey=F7`r`nLeaveKey=F8`r`n`r`n[Combat]`r`nFriendlyFire=0`r`n`r`n[Avatar]`r`nGender=0`r`n`r`n[Diagnostics]`r`nOverlay=1`r`nNextTestStep=1`r`n"}else{$text=[regex]::Replace($text,'(?m)^ContentId=[^\r\n]*','ContentId='+$id);$text=[regex]::Replace($text,'(?m)^; (?:Zweiklang Coop|Orebound Co-op) [^\r\n]*','; Orebound Co-op 0.1.0-alpha.34')}
  $section=[regex]::Match($text,'(?ms)^\[Interface\][ \t]*\r?\n(.*?)(?=^\[|\z)')
  if($section.Success){$lang=[regex]::Match($section.Value,'(?m)^Language=[^\r\n]*');if($lang.Success){if($Language){$changed=[regex]::Replace($section.Value,'(?m)^Language=[^\r\n]*','Language='+$Language);$text=$text.Substring(0,$section.Index)+$changed+$text.Substring($section.Index+$section.Length)}}else{$text=$text.Insert($section.Index+$section.Length,"`r`nLanguage=$selectedLanguage`r`n")}}
  else{$text+="`r`n[Interface]`r`nLanguage=$selectedLanguage`r`n"}
@@ -73,10 +86,10 @@ try{
  foreach($row in $state){if((Get-FileHash -LiteralPath (Join-Path $game $row.File)).Hash -ne $row.SHA256){throw ('Save/state/log changed: '+$row.File)}}
  foreach($row in $other){if($row.File -notin @($files|ForEach-Object Relative) -and (Get-FileHash -LiteralPath (Join-Path $game $row.File)).Hash -ne $row.SHA256){throw ('Unrelated game configuration/module changed: '+$row.File)}}
  foreach($rel in $legacy){if(Test-Path -LiteralPath (Join-Path $game $rel)){throw 'Legacy loader file still present after migration.'}}
- $result=[ordered]@{Version='0.1.0-alpha.33';Protocol=11;ScriptABI=2;GamePath=$game;ContentId=$id;Content=$rows;StateFilesUnchanged=$state.Count;PersonalConfigurationPreserved=$true;LegacyLoaderFilesRemoved=$true;OptionalModules=@($profile.OptionalModules);BackupManifest=$manifest;GamesStarted=$false;VerifiedAt=(Get-Date -Format o)}
+ $result=[ordered]@{Version='0.1.0-alpha.34';Protocol=11;ScriptABI=2;MenuABI=1;MenuArtworkInstalled=(Test-Path -LiteralPath (Join-Path $game 'Data\OreboundCoop_Menu.vdf'));GamePath=$game;ContentId=$id;Content=$rows;StateFilesUnchanged=$state.Count;PersonalConfigurationPreserved=$true;LegacyLoaderFilesRemoved=$true;OptionalModules=@($profile.OptionalModules);BackupManifest=$manifest;GamesStarted=$false;VerifiedAt=(Get-Date -Format o)}
  $result|ConvertTo-Json -Depth 7|Set-Content -LiteralPath (Join-Path $backup 'verification.json') -Encoding UTF8
  $result|ConvertTo-Json -Depth 7|Set-Content -LiteralPath (Join-Path $root 'local\last-installation.json') -Encoding UTF8
- Write-Output ('Orebound Co-op Alpha.33 installed. ContentId='+$id);Write-Output ('Backup: '+$manifest);Write-Output ('Unchanged save/state/log files: '+$state.Count);Write-Output 'No game started. Native acceptance remains open.'
+ Write-Output ('Orebound Co-op Alpha.34 installed. ContentId='+$id);Write-Output ('Backup: '+$manifest);Write-Output ('Unchanged save/state/log files: '+$state.Count);Write-Output 'No game started. Native acceptance remains open.'
 }catch{
  foreach($entry in $records){if($entry.Existed){Copy-Item -LiteralPath $entry.Backup -Destination $entry.Target -Force}elseif(Test-Path -LiteralPath $entry.Target){Remove-Item -LiteralPath $entry.Target -Force}}
  throw

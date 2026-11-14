@@ -11,7 +11,7 @@ for file in sorted(source.rglob('*')):
  if not file.is_file():continue
  rel=file.relative_to(source).as_posix();data=file.read_text(encoding='ascii').replace('\r\n','\n').encode('ascii');folder,name=rel.rsplit('/',1)
  vfs.mkdir(folder).create(name,data,timestamp=stamp);entries.append((rel,data))
-assert len(entries)==2,'Unexpected Ninja source files'
+assert {x[0] for x in entries}=={'Ninja/ZweiklangCore/Content_G2.src','Ninja/ZweiklangCore/Content/Bridge.d','Ninja/ZweiklangCore/Menu_G2.src','Ninja/ZweiklangCore/Menu/Branding.d'},'Unexpected Ninja source files'
 target=out/'OreboundCoop_Core.vdf';vfs.save(target,zenkit.GameVersion.GOTHIC2,stamp)
 mount=zenkit.Vfs();mount.mount_disk(target)
 for rel,data in entries:
@@ -21,4 +21,4 @@ header=root/'src/OreboundCoop/include/coop/NinjaArchiveHash.h'
 text='#pragma once\nnamespace orebound::extensions { inline constexpr const char* CoreArchiveHash="'+sha+'"; }\n'
 if not header.exists() or header.read_text(encoding='utf-8')!=text:header.write_text(text,encoding='utf-8',newline='\n')
 (out/'manifest.json').write_text(json.dumps(dict(ABI=2,File=target.name,SHA256=sha,Bytes=target.stat().st_size,Entries=[x[0] for x in entries],GamesStarted=False),indent=2),encoding='utf-8')
-print('PASS: deterministic own Ninja VDF; two entries independently mounted and byte-verified; ABI 2; no foreign sources included.')
+print('PASS: deterministic own Ninja VDF; four entries independently mounted and byte-verified; ABI 2; no foreign sources included.')

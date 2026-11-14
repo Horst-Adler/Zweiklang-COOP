@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$SdkRoot,[string]$MSBuildPath,[string]$PythonPath="python",[switch]$TestsOnly)
+param([string]$SdkRoot,[string]$MSBuildPath,[string]$PythonPath="python",[switch]$TestsOnly,[string]$MenuArtworkSource)
 $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
 if(-not $MSBuildPath){
@@ -16,6 +16,10 @@ if(-not $MSBuildPath -or -not(Test-Path -LiteralPath $MSBuildPath)){throw 'MSBui
 $source=Join-Path $root 'src\OreboundCoop'
 $logs=Join-Path $root 'build\logs';New-Item -ItemType Directory -Path $logs -Force|Out-Null
 if(-not $TestsOnly){
+    if($MenuArtworkSource){
+        & $PythonPath (Join-Path $PSScriptRoot 'Build-MenuArtwork.py') --image $MenuArtworkSource
+        if($LASTEXITCODE -ne 0){throw 'Own menu artwork conversion failed.'}
+    }
     & $PythonPath (Join-Path $PSScriptRoot "Build-Localization.py")
     if($LASTEXITCODE -ne 0){throw "Localization catalogue build failed."}
     & $PythonPath (Join-Path $PSScriptRoot "Build-NinjaModule.py")

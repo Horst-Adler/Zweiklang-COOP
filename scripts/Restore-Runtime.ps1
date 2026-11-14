@@ -1,8 +1,8 @@
-[CmdletBinding(SupportsShouldProcess=$true)]
+﻿[CmdletBinding(SupportsShouldProcess=$true)]
 param([Parameter(Mandatory=$true)][string]$Manifest,[Parameter(Mandatory=$true)][string]$GamePath)
 $ErrorActionPreference='Stop'
 $game=[IO.Path]::GetFullPath($GamePath).TrimEnd('\')
-$allowed=@('System\Autorun\OreboundCoop.dll','System\Autorun\OreboundCoop_Menu.d','System\Autorun\OreboundCoop_Npc.d','Data\OreboundCoop_Core.vdf','System\OreboundCoop.ini','System\Autorun\ZweiklangCoop.dll','System\Autorun\ZweiklangCoop_Menu.d','System\Autorun\ZweiklangCoop_Npc.d','Data\ZweiklangCoop_Core.vdf','System\ZweiklangCoop.ini','System\Autorun\Menu\zUnionMenu.d','System\Ninja.dll','Data\Quickloot.vdf','Data\Sprint.vdf','Data\Toolkit.vdf','Data\PatchMenu.vdf')
+$allowed=@('Data\OreboundCoop_Menu.vdf','System\Autorun\OreboundCoop.dll','System\Autorun\OreboundCoop_Menu.d','System\Autorun\OreboundCoop_Npc.d','Data\OreboundCoop_Core.vdf','System\OreboundCoop.ini','System\Autorun\ZweiklangCoop.dll','System\Autorun\ZweiklangCoop_Menu.d','System\Autorun\ZweiklangCoop_Npc.d','Data\ZweiklangCoop_Core.vdf','System\ZweiklangCoop.ini','System\Autorun\Menu\zUnionMenu.d','System\Ninja.dll','Data\Quickloot.vdf','Data\Sprint.vdf','Data\Toolkit.vdf','Data\PatchMenu.vdf')
 if(Get-Process Gothic2 -ErrorAction SilentlyContinue){throw 'Close Gothic II before restoring runtime files.'}
 $targets=@($allowed|ForEach-Object {[IO.Path]::GetFullPath((Join-Path $game $_))})
 $entries=@(Get-Content -LiteralPath $Manifest -Raw|ConvertFrom-Json)

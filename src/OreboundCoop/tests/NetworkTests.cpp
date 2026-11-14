@@ -340,6 +340,7 @@ void TestKeyboardLayout() {
 #include "RecoveryTests.inl"
 #include "ExtensionTests.inl"
 #include "LocalizationTests.inl"
+#include "MenuArtworkTests.inl"
 #include "NativeSaveTests.inl"
 #include "WorldTests.inl"
 #include "SessionTests.inl"
@@ -393,6 +394,7 @@ int main(int argc,char** argv) {
         TestCharacterRules();
         TestExtensions();
         TestLocalization();
+        TestMenuArtwork();
         TestCombatTransport();
         TestReliableReorderingAndLoss();
         TestCompatibility();

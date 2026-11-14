@@ -6,4 +6,4 @@ The supported development profile uses Gothic II DNdR 2.6-fix/LAA, Union 1.0m an
 
 External build SDK reference: GothicCoop commit `0255381eeb86ea4b888f420fafaa4a10ee4d85e3`; only separately supplied API definitions/libraries are compiled, not that project's co-op gameplay implementation. See [dependencies](docs/DEPENDENCIES.md).
 
-Character profiles refer to existing game resources examined in the local installation. No original or Velaya texture/model/dialogue/audio files are distributed. The active alpha has no custom start-screen artwork. Source publication is constrained by an explicit allowlist and synthetic fixture hashes.
+Character profiles refer to existing game resources examined in the local installation. No original or Velaya texture/model/dialogue/audio files are distributed. Optional own AI-generated menu artwork is prepared locally and not included in this source-only repository. Original logos remain game resources. Source publication is constrained by an explicit allowlist and synthetic fixture hashes.

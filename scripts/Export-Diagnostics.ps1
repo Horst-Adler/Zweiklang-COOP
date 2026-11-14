@@ -60,7 +60,7 @@ foreach($relative in @('Gothic.ini','SystemPack.ini','Log.txt','GD3D11\UserSetti
         Copy-Item -LiteralPath $file -Destination $target
     }
 }
-$qolFiles=@('Data\OreboundCoop_Core.vdf','Data\ZweiklangCoop_Core.vdf','Data\Quickloot.vdf','Data\Sprint.vdf','Data\Toolkit.vdf','Data\PatchMenu.vdf','System\Ninja.dll')
+$qolFiles=@('Data\OreboundCoop_Menu.vdf','Data\OreboundCoop_Core.vdf','Data\ZweiklangCoop_Core.vdf','Data\Quickloot.vdf','Data\Sprint.vdf','Data\Toolkit.vdf','Data\PatchMenu.vdf','System\Ninja.dll')
 $qolProfile=@($qolFiles|ForEach-Object {
     $file=Join-Path $GamePath $_
     [ordered]@{File=$_;Exists=(Test-Path -LiteralPath $file -PathType Leaf);SHA256=$(if(Test-Path -LiteralPath $file -PathType Leaf){(Get-FileHash -LiteralPath $file).Hash}else{$null})}

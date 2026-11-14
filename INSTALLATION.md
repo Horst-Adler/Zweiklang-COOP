@@ -51,3 +51,7 @@ Start Gothic manually. Configure role, name, IP, port and friendly fire under Un
 Use new test slots. Begin with join/readiness, regular pickups, optional Quickloot separately, containers and sequential saving, then the Cavalorn route. [Test plan](docs/TESTPLAN-CAVALORN.md). English game-script compatibility and native language-switch/menu acceptance remain separate open tests.
 
 Restore only a verified runtime manifest with `scripts/Restore-Runtime.ps1`; it restores approved runtime files without resetting saves. Keep matching save/recovery backups before trying older builds.
+
+## Optional main-menu artwork
+
+Alpha.34 can install the matching own artwork archive with `-MenuArtworkDirectory <folder>`. Existing source-root `build/alpha/menu` output is selected automatically. Missing optional artwork retains the original menu; unknown supplied/retained archives are rejected. See [menu artwork](docs/MENU-ARTWORK.md) for local building, disabling and visual acceptance.
