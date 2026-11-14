@@ -1,6 +1,6 @@
 # Orebound Co-op – deutsche Kurzanleitung
 
-Aktueller Entwicklungsstand: Alpha.33, Protokoll 11 und Ninja-Skript-ABI 2. Gemeinsame Spielabnahme offen. Das Projekt hieß bisher Zweiklang COOP; bestehende technische Speicherkennungen bleiben kompatibel erhalten.
+Aktueller Entwicklungsstand: Alpha.33, Protokoll 11 und Ninja-Skript-ABI 2. Gemeinsame Spielabnahme offen. Bestehende Charakterprofile, Spielstände und Inventarjournale bleiben bei Updates erhalten.
 
 Die eigene Oberfläche unterstützt Deutsch und Englisch. Auswahl: **Union & Plugins → Orebound Co-op → Sprache / Language**. Nach der Auswahl Einstellungen speichern. Die Sprache gilt lokal; beide PCs können unterschiedlich eingestellt sein. Öffentliche Neuinstallationen verwenden Englisch, bestehende Profile werden bei der Migration standardmäßig Deutsch behalten.
 

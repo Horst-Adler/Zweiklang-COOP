@@ -2,7 +2,7 @@
 
 **A two-player Gothic II: Night of the Raven co-op project built around Union and Ninja.**
 
-Previously developed as Zweiklang COOP. The project has been renamed without resetting existing character profiles, saves or inventory journals.
+Updates preserve existing character profiles, saves and inventory journals.
 
 **Current development build: 0.1.0-alpha.33 · protocol 11 · Ninja script ABI 2.** This is a developer alpha. Native two-PC acceptance is still open; a completed co-op campaign is not claimed.
 
