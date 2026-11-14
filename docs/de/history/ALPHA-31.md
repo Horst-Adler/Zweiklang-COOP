@@ -28,4 +28,4 @@ Die Paketgrenze wurde wegen zusätzlicher Gestalt-, Talent- und Eigentümerdaten
 
 ## Reihenfolge der Abnahme
 
-Zuerst den bisherigen Turm-/Cavalorn-Test wiederholen. Neue Sonderfälle danach in einem eigenen Testzweig prüfen; fehlende Zauber oder permanente Gegenstände nicht als bestandene Tests werten. Details: [Charakter-Testliste](TEST-ALPHA31-CHARAKTERE.md).
+Zuerst den bisherigen Turm-/Cavalorn-Test wiederholen. Neue Sonderfälle danach in einem eigenen Testzweig prüfen; fehlende Zauber oder permanente Gegenstände nicht als bestandene Tests werten. Details: [Charakter-Testliste](../../TEST-ALPHA31-CHARAKTERE.md).

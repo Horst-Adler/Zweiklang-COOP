@@ -2,23 +2,23 @@
 
 ## 0.1.0-alpha.32 – 2026-11-14
 
-Eigene Ninja-Core-VDF und versionierte Union-Schnittstelle; Quickloot/Sprint/Toolkit/PatchMenu für den Kern optional, bekannte Varianten automatisch erkannt und bedingte Bibliotheksabhängigkeiten erhalten. Installer/Build/Rückbau angepasst, Händlerbindungen bei Fehlern geschützt. 3.671 technische Assertions, native Profilabnahme offen. [Details](docs/ALPHA-32.md).
+Eigene Ninja-Core-VDF und versionierte Union-Schnittstelle; Quickloot/Sprint/Toolkit/PatchMenu für den Kern optional, bekannte Varianten automatisch erkannt und bedingte Bibliotheksabhängigkeiten erhalten. Installer/Build/Rückbau angepasst, Händlerbindungen bei Fehlern geschützt. 3.671 technische Assertions, native Profilabnahme offen. [Details](ALPHA-32.md).
 
 ## 0.1.0-alpha.31 – 2026-11-14
 
-Persönliche Straftat-/NPC-Zustände mit gesicherter Charakterdatei; lokale Fortschritts- und Formschutzregeln; besondere Bewegungsprioritäten und Overlays; Gestaltübertragung und besitzergebundene Standardbeschwörungen. Protokoll 11, 3.413 technische Assertions, native Abnahme offen. [Details](docs/ALPHA-31.md).
+Persönliche Straftat-/NPC-Zustände mit gesicherter Charakterdatei; lokale Fortschritts- und Formschutzregeln; besondere Bewegungsprioritäten und Overlays; Gestaltübertragung und besitzergebundene Standardbeschwörungen. Protokoll 11, 3.413 technische Assertions, native Abnahme offen. [Details](ALPHA-31.md).
 
 ## 0.1.0-alpha.30 – 2026-11-13
 
-Bestätigte Speicherpause vor nativem Schreiben, Partner-Inventarsperren, erreichbare Trennung und richtige Statusmeldungen während Savepausen; Bodenitem-Zuordnung und doppelte Drop-Tags korrigiert; Saveguard-Bereinigung geprüft; Logrotation bleibt bei Dateisperren begrenzt und Ereignisse unabhängig. 2.391 Netzwerktest-Assertions plus Diagnoseprüfungen. Native Abnahme offen. [Rundumcheck](docs/ALPHA-30.md).
+Bestätigte Speicherpause vor nativem Schreiben, Partner-Inventarsperren, erreichbare Trennung und richtige Statusmeldungen während Savepausen; Bodenitem-Zuordnung und doppelte Drop-Tags korrigiert; Saveguard-Bereinigung geprüft; Logrotation bleibt bei Dateisperren begrenzt und Ereignisse unabhängig. 2.391 Netzwerktest-Assertions plus Diagnoseprüfungen. Native Abnahme offen. [Rundumcheck](ALPHA-30.md).
 
 ## 0.1.0-alpha.29 – 2026-11-13
 
-Sichere Haupt-/Pending-Journalwiederherstellung mit Beweiserhalt und Konfliktsperre, Schutz gegen erfundene Aborts bei bestätigten Client-Commits, idempotente dauerhafte Schreibvorgänge, aktive Zeitlinien vor lokalem Rücksetzen prüfen und genaue Persistenz-/Itemdiagnosen. 2.342 technische Assertions. Native Abnahme offen; keine VM-/Treiberänderung. [Details](docs/ALPHA-29.md).
+Sichere Haupt-/Pending-Journalwiederherstellung mit Beweiserhalt und Konfliktsperre, Schutz gegen erfundene Aborts bei bestätigten Client-Commits, idempotente dauerhafte Schreibvorgänge, aktive Zeitlinien vor lokalem Rücksetzen prüfen und genaue Persistenz-/Itemdiagnosen. 2.342 technische Assertions. Native Abnahme offen; keine VM-/Treiberänderung. [Details](ALPHA-29.md).
 
 ## 0.1.0-alpha.28 – 2026-11-08
 
-Neue Inventar-Basis bei neuem Spiel, Startschutz bei ungeklärter Bindung, zuverlässige Speicherpause mit Sitzungserhalt und begrenzter Timeout-Verlängerung, Partnerkollision nach Weltaufnahme und gezielter Paarfilter. Versionsanzeige/Diagnose ergänzt. Protokoll 10; 2.250 technische Assertions. Native Abnahme offen. Details: [Alpha.28](docs/ALPHA-28.md).
+Neue Inventar-Basis bei neuem Spiel, Startschutz bei ungeklärter Bindung, zuverlässige Speicherpause mit Sitzungserhalt und begrenzter Timeout-Verlängerung, Partnerkollision nach Weltaufnahme und gezielter Paarfilter. Versionsanzeige/Diagnose ergänzt. Protokoll 10; 2.250 technische Assertions. Native Abnahme offen. Details: [Alpha.28](ALPHA-28.md).
 
 Belegbare Entwicklungsstände, keine nachträglichen öffentlichen Releases.
 Die aktuelle Quellversion ist **0.1.0-alpha.27**, Stand 7. November 2026.
@@ -63,7 +63,7 @@ Der Alpha.26-Test endete vor dem Questabschluss: zwei als Fehler markierte Schri
 
 Native Savepfade, frühe Schreibvorprüfung, Prüfung der eigentlichen Save-Dateien und eindeutige Abschlussmeldungen korrigiert. Gastdialogübergang freigegeben, Partnerkollision entfernt, NPC-Physik beim Trennen wiederhergestellt, Sprint-Partyguard auf beide PCs erweitert, identische eindeutige Spawnanker berücksichtigt. Wesentliche Ereignisse und Sitzungsanfang haben eigene Logaufbewahrung; Protokollanzeige korrigiert. Testplan durch konkrete Marker-Anleitung ergänzt.
 
-**2.228 technische Assertions und Win32-Build bestanden. Native Abnahme der Korrekturen offen.** Protokoll 9, Journal 4, Checkpointformat 2 unverändert; kein Fertig-Release. [Details](docs/ALPHA-27.md).
+**2.228 technische Assertions und Win32-Build bestanden. Native Abnahme der Korrekturen offen.** Protokoll 9, Journal 4, Checkpointformat 2 unverändert; kein Fertig-Release. [Details](ALPHA-27.md).
 
 ### Alpha.30 – Installationsnachprüfung
 

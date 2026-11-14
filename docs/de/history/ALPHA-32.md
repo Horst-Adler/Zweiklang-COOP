@@ -13,4 +13,4 @@
 
 3.671 technische Assertions im vollständigen Testlauf, dazu 18 echte Dateiprofilfälle und 20 Inhaltskennungsprüfungen. Das eigene VDF wird deterministisch gebaut, unabhängig gemountet und byteweise gegen die zwei eigenen Quelldateien geprüft. Vorhandene Saves werden bei der Installation nicht umgeschrieben.
 
-Siehe [Architektur und Profile](UNION-NINJA.md). Der anschließende Rundumcheck und Installationsabgleich werden separat dokumentiert. Kein Nachweis, dass der native Ninja-/Union-Parser oder alle Gameplaypfade bereits auf zwei PCs abgenommen wurden.
+Siehe [Architektur und Profile](../../UNION-NINJA.md). Der anschließende Rundumcheck und Installationsabgleich werden separat dokumentiert. Kein Nachweis, dass der native Ninja-/Union-Parser oder alle Gameplaypfade bereits auf zwei PCs abgenommen wurden.
