@@ -1,118 +1,43 @@
 # Roadmap
 
-Der Versionsplan bezieht sich auf **Gothic II DNdR mit Union für zwei Spieler**.
-Eine technische Implementierung ist nicht gleichbedeutend mit einer erfolgreichen
-Spielabnahme. Es gibt keine feste Termin- oder Kampagnenkompatibilitätszusage.
+Target: two-player Gothic II DNdR co-op. Current developer build: Alpha.33. Technical implementation and native gameplay acceptance are tracked separately; no fixed release date or campaign-wide compatibility promise.
 
-## Bereits belegt
+## Alpha: reliable shared core
 
-- Eigene Quellcode-/Buildbasis und gemeinsames Host-/Clientplugin.
-- Union-Menü und korrigierte Eingabe einschließlich deutschem Tastaturlayout.
-- Namenloser Held und Velaya-Profil; Partnergesichter und Animationen korrigiert.
-- Verbindung und Reconnect im LAN in früheren Tests bestätigt.
-- Alpha.15: Bewegung ohne Reconnect, Gasttreffer, Gast-Aggro und gleiche Gegner-HP bestätigt.
-- 2.228 technische Assertions im aktuellen Alpha.27-Code und im separaten
-  Veröffentlichungscheckout erfolgreich ausgeführt.
+- Validate connection/reconnect, movement, shared combat, guest aggro, local health and friendly fire.
+- Validate ground items, corpses, containers, deposits, locks, merchants and recovery without duplication or loss.
+- Finish general shared quests and authorized turn-in by either player. Eligible quest rewards are 100% per player, not a 50/50 split. Faction quests remain separate unless both players qualify through the same faction.
+- Define and implement general combat XP, special/quest item handling, doors/switches, companion/dialogue conflicts, time/sleep and defeat rules.
+- Complete coordinated world/chapter transitions and campaign save/resume. Two activation areas in one world are implemented; unrestricted independent worlds are not.
+- Accept personal NPC/crime state, local training/permanent bonuses, special movement, transformations and owned summons in separate native test cases.
+- Introduce Orebound Co-op branding and English/German local UI. Public documentation is English-first; the productive work website stays German. Alpha.33 contains the technical foundation; native menu/parser and mixed-language acceptance remain open.
+- Preserve Union as the authority and Ninja as the bounded script layer. Comfort modules remain optional with conditional dependencies and exact supported profiles.
 
-## Alpha – gemeinsamer Kern
+Alpha exit: reproducible shared base workflows on both PCs, safe reconnect/resume and no unresolved critical crashes, duplicate/lost items or progression blockers.
 
-### Aktuelle Abnahme
+## Beta: extended play and comfort
 
-- Zwei-PC-Regression von Xardas bis Cavalorn und Ende der Banditenhöhle.
-- Partnerfokus/Friendly Fire und getrennte Spieler-HP prüfen.
-- Leichen/Kisten, Einlagern, Schlösser, Bodenstapel und Quickloot prüfen.
-- Quellenkonflikte, Abbruch, Wiederverbindung und Recovery überprüfen.
-- Hostgeführten Cavalorn-Questadapter mit tatsächlich vollen Gaben abnehmen.
-- NPC-Lebenszyklus und zwei Aktivierungsgebiete derselben Welt prüfen.
-- NPC-Handel bei einem echten Händler und große Entfernung separat testen.
+- Direct player dialogue and item/gold trade with mutual confirmation and authoritative atomic exchange.
+- Two male and two female appearances; Velaya leather/cloth outfit.
+- Starter armor with male/female visuals in Xardas' laboratory chest behind the fireplace-operated gate, one safe allocation per character.
+- Partner pings and shared map notes.
+- Revisit the custom Orebound Co-op start screen after resolving native menu/render ordering; earlier artwork experiments were withdrawn.
+- Longer campaign sections, independent paths/factions, dense NPC regions, latency/loss/jitter, resource use and multi-hour sessions.
+- Update/save migrations, diagnostics/usability and versioned content adapters.
+- Stabilize language changes, placeholders/fallbacks and fonts; prepare Polish diacritics/Cyrillic support.
 
-### Noch zu vervollständigende Grundsysteme
+Revival, absence catch-up and joint story voting still need rule decisions. Optional female player voice-over is an idea, not a mandatory release requirement.
 
-- Allgemeine gemeinsame Quests und berechtigte Questabgabe durch beide Spieler.
-- Allgemeine Belohnungsregeln: berechtigte Spieler erhalten je 100 % statt Halbierung.
-- Fraktionsquests bei unterschiedlichen Fraktionen getrennt; gemeinsame Fortschritte
-  und volle Gaben nur bei gleicher Fraktion. Fraktionswechsel/Berechtigungszeitpunkt definieren.
-- Allgemeine Kampf-EP-Vergabe; Reichweite, Abwesenheit und Bewusstlosigkeit klären.
-- Quest-/Spezialitems, Zugang zu Schlüsselgegenständen und relevante Skriptfolgen.
-- Türen, Gitter, Schalter und geskriptete Interaktionen koordinieren.
-- Dialogkonflikte, Begleiter, Zeit/Pause/Schlafen und Niederlagenregeln.
-- Koordinierte Welt-/Kapitelwechsel und robuste gemeinsame Speicherkoordination.
+## Full version: Gothic II base release
 
-**Alpha-Abschluss:** Die vereinbarten Grundabläufe funktionieren reproduzierbar
-auf beiden PCs, einschließlich Konsistenz nach Wiederbeitritt und Fortsetzen.
-Kritische Abstürze, Duplikate, Verluste und Fortschrittsblockaden werden nach
-Befund bearbeitet; automatische Tests allein erfüllen dieses Kriterium nicht.
+- Complete campaign, save/resume, chapter/world transition and stability acceptance.
+- Reproducible packages, tested installation/update/rollback, compatibility matrix and documented resource provenance.
+- Co-op achievements, selected NPC reactions to the duo and a shared travel journal.
+- Add Polish and Russian plugin translations: English, Deutsch, Polski, Русский; validate fonts and all 16 host/client language pairs.
+- Keep public documentation English-first. A future public website is separate from the German productive board.
 
-## Beta – längere Tests und Komfort
+Only verified combinations are released. A version label alone does not establish a completed campaign.
 
-- Längere gemeinsame Kampagnenabschnitte und unabhängige Wege/Charakterentwicklung.
-- Latenz, Jitter, Verlust, doppelte/vertauschte Pakete, dichte NPC-Gebiete und Last.
-- Mehrstündige Sitzungen; Ressourcenverbrauch und mögliche Lecks messen.
-- Versionswechsel, unterstützte Formatmigrationen und Rückfallprozeduren.
-- **Partner ansprechen und direkt handeln:** eigenes Partner-Dialogmenü mit
-  „Handeln“, Items/Gold anbieten, beidseitige Bestätigung und atomare Inventaränderung;
-  sichere Behandlung von Dialogabbruch/Disconnect/Entfernung. Geplant, noch nicht implementiert.
-- **Zwei männliche und zwei weibliche Aussehen**, inklusive bestehender Held-/Velaya-Basis.
-- Braunes Leder-/Stoffoutfit und Startrüstung mit zwei Formen in Xardas’ Laborkiste
-  hinter dem Gitter; einmalige Vergabe ohne Wiederholungsduplikate.
-- **Eigenes Startbild „Zweiklang COOP“** neu untersuchen. Die Alpha.24/25-Einbauten
-  sind nach Darstellungsfehlern zurückgezogen. Native Renderreihenfolge zuerst klären.
-- Definierte Adapter-Schnittstellen für spätere Folgeversionen vorbereiten.
+## Separate later extensions
 
-Gegenseitige Wiederbelebung, Nachvergütung bei Abwesenheit oder gemeinsame
-Story-Abstimmungen bleiben zunächst Regel-/Architekturentscheidungen.
-Die optionale Idee weiblicher Spielerdialoge ist keine verbindliche Freigabevoraussetzung.
-
-**Beta-Abschluss:** Stabile längere Spielsitzungen und erweiterte Kampagnentests;
-keine offenen kritischen Stabilitäts-, Duplikat-, Verlust- oder Persistenzfehler.
-
-## Vollversion – Freigabe der Gothic-2-Basis
-
-- Unterstützte Spiel-/Union-/Pluginstände ausdrücklich benennen.
-- Zwei-PC-Kampagnen-, Kapitel-/Weltwechsel-, Speicher- und Wiederbeitrittsnachweise.
-- Reproduzierbare Pakete, eindeutige Versionen/Prüfsummen, Installation und Rückbau.
-- Bedienhilfe, Diagnose und bekannte Einschränkungen abschließen.
-- Herkunft und zulässigen Verteilungsumfang aller tatsächlich ausgelieferten Dateien prüfen.
-
-### Geplant: eigene Koop-Achievements
-
-- Erster Gegner als Team besiegt, erste gemeinsame Quest abgeschlossen und beide Spieler in Khorinis angekommen.
-- Bestätigte Kampf-/Quest-/Gebietsereignisse, Hostabgleich und dauerhafter Fortschritt je Koopprofil; eindeutige Vergaben trotz Reconnect oder Laden.
-- Eigenes Erfolgsmenü und optionale Benachrichtigungen. Beteiligung, Fraktionsquests und nachträgliche Vergabe vor Umsetzung definieren; noch nicht implementiert.
-
-**Freigabe:** Nur die ausdrücklich abgenommenen Kombinationen werden unterstützt.
-Die Versionsnummer allein ist kein Nachweis einer fertigen gemeinsamen Kampagne.
-
-## Eigene spätere Erweiterungen und Versionen
-
-### Odyssee-Erweiterung
-
-Separate Folgeversion auf dem stabilen G2-Kern: konkrete TC-Version und
-Abhängigkeiten erfassen, eigenes Inhaltsprofil sowie Quest-/Welt-/Persistenzadapter
-entwickeln und kapitelweise gemeinsam abnehmen. Eigenes Paket und eigene
-Kompatibilitätsmatrix; keine derzeitige pauschale Unterstützung.
-
-### Gothic-1-Portierung
-
-Eigener Versionszweig mit passender Engine-/Unionbasis, Build, nativen Schnittstellen,
-Figuren, Kampf, Items, Quests und Saveprofilen. G2-Adressen nicht übernehmen.
-Separate Zwei-PC-Kampagnen- und Stabilitätsabnahme vor einer eigenen Freigabe.
-
-**Odyssee und Gothic 1 sind keine Abschlusskriterien für die Gothic-2-Vollversion.**
-
-## Unmittelbare Wiederholungsprüfung nach Alpha.26
-
-Zuerst die Alpha.27-Korrekturen für Speicherung, Bereitschaft, Einzelaufnahmen, Gastdialoge und Spielerkollision oben im Turm abnehmen. Dann den unterbrochenen Cavalorn-Ablauf fortsetzen. Frühere grüne Haken ersetzen diese Regression nicht; eine technische Korrektur ist noch keine bestätigte gemeinsame Spielabnahme.
-
-
-Aktueller Charakterstand: [Alpha.31](docs/ALPHA-31.md), Protokoll 11. Persönliche NPC-Zustände, Schutz lokaler Fortschritte, besondere Bewegungen, Verwandlungen und reguläre Beschwörungen sind technisch implementiert; native Zwei-PC-Abnahme bleibt offen. Zusätzliche [Charakter-Testliste](docs/TEST-ALPHA31-CHARAKTERE.md).
-
-
-## Bestätigte weitere Ideen
-
-Beta: Partner-Pings und gemeinsame Kartenmarkierungen/Notizen. Vollversion: ausgewählte NPC-Reaktionen auf das Duo und gemeinsames Reisetagebuch. Diese Ideen sind geplant, noch nicht implementiert. Die vier Charakter-Alpha-Punkte sind technisch in Alpha.31 enthalten, native Abnahme offen.
-
-
-## Alpha.32: Union-/Ninja-Modularisierung
-
-Technisch umgesetzt: Union-Hauptkern, eigener Ninja-Befehlsvertrag ABI 1 und automatische optionale Modulprofile. Pflichtkern ohne Komfortmods; bedingte Toolkit-Abhängigkeiten und vollständiger Contentvergleich erhalten. Native Abnahme beider Profile noch offen. [Architektur und Testmatrix](docs/UNION-NINJA.md).
+Odyssee requires its own pinned content version, quest/world/persistence adapters and chapter acceptance. Gothic 1 requires a separate engine adapter/build and script profiles. Neither is an exit condition for the Gothic II full version.

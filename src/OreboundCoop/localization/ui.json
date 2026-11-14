@@ -1,0 +1,1206 @@
+{
+  "schema": 1,
+  "languages": [
+    "en",
+    "de"
+  ],
+  "defaultLanguage": "en",
+  "entries": [
+    {
+      "id": "ui_54864727d1ab",
+      "en": "Ready: F6 host / F7 join / F8 leave",
+      "de": "Ready: F6 host / F7 join / F8 leave"
+    },
+    {
+      "id": "ui_d9bf3aab34f6",
+      "en": "Avatar unavailable; connection remains active. Check the log.",
+      "de": "Avatar unavailable; connection remains active. Check log."
+    },
+    {
+      "id": "ui_caa469c809fa",
+      "en": "Could not load the partner's head. See diagnostics.",
+      "de": "Partnerkopf konnte nicht geladen werden; siehe Diagnose."
+    },
+    {
+      "id": "ui_ddca9b14c007",
+      "en": "Orebound Co-op Alpha.33 | ",
+      "de": "Orebound Co-op Alpha.33 | "
+    },
+    {
+      "id": "ui_682c7f8f9168",
+      "en": "Partner: ",
+      "de": "Partner: "
+    },
+    {
+      "id": "ui_67231ca990f8",
+      "en": "Content ID missing. Run the current installer before connecting.",
+      "de": "Missing ContentId. Run Prepare-Alpha.ps1 before connecting."
+    },
+    {
+      "id": "ui_af8169a43748",
+      "en": "Co-op start blocked: save binding missing or invalid. Check diagnostics; load or save.",
+      "de": "Koop-Start gesperrt: Spielstandbindung fehlt/ist fehlerhaft. Diagnose pruefen; laden oder speichern."
+    },
+    {
+      "id": "ui_4cbb7f56d97a",
+      "en": "Load a game world before starting a session.",
+      "de": "Zuerst eine Spielwelt laden, dann Sitzung starten."
+    },
+    {
+      "id": "ui_d1ac6d29b9b3",
+      "en": "OreboundCoop_Npc.d is missing or not loaded. Update both PCs.",
+      "de": "OreboundCoop_Npc.d fehlt oder wurde nicht geladen. Beide PCs aktualisieren."
+    },
+    {
+      "id": "ui_6119f0b88028",
+      "en": "Outdated co-op helpers loaded. Restart Gothic after updating.",
+      "de": "Geladene Koop-Helfer veraltet; Gothic nach Update neu starten."
+    },
+    {
+      "id": "ui_fed12366be2a",
+      "en": "Co-op safety variables missing. Restart Gothic after updating.",
+      "de": "Koop-QoL-Schutzvariablen fehlen; Gothic nach Update neu starten."
+    },
+    {
+      "id": "ui_a8828c7e2e88",
+      "en": "Co-op started; saving keeps the session connected.",
+      "de": "Koop verbunden; Speichern behaelt die Sitzung bei."
+    },
+    {
+      "id": "ui_155ac878a74d",
+      "en": "Game options are not ready yet.",
+      "de": "Spieloptionen sind noch nicht bereit."
+    },
+    {
+      "id": "ui_f3dac232558a",
+      "en": "Name: 1 to 32 UTF-8 bytes; no control characters.",
+      "de": "Name: 1 bis 32 UTF-8-Bytes, keine Steuerzeichen."
+    },
+    {
+      "id": "ui_27f430950679",
+      "en": "Please enter a valid host IPv4 address.",
+      "de": "Bitte eine gueltige Host-IPv4-Adresse eingeben."
+    },
+    {
+      "id": "ui_7ac6d3c2baea",
+      "en": "Client IP: local IPv4 or 0.0.0.0 for automatic selection.",
+      "de": "Client-IP: eigene IPv4 oder 0.0.0.0 fuer automatisch."
+    },
+    {
+      "id": "ui_beb35ecacd83",
+      "en": "Port must be between 1024 and 65535.",
+      "de": "Port muss zwischen 1024 und 65535 liegen."
+    },
+    {
+      "id": "ui_8445b7c09dfc",
+      "en": "Could not save settings. Check write permissions.",
+      "de": "Speichern fehlgeschlagen: Schreibrechte pruefen."
+    },
+    {
+      "id": "ui_8f9ec31b8caf",
+      "en": "Saved. Role: Host.",
+      "de": "Gespeichert. Rolle: Host."
+    },
+    {
+      "id": "ui_2f616c5c890c",
+      "en": "Saved. Role: Client.",
+      "de": "Gespeichert. Rolle: Client."
+    },
+    {
+      "id": "ui_f2a36e1215cb",
+      "en": "Partner is saving; synchronization is paused briefly.",
+      "de": "Partner speichert; Abgleich wartet kurz."
+    },
+    {
+      "id": "ui_95b49cb234f4",
+      "en": "Save pause finished; synchronization is resuming.",
+      "de": "Speicherpause beendet; Abgleich wird fortgesetzt."
+    },
+    {
+      "id": "ui_18cd6757a256",
+      "en": "Save failed. See recovery diagnostics; keep the original save.",
+      "de": "Speichern fehlgeschlagen: siehe Recovery-Diagnose. Ausgangssave behalten."
+    },
+    {
+      "id": "ui_404e3bb7c43b",
+      "en": "Verifying saved game ...",
+      "de": "Spielstand wird geprueft ..."
+    },
+    {
+      "id": "ui_a607163594d2",
+      "en": "Saving finished. Check checkpoint status before connecting.",
+      "de": "Speichern beendet; Checkpointstatus vor Koop pruefen."
+    },
+    {
+      "id": "ui_893704f10b60",
+      "en": "Ready: start a session in the Union menu or with F6/F7.",
+      "de": "Bereit: Sitzung im Union-Menue oder mit F6/F7 starten."
+    },
+    {
+      "id": "ui_8e0b6d63f3f2",
+      "en": "Saving blocked: resolve inventory/quest synchronization first.",
+      "de": "Speichern gesperrt: erst den Inventar-/Questabgleich klaeren."
+    },
+    {
+      "id": "ui_67dce044f565",
+      "en": "Saving cancelled before changing files. See recovery diagnostics.",
+      "de": "Speichern vor Dateiaenderungen abgebrochen; siehe Recovery-Diagnose."
+    },
+    {
+      "id": "ui_71df0419bdbe",
+      "en": "Save not started: partner confirmation missing or partner is saving. Try again.",
+      "de": "Speichern nicht begonnen: Partnerbestaetigung fehlt oder Partner speichert. Bitte erneut versuchen."
+    },
+    {
+      "id": "ui_3ab959479c88",
+      "en": "Game and checkpoint saved. Co-op session remains connected.",
+      "de": "Spielstand und Checkpoint gespeichert. Koop-Sitzung bleibt bestehen."
+    },
+    {
+      "id": "ui_d888a85eb716",
+      "en": "Game and checkpoint saved. No active co-op connection.",
+      "de": "Spielstand und Checkpoint gespeichert. Keine Koop-Verbindung aktiv."
+    },
+    {
+      "id": "ui_b500e0f005b2",
+      "en": "Save not fully confirmed. See recovery diagnostics.",
+      "de": "Spielstand nicht vollstaendig bestaetigt; siehe Recovery-Diagnose."
+    },
+    {
+      "id": "ui_6df9fa7c9425",
+      "en": "Direct save without checkpoint validation blocked.",
+      "de": "Direktes Speichern ohne Checkpointvorpruefung gesperrt."
+    },
+    {
+      "id": "ui_4c75853f395b",
+      "en": "Session ended.",
+      "de": "Sitzung beendet."
+    },
+    {
+      "id": "ui_f02982da1dfb",
+      "en": "Cavalorn quest paused: ",
+      "de": "Cavalorn-Quest angehalten: "
+    },
+    {
+      "id": "ui_37398218e189",
+      "en": "In this alpha, the connected host handles Cavalorn quest dialogue.",
+      "de": "Cavalorn-Questdialoge fuehrt in dieser Alpha der verbundene Host."
+    },
+    {
+      "id": "ui_06d05082ebea",
+      "en": "Cavalorn is waiting for both players to be ready. Check diagnostics.",
+      "de": "Cavalorn wartet auf beide bereiten Spieler; Diagnoseanzeige beachten."
+    },
+    {
+      "id": "ui_a3e70c577d09",
+      "en": "Summoning is waiting for personal character synchronization.",
+      "de": "Beschwoerung wartet auf den persoenlichen Abgleich."
+    },
+    {
+      "id": "ui_007042c4e974",
+      "en": "Synchronizing personal character states.",
+      "de": "Persoenliche Spielerzustaende werden abgeglichen."
+    },
+    {
+      "id": "ui_e8da68b3aa14",
+      "en": "Co-op start blocked: ",
+      "de": "Koop-Start gesperrt: "
+    },
+    {
+      "id": "ui_ffc80ffb0bf3",
+      "en": "Currently being used by your partner.",
+      "de": "Wird gerade vom Partner benutzt."
+    },
+    {
+      "id": "ui_3b0cdc376883",
+      "en": "Chest still locked on the host. Synchronize its lock first.",
+      "de": "Kiste beim Host noch verschlossen; Schlösserabgleich folgt separat."
+    },
+    {
+      "id": "ui_fd1e4c4de9e2",
+      "en": "Too far away or position not up to date yet.",
+      "de": "Zu weit entfernt oder Position noch nicht aktuell."
+    },
+    {
+      "id": "ui_66712cecbfd2",
+      "en": "That item quantity is no longer available.",
+      "de": "Item nicht mehr in dieser Menge vorhanden."
+    },
+    {
+      "id": "ui_9af3a5d36bb9",
+      "en": "Inventory state is outdated. Please reopen it.",
+      "de": "Inventarstand veraltet; bitte erneut öffnen."
+    },
+    {
+      "id": "ui_5ae5f9cf43e0",
+      "en": "Loot access not confirmed. Check the log.",
+      "de": "Beutezugriff nicht bestätigt; siehe Log."
+    },
+    {
+      "id": "ui_73217e8c9ce7",
+      "en": "Finish the current loot operation first.",
+      "de": "Bitte Beutevorgang erst abschließen."
+    },
+    {
+      "id": "ui_c1729fcf850a",
+      "en": "Loot source is not uniquely synchronized yet.",
+      "de": "Beutequelle noch nicht eindeutig synchronisiert."
+    },
+    {
+      "id": "ui_84ab6893f077",
+      "en": "Requesting loot contents from the host ...",
+      "de": "Beuteinhalt wird beim Host angefragt ..."
+    },
+    {
+      "id": "ui_63cda7a7c0f6",
+      "en": "You cannot loot your co-op partner.",
+      "de": "Der Koop-Partner kann nicht geplündert werden."
+    },
+    {
+      "id": "ui_cd7ea0cb58b3",
+      "en": "This loot source is being used by the client.",
+      "de": "Diese Beute benutzt gerade der Client."
+    },
+    {
+      "id": "ui_7b2d83e77b85",
+      "en": "This chest is being used by the client.",
+      "de": "Diese Kiste benutzt gerade der Client."
+    },
+    {
+      "id": "ui_479fa1f13962",
+      "en": "Shared loot: the host confirms item transfers.",
+      "de": "Gemeinsame Beute: Entnahmen werden vom Host bestätigt."
+    },
+    {
+      "id": "ui_e81e3f83e8b8",
+      "en": "Loot window did not open. Please try again.",
+      "de": "Beutefenster nicht geöffnet; bitte erneut versuchen."
+    },
+    {
+      "id": "ui_8c60f10d6461",
+      "en": "Loot source is locked by the client.",
+      "de": "Beutequelle ist beim Client gesperrt."
+    },
+    {
+      "id": "ui_23f7e3fcb536",
+      "en": "Depositing is not available on this transfer path. Use the regular inventory.",
+      "de": "Einlagern folgt separat; derzeit gemeinsame Entnahme."
+    },
+    {
+      "id": "ui_2f084074674d",
+      "en": "This item is not supported as shared loot.",
+      "de": "Dieses Item ist nicht als gemeinsame Beute freigegeben."
+    },
+    {
+      "id": "ui_214022517409",
+      "en": "Received: ",
+      "de": "Erhalten: "
+    },
+    {
+      "id": "ui_2092a0e74542",
+      "en": "Quickloot helper missing. Update both installations.",
+      "de": "Quickloot-Helfer fehlt; beide Installationen aktualisieren."
+    },
+    {
+      "id": "ui_3e4a0b665fae",
+      "en": "Quickloot complete.",
+      "de": "Quickloot abgeschlossen."
+    },
+    {
+      "id": "ui_625a180ff724",
+      "en": "Ground stack is ambiguous. Pick it up normally.",
+      "de": "Bodenstapel mehrdeutig; bitte regulaer aufnehmen."
+    },
+    {
+      "id": "ui_e9dddb6d5855",
+      "en": "Chest locked. Unlock it normally first.",
+      "de": "Kiste verschlossen: erst regulaer aufschliessen."
+    },
+    {
+      "id": "ui_379792d487cf",
+      "en": "Chest is currently being used.",
+      "de": "Kiste wird gerade benutzt."
+    },
+    {
+      "id": "ui_5ca4a52c83d6",
+      "en": "Open this scripted chest normally.",
+      "de": "Skriptgesteuerte Kiste bitte regulaer oeffnen."
+    },
+    {
+      "id": "ui_5b7e0fa2e096",
+      "en": "Loot source is currently being used.",
+      "de": "Beutequelle wird gerade benutzt."
+    },
+    {
+      "id": "ui_0ca47dbaf708",
+      "en": "Recovery cannot uniquely identify this loot source. Open it normally.",
+      "de": "Beutequelle fuer Recovery mehrdeutig; bitte regulaer oeffnen."
+    },
+    {
+      "id": "ui_bc4e9d740c38",
+      "en": "No more eligible loot.",
+      "de": "Keine weitere freigegebene Beute."
+    },
+    {
+      "id": "ui_76ad8effa733",
+      "en": "Inventory synchronization paused. See the recovery log.",
+      "de": "Inventarabgleich angehalten; Details im Recovery-Log."
+    },
+    {
+      "id": "ui_fa8bdbff19cb",
+      "en": "Saving in progress",
+      "de": "Speichervorgang laeuft"
+    },
+    {
+      "id": "ui_8483542d8fa2",
+      "en": "Pending inventory/quest operations are waiting for synchronization",
+      "de": "Offene Inventar-/Questvorgaenge warten auf Abgleich"
+    },
+    {
+      "id": "ui_2947c129d814",
+      "en": "Save binding missing",
+      "de": "Spielstandbindung fehlt"
+    },
+    {
+      "id": "ui_263eaf75a6f4",
+      "en": "Inventory is waiting for personal character states.",
+      "de": "Inventar wartet auf persoenliche Spielerzustaende."
+    },
+    {
+      "id": "ui_e0acf3b1a778",
+      "en": "Inventory is waiting: save in progress.",
+      "de": "Inventar wartet: Speichervorgang laeuft."
+    },
+    {
+      "id": "ui_a5209833b627",
+      "en": "Inventory synchronization blocked. Check diagnostics (Ctrl+Shift+D).",
+      "de": "Inventarabgleich gesperrt; konkrete Ursache in der Diagnose (Strg+Umschalt+D)."
+    },
+    {
+      "id": "ui_0381fc735de1",
+      "en": "Load or save a test game to bind inventory recovery.",
+      "de": "Bitte Testspielstand laden oder einmal speichern, damit Inventar-Recovery gebunden ist."
+    },
+    {
+      "id": "ui_e937e6515593",
+      "en": "Recovery is waiting for a save and host. Save the new game once.",
+      "de": "Recovery wartet auf Spielstand und Host; neuen Spielstand einmal speichern."
+    },
+    {
+      "id": "ui_c17c42295267",
+      "en": "Test marker requires logging to be enabled.",
+      "de": "Testmarke benoetigt aktiviertes Logging."
+    },
+    {
+      "id": "ui_ab7d8e730d46",
+      "en": "Test marker limit reached. Start a new test run.",
+      "de": "Testmarkenlimit erreicht; neuen Testdurchgang beginnen."
+    },
+    {
+      "id": "ui_e51940f4c440",
+      "en": "Test marker is waiting for the partner/send channel.",
+      "de": "Testmarke wartet auf Partner/Sendekanal."
+    },
+    {
+      "id": "ui_e41e07bc6e84",
+      "en": "Test marker ",
+      "de": "Testmarke "
+    },
+    {
+      "id": "ui_e0c2d79a1eac",
+      "en": " written; next ",
+      "de": " geschrieben; naechste "
+    },
+    {
+      "id": "ui_4ca763b5c66c",
+      "en": "Could not write the test marker.",
+      "de": "Testmarke konnte nicht geschrieben werden."
+    },
+    {
+      "id": "ui_c71e69853901",
+      "en": "Next test marker: ",
+      "de": "Naechste Testmarke: "
+    },
+    {
+      "id": "ui_91b5e7f2b0cb",
+      "en": "Not connected. Set role/IP in the Union menu; F6 host / F7 join.",
+      "de": "Nicht verbunden. Rolle/IP im Union-Menue; F6 Host / F7 Beitritt."
+    },
+    {
+      "id": "ui_599af28935be",
+      "en": "Protocol ",
+      "de": "Protokoll "
+    },
+    {
+      "id": "ui_e46b1aa110bb",
+      "en": " | World ",
+      "de": " | Welt "
+    },
+    {
+      "id": "ui_272347b4647d",
+      "en": " | State ",
+      "de": " | Zustand "
+    },
+    {
+      "id": "ui_00bc75791916",
+      "en": " | Pending ",
+      "de": " | offen "
+    },
+    {
+      "id": "ui_2544ff2159e2",
+      "en": "Distance ",
+      "de": "Abstand "
+    },
+    {
+      "id": "ui_505e820fc14c",
+      "en": " | Cavalorn ",
+      "de": " | Cavalorn "
+    },
+    {
+      "id": "ui_b3a09d419b63",
+      "en": " | Next marker ",
+      "de": " | naechste Marke "
+    },
+    {
+      "id": "ui_fde1c73c5052",
+      "en": "Blocked: ",
+      "de": "Sperre: "
+    },
+    {
+      "id": "ui_90ae9caedb1a",
+      "en": "Blocked: saved inventory operations are awaiting synchronization.",
+      "de": "Sperre: gespeicherte Inventarvorgaenge warten auf Abgleich."
+    },
+    {
+      "id": "ui_d75cba87a1b4",
+      "en": "Quest: ",
+      "de": "Quest: "
+    },
+    {
+      "id": "ui_332885e19cbf",
+      "en": "Ctrl+Shift: M marker | N next | B previous | D diagnostics",
+      "de": "Strg+Umschalt: M Marke | N weiter | B zurueck | D Diagnose"
+    },
+    {
+      "id": "ui_eb5b307ed781",
+      "en": "Trade is waiting for safe inventory synchronization.",
+      "de": "Handel wartet auf den sicheren Inventarabgleich."
+    },
+    {
+      "id": "ui_679d06ba430a",
+      "en": "Merchant not uniquely synchronized yet. Please try again.",
+      "de": "Haendler noch nicht eindeutig synchronisiert; bitte erneut versuchen."
+    },
+    {
+      "id": "ui_999289eaa19c",
+      "en": "Ground items are waiting for safe inventory synchronization.",
+      "de": "Bodenitems warten auf den sicheren Inventarabgleich."
+    },
+    {
+      "id": "ui_69b8143492ba",
+      "en": "An item operation is still awaiting confirmation.",
+      "de": "Ein Gegenstandsvorgang wird noch bestätigt."
+    },
+    {
+      "id": "ui_d83a0327940b",
+      "en": "Do not drop equipped or bound items as co-op ground items.",
+      "de": "Ausgeruestete oder gebundene Gegenstaende bitte nicht als Koop-Bodenitem ablegen."
+    },
+    {
+      "id": "ui_3c32a71e053e",
+      "en": "The merchant is being used by the guest.",
+      "de": "Der Händler wird gerade vom Gast benutzt."
+    },
+    {
+      "id": "ui_85f2a20082b3",
+      "en": "Trade value exceeds the alpha limit.",
+      "de": "Handelswert außerhalb der Alpha-Grenze."
+    },
+    {
+      "id": "ui_d490bc4105ac",
+      "en": "Not enough gold for this purchase.",
+      "de": "Nicht genug Gold fuer diesen Kauf."
+    },
+    {
+      "id": "ui_caf4bae02f60",
+      "en": "Saving blocked: local inventory/quest synchronization.",
+      "de": "Speichern gesperrt: lokaler Inventar-/Questabgleich."
+    },
+    {
+      "id": "ui_760cd119693f",
+      "en": "Saving is waiting: finish your inventory operation first.",
+      "de": "Speichern wartet: eigenen Inventarvorgang zuerst beenden."
+    },
+    {
+      "id": "ui_2ef32e866a1b",
+      "en": "Saving is waiting: your partner must finish an inventory operation.",
+      "de": "Speichern wartet: Partner muss offenen Inventarvorgang beenden."
+    },
+    {
+      "id": "ui_bac5aa4e60b8",
+      "en": "Saving is waiting: your partner is saving.",
+      "de": "Speichern wartet: Partner speichert gerade."
+    },
+    {
+      "id": "ui_5887b0600918",
+      "en": "Saving is waiting: partner readiness is not known yet.",
+      "de": "Speichern wartet: Partnerbereitschaft noch nicht bekannt."
+    },
+    {
+      "id": "ui_5cbb3437c9ac",
+      "en": "Ready to save.",
+      "de": "Speichern bereit."
+    },
+    {
+      "id": "ui_8ff8e135be0a",
+      "en": "Ready: combat, loot and Cavalorn quest",
+      "de": "Bereit: Kampf, Loot und Cavalorn-Quest"
+    },
+    {
+      "id": "ui_d8fd43e22fab",
+      "en": "Waiting: load or save a test game",
+      "de": "Warten: Testspielstand laden oder speichern"
+    },
+    {
+      "id": "ui_14923843e734",
+      "en": "Blocked: local inventory/quest synchronization",
+      "de": "Gesperrt: lokaler Inventar-/Questabgleich"
+    },
+    {
+      "id": "ui_f54ef287ef89",
+      "en": "Waiting: partner is resolving pending operations",
+      "de": "Warten: Partner klaert offene Vorgaenge"
+    },
+    {
+      "id": "ui_d4e58931a299",
+      "en": "Waiting: receiving host rules",
+      "de": "Warten: Hostregeln werden uebertragen"
+    },
+    {
+      "id": "ui_cf44c2999898",
+      "en": "Waiting: creating partner actor",
+      "de": "Warten: Partnerfigur wird aufgebaut"
+    },
+    {
+      "id": "ui_656c151cc417",
+      "en": "Core ready; Cavalorn adapter not ready yet",
+      "de": "Basis bereit; Cavalorn-Adapter noch nicht bereit"
+    },
+    {
+      "id": "ui_3fa3bb035083",
+      "en": "Waiting: current partner position missing",
+      "de": "Warten: aktuelle Partnerposition fehlt"
+    },
+    {
+      "id": "ui_633a56b17b85",
+      "en": "Inventory synchronization in progress; please wait",
+      "de": "Inventarabgleich laeuft; bitte kurz warten"
+    },
+    {
+      "id": "ui_a41d5637ed8f",
+      "en": "Player dead/unconscious: quest rewards are waiting",
+      "de": "Spieler tot/bewusstlos: Questgaben warten"
+    },
+    {
+      "id": "ui_8d3142772000",
+      "en": "Partner dead/unconscious: quest rewards are waiting",
+      "de": "Partner tot/bewusstlos: Questgaben warten"
+    },
+    {
+      "id": "ui_a22bafd6d42f",
+      "en": "Waiting: partner readiness",
+      "de": "Warten: Bereitschaft des Partners"
+    },
+    {
+      "id": "menu.brand",
+      "en": "Orebound Co-op",
+      "de": "Orebound Co-op"
+    },
+    {
+      "id": "menu.title",
+      "en": "OREBOUND CO-OP",
+      "de": "OREBOUND CO-OP"
+    },
+    {
+      "id": "menu.description",
+      "en": "Configure connection, character and diagnostics.",
+      "de": "Verbindung, Figur und Diagnose einstellen."
+    },
+    {
+      "id": "menu.language",
+      "en": "Language / Sprache",
+      "de": "Sprache / Language"
+    },
+    {
+      "id": "menu.language_choices",
+      "en": "English|Deutsch",
+      "de": "English|Deutsch"
+    },
+    {
+      "id": "menu.language_help",
+      "en": "Left/Right: choose your local language. Save settings to keep it.",
+      "de": "Links/Rechts: lokale Sprache waehlen. Zum Behalten Einstellungen speichern."
+    },
+    {
+      "id": "player.default",
+      "en": "Player",
+      "de": "Spieler"
+    },
+    {
+      "id": "item.generic",
+      "en": "Item",
+      "de": "Gegenstand"
+    },
+    {
+      "id": "state.missing",
+      "en": "missing",
+      "de": "fehlt"
+    },
+    {
+      "id": "menu.back",
+      "en": "Back",
+      "de": "Zurueck"
+    },
+    {
+      "id": "role.host",
+      "en": "HOST",
+      "de": "HOST"
+    },
+    {
+      "id": "role.guest",
+      "en": "GUEST",
+      "de": "CLIENT"
+    },
+    {
+      "id": "role.offline",
+      "en": "OFFLINE",
+      "de": "OFFLINE"
+    },
+    {
+      "id": "menu_menuitem_union_auto_zweiklangcoop_0",
+      "en": "Orebound Co-op",
+      "de": "Orebound Co-op"
+    },
+    {
+      "id": "menu_menuitem_union_auto_zweiklangcoop_1",
+      "en": "Configure connection, character and diagnostics.",
+      "de": "Verbindung, Spielername und Diagnose einstellen."
+    },
+    {
+      "id": "menu_menuitem_zk_client_label_0",
+      "en": "Client IP (IPv4)",
+      "de": "Client-IP (IPv4)"
+    },
+    {
+      "id": "menu_menuitem_zk_client_input_1",
+      "en": "Client PC address. Use 0.0.0.0 for automatic interface selection.",
+      "de": "IP des Client-PCs. 0.0.0.0: Windows waehlt die Netzwerkschnittstelle."
+    },
+    {
+      "id": "menu_menuitem_zk_client_edit_1",
+      "en": "Client role: primary local IPv4 is detected automatically. Enter: edit manually.",
+      "de": "Rolle Client: eigene primaere IPv4 automatisch. Enter: manuell bearbeiten."
+    },
+    {
+      "id": "menu_menuitem_zk_role_label_0",
+      "en": "Role of this PC",
+      "de": "Rolle dieses PCs"
+    },
+    {
+      "id": "menu_menuitem_zk_role_choice_0",
+      "en": "Host|Client",
+      "de": "Host|Client"
+    },
+    {
+      "id": "menu_menuitem_zk_role_choice_1",
+      "en": "Left/Right: select role. Its local IP is filled in automatically.",
+      "de": "Links/Rechts: Rolle waehlen. Die zugehoerige eigene IP wird automatisch eingetragen."
+    },
+    {
+      "id": "menu_menuitem_zk_start_0",
+      "en": "Start session",
+      "de": "Sitzung starten"
+    },
+    {
+      "id": "menu_menuitem_zk_start_1",
+      "en": "Save settings and start with the selected role. Load a world first.",
+      "de": "Einstellungen speichern und mit der ausgewaehlten Rolle starten. Welt vorher laden."
+    },
+    {
+      "id": "menu_menuitem_zk_leave_0",
+      "en": "End session",
+      "de": "Sitzung beenden"
+    },
+    {
+      "id": "menu_menuitem_zk_leave_1",
+      "en": "Disconnect the current co-op session.",
+      "de": "Aktuelle Coop-Verbindung trennen."
+    },
+    {
+      "id": "menu_menuitem_zk_title_0",
+      "en": "OREBOUND CO-OP",
+      "de": "OREBOUND CO-OP"
+    },
+    {
+      "id": "menu_menuitem_zk_gender_label_0",
+      "en": "Character / gender",
+      "de": "Geschlecht / Figur"
+    },
+    {
+      "id": "menu_menuitem_zk_gender_choice_0",
+      "en": "Male (Hero)|Female (Velaya)",
+      "de": "Maennlich (Held)|Weiblich (Velaya)"
+    },
+    {
+      "id": "menu_menuitem_zk_gender_choice_1",
+      "en": "Left/Right: choose a character and save. Native G2 body and face; outfit planned for beta.",
+      "de": "Links/Rechts: Figur waehlen und speichern. Native G2-Figur mit Velayas Kopf/Gesicht; Outfit erst Beta."
+    },
+    {
+      "id": "menu_menuitem_zk_name_label_0",
+      "en": "Player name",
+      "de": "Spielername"
+    },
+    {
+      "id": "menu_menuitem_zk_name_input_1",
+      "en": "Enter: edit name. Enter confirms; Escape cancels.",
+      "de": "Enter: Name bearbeiten. Enter bestaetigt, Escape verwirft die Eingabe."
+    },
+    {
+      "id": "menu_menuitem_zk_host_label_0",
+      "en": "Host IP (IPv4)",
+      "de": "Host-IP (IPv4)"
+    },
+    {
+      "id": "menu_menuitem_zk_host_input_1",
+      "en": "Host role: automatic local IPv4. Client role: address of the host PC.",
+      "de": "Rolle Host: eigene primaere IPv4 automatisch. Als Client: Adresse des Host-PCs."
+    },
+    {
+      "id": "menu_menuitem_zk_port_label_0",
+      "en": "UDP port",
+      "de": "UDP-Port"
+    },
+    {
+      "id": "menu_menuitem_zk_port_input_1",
+      "en": "Enter: port 1024 to 65535. Default: 12345.",
+      "de": "Enter: Port 1024 bis 65535 eingeben. Standard: 12345."
+    },
+    {
+      "id": "menu_menuitem_zk_log_label_0",
+      "en": "Logging",
+      "de": "Protokollierung"
+    },
+    {
+      "id": "menu_menuitem_zk_log_choice_0",
+      "en": "Off|Normal|Debug",
+      "de": "Aus|Normal|Debug"
+    },
+    {
+      "id": "menu_menuitem_zk_log_choice_1",
+      "en": "Left/Right: log level. Debug records packets and game state.",
+      "de": "Links/Rechts: Logstufe. Debug erfasst Pakete und Spielzustand."
+    },
+    {
+      "id": "menu_menuitem_zk_engine_label_0",
+      "en": "Engine messages",
+      "de": "Engine-Meldungen"
+    },
+    {
+      "id": "menu_menuitem_zk_engine_choice_0",
+      "en": "Off|On",
+      "de": "Aus|Ein"
+    },
+    {
+      "id": "menu_menuitem_zk_engine_choice_1",
+      "en": "Left/Right: capture additional engine diagnostic messages.",
+      "de": "Links/Rechts: Engine-Diagnosemeldungen zusaetzlich erfassen."
+    },
+    {
+      "id": "menu_menuitem_zk_apply_0",
+      "en": "Save settings",
+      "de": "Einstellungen speichern"
+    },
+    {
+      "id": "menu_menuitem_zk_apply_1",
+      "en": "Save name, IP addresses, port, role and language locally.",
+      "de": "Name, IP-Adressen, Port und Rolle lokal speichern."
+    },
+    {
+      "id": "menu_menuitem_zk_status_0",
+      "en": "Use Save settings to keep your changes.",
+      "de": "Aenderungen erst mit Einstellungen speichern uebernehmen."
+    },
+    {
+      "id": "menu_menuitem_zk_name_edit_1",
+      "en": "Enter: edit. Enter confirms; Escape cancels. Then save settings.",
+      "de": "Enter: bearbeiten. Enter bestaetigt, Escape verwirft. Danach Einstellungen speichern."
+    },
+    {
+      "id": "menu_menuitem_zk_host_edit_1",
+      "en": "Enter: edit IPv4 address. Enter confirms; Escape cancels.",
+      "de": "Enter: IPv4-Adresse bearbeiten. Enter bestaetigt, Escape verwirft."
+    },
+    {
+      "id": "menu_menuitem_zk_port_edit_1",
+      "en": "Enter: edit port 1024 to 65535. Default: 12345.",
+      "de": "Enter: Port 1024 bis 65535 bearbeiten. Standard: 12345."
+    },
+    {
+      "id": "menu_menuitem_zk_ff_label_0",
+      "en": "Friendly fire",
+      "de": "Friendly Fire"
+    },
+    {
+      "id": "menu_menuitem_zk_ff_choice_0",
+      "en": "Off|On",
+      "de": "Aus|Ein"
+    },
+    {
+      "id": "menu_menuitem_zk_ff_choice_1",
+      "en": "Host rule. Off: no partner damage or combat targeting. Client follows the host rule.",
+      "de": "Host-Regel. Aus: kein Partnerschaden und kein Partner-Kampffokus. Client uebernimmt Host-Regel."
+    },
+    {
+      "id": "network.0",
+      "en": "Idle",
+      "de": "Bereit"
+    },
+    {
+      "id": "network.1",
+      "en": "Stopped",
+      "de": "Beendet"
+    },
+    {
+      "id": "network.2",
+      "en": "Connected: guest joined",
+      "de": "Verbunden: Client beigetreten"
+    },
+    {
+      "id": "network.3",
+      "en": "Connected: joined host",
+      "de": "Verbunden: Host beigetreten"
+    },
+    {
+      "id": "network.4",
+      "en": "Hosting: waiting for one guest",
+      "de": "Host: warte auf einen Client"
+    },
+    {
+      "id": "network.5",
+      "en": "Connecting to host",
+      "de": "Verbinde mit Host"
+    },
+    {
+      "id": "network.6",
+      "en": "Rejected: different protocol version",
+      "de": "Abgewiesen: andere Protokollversion"
+    },
+    {
+      "id": "network.7",
+      "en": "Rejected: different Gothic engine",
+      "de": "Abgewiesen: andere Gothic-Engine"
+    },
+    {
+      "id": "network.8",
+      "en": "Rejected: different content fingerprint",
+      "de": "Abgewiesen: unterschiedliche Spielinhalte"
+    },
+    {
+      "id": "network.9",
+      "en": "Rejected: different world",
+      "de": "Abgewiesen: andere Welt"
+    },
+    {
+      "id": "network.10",
+      "en": "Rejected: host already has one guest",
+      "de": "Abgewiesen: Host hat bereits einen Client"
+    },
+    {
+      "id": "network.11",
+      "en": "Rejected: unknown reason",
+      "de": "Abgewiesen: unbekannter Grund"
+    },
+    {
+      "id": "network.extra0",
+      "en": "WSAStartup failed",
+      "de": "Windows-Netzwerk konnte nicht gestartet werden"
+    },
+    {
+      "id": "network.extra1",
+      "en": "Disconnected by peer",
+      "de": "Partner hat die Verbindung getrennt"
+    },
+    {
+      "id": "network.extra2",
+      "en": "Peer timed out",
+      "de": "Zeitlimit der Partnerverbindung erreicht"
+    },
+    {
+      "id": "network.extra3",
+      "en": "Handshake timed out",
+      "de": "Zeitlimit beim Verbindungsaufbau erreicht"
+    },
+    {
+      "id": "network.extra4",
+      "en": "Host stopped",
+      "de": "Host beendet"
+    },
+    {
+      "id": "network.extra5",
+      "en": "Session closed",
+      "de": "Sitzung beendet"
+    },
+    {
+      "id": "network.extra6",
+      "en": "Preparing session",
+      "de": "Sitzung wird vorbereitet"
+    },
+    {
+      "id": "network.extra7",
+      "en": "Disconnected from Union menu",
+      "de": "Im Union-Menue getrennt"
+    },
+    {
+      "id": "network.extra8",
+      "en": "Union options opened: session closed; reconnect afterwards.",
+      "de": "Union-Optionen geoeffnet: Sitzung getrennt. Danach erneut verbinden."
+    },
+    {
+      "id": "script.cavalorn.active",
+      "en": "Co-op: We are helping Cavalorn fight the bandits near the cave.",
+      "de": "Co-op: Wir helfen Cavalorn gegen die Banditen bei der Hoehle."
+    },
+    {
+      "id": "script.cavalorn.done",
+      "en": "Co-op: The bandits are defeated and Cavalorn has completed the quest.",
+      "de": "Co-op: Die Banditen sind besiegt und Cavalorn hat die Aufgabe abgeschlossen."
+    },
+    {
+      "id": "script.cavalorn.letter",
+      "en": "Co-op: Cavalorn mentioned Vatras in Khorinis. This follow-up quest is not yet a shared test case.",
+      "de": "Co-op: Cavalorn hat uns auf Vatras in Khorinis hingewiesen. Diese Folgequest ist noch kein gemeinsamer Testfall."
+    }
+  ],
+  "menu": [
+    {
+      "symbol": "MenuItem_Union_Auto_ZweiklangCoop",
+      "index": 0,
+      "id": "menu_menuitem_union_auto_zweiklangcoop_0"
+    },
+    {
+      "symbol": "MenuItem_Union_Auto_ZweiklangCoop",
+      "index": 1,
+      "id": "menu_menuitem_union_auto_zweiklangcoop_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_CLIENT_LABEL",
+      "index": 0,
+      "id": "menu_menuitem_zk_client_label_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_CLIENT_INPUT",
+      "index": 1,
+      "id": "menu_menuitem_zk_client_input_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_CLIENT_EDIT",
+      "index": 1,
+      "id": "menu_menuitem_zk_client_edit_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_ROLE_LABEL",
+      "index": 0,
+      "id": "menu_menuitem_zk_role_label_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_ROLE_CHOICE",
+      "index": 0,
+      "id": "menu_menuitem_zk_role_choice_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_ROLE_CHOICE",
+      "index": 1,
+      "id": "menu_menuitem_zk_role_choice_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_START",
+      "index": 0,
+      "id": "menu_menuitem_zk_start_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_START",
+      "index": 1,
+      "id": "menu_menuitem_zk_start_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_LEAVE",
+      "index": 0,
+      "id": "menu_menuitem_zk_leave_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_LEAVE",
+      "index": 1,
+      "id": "menu_menuitem_zk_leave_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_TITLE",
+      "index": 0,
+      "id": "menu_menuitem_zk_title_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_GENDER_LABEL",
+      "index": 0,
+      "id": "menu_menuitem_zk_gender_label_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_GENDER_CHOICE",
+      "index": 0,
+      "id": "menu_menuitem_zk_gender_choice_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_GENDER_CHOICE",
+      "index": 1,
+      "id": "menu_menuitem_zk_gender_choice_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_NAME_LABEL",
+      "index": 0,
+      "id": "menu_menuitem_zk_name_label_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_NAME_INPUT",
+      "index": 1,
+      "id": "menu_menuitem_zk_name_input_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_HOST_LABEL",
+      "index": 0,
+      "id": "menu_menuitem_zk_host_label_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_HOST_INPUT",
+      "index": 1,
+      "id": "menu_menuitem_zk_host_input_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_PORT_LABEL",
+      "index": 0,
+      "id": "menu_menuitem_zk_port_label_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_PORT_INPUT",
+      "index": 1,
+      "id": "menu_menuitem_zk_port_input_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_LOG_LABEL",
+      "index": 0,
+      "id": "menu_menuitem_zk_log_label_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_LOG_CHOICE",
+      "index": 0,
+      "id": "menu_menuitem_zk_log_choice_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_LOG_CHOICE",
+      "index": 1,
+      "id": "menu_menuitem_zk_log_choice_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_ENGINE_LABEL",
+      "index": 0,
+      "id": "menu_menuitem_zk_engine_label_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_ENGINE_CHOICE",
+      "index": 0,
+      "id": "menu_menuitem_zk_engine_choice_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_ENGINE_CHOICE",
+      "index": 1,
+      "id": "menu_menuitem_zk_engine_choice_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_APPLY",
+      "index": 0,
+      "id": "menu_menuitem_zk_apply_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_APPLY",
+      "index": 1,
+      "id": "menu_menuitem_zk_apply_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_STATUS",
+      "index": 0,
+      "id": "menu_menuitem_zk_status_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_NAME_EDIT",
+      "index": 1,
+      "id": "menu_menuitem_zk_name_edit_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_HOST_EDIT",
+      "index": 1,
+      "id": "menu_menuitem_zk_host_edit_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_PORT_EDIT",
+      "index": 1,
+      "id": "menu_menuitem_zk_port_edit_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_FF_LABEL",
+      "index": 0,
+      "id": "menu_menuitem_zk_ff_label_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_FF_CHOICE",
+      "index": 0,
+      "id": "menu_menuitem_zk_ff_choice_0"
+    },
+    {
+      "symbol": "MENUITEM_ZK_FF_CHOICE",
+      "index": 1,
+      "id": "menu_menuitem_zk_ff_choice_1"
+    },
+    {
+      "symbol": "MENUITEM_ZK_LANGUAGE_LABEL",
+      "index": 0,
+      "id": "menu.language"
+    },
+    {
+      "symbol": "MENUITEM_ZK_LANGUAGE_CHOICE",
+      "index": 0,
+      "id": "menu.language_choices"
+    },
+    {
+      "symbol": "MENUITEM_ZK_LANGUAGE_CHOICE",
+      "index": 1,
+      "id": "menu.language_help"
+    },
+    {
+      "symbol": "MENUITEM_ZK_BACK",
+      "index": 0,
+      "id": "menu.back"
+    }
+  ],
+  "script": [
+    {
+      "symbol": "Patch_ZweiklangCore_CavalornActive",
+      "id": "script.cavalorn.active"
+    },
+    {
+      "symbol": "Patch_ZweiklangCore_CavalornDone",
+      "id": "script.cavalorn.done"
+    },
+    {
+      "symbol": "Patch_ZweiklangCore_CavalornLetter",
+      "id": "script.cavalorn.letter"
+    }
+  ]
+}

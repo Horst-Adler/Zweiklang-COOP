@@ -1,114 +1,25 @@
-# Selbst kompilieren
+# Building from source
 
-## Nachgewiesene Werkzeugkette
+## Toolchain
 
-- Windows, 32-Bit-Ziel `Win32`.
-- Visual Studio 2019 Build Tools bzw. Visual Studio mit **MSVC v142** und Windows-10-SDK.
-- C++17, Release-Konfiguration und dynamische Visual-C++-Laufzeit `/MD`.
-- MSBuild; `config/buildtools2019.vsconfig` nennt die verwendeten Installationskomponenten einschließlich SDK 19041.
-- Python 3 für die Archiv-/Konfigurations-/Publikationswerkzeuge. Der vollständige Build benötigt Python 3.12 und `zenkit==1.3.0.4` zum Bauen des eigenen Ninja-Archivs.
+Windows, MSVC v142, Windows 10 SDK, MSBuild, C++17, Release/Win32 and x86 Visual C++ runtime (`/MD`). The own localization builder uses standard Python. Building the own Ninja VDF additionally requires Python 3.12 with `zenkit==1.3.0.4`.
 
-Die Projektdateien wählen `WindowsTargetPlatformVersion=10.0`. Eine andere Compiler-/SDK-Kombination ist damit nicht automatisch als kompatibel bestätigt.
+The repository does not include an SDK. The examined external Union/ZenGin definitions are from `https://gitlab.com/gothiccoop/gothiccoop.git`, commit `0255381eeb86ea4b888f420fafaa4a10ee4d85e3`. Supply `UnionAfx.h`, `.build_settings.inl`, G2A/UserAPI definitions, Union SDK v1.0l and DirectX 7 headers/import libraries separately. The foreign co-op gameplay implementation is not linked.
 
-## Externe Union-/ZenGin-Abhängigkeit
-
-Das Repository enthält **kein SDK und keine fremden Importbibliotheken**.
-Der dokumentierte Referenzstand ist:
-
-- Repository: <https://gitlab.com/gothiccoop/gothiccoop.git>
-- Commit: `0255381eeb86ea4b888f420fafaa4a10ee4d85e3`
-
-Benötigt werden daraus die SDK-Definitionen und -Bibliotheken, insbesondere:
-
-```text
-UnionAfx.h
-.build_settings.inl
-ZenGin/Gothic_II_Addon/
-ZenGin/Gothic_UserAPI/
-SDK/Union/v1.0l/Include/
-SDK/Union/v1.0l/Lib/Shw32.lib
-SDK/Union/v1.0l/Lib/Vdfs32g.lib
-SDK/DirectX7/include/
-SDK/DirectX7/Lib/
-```
-
-Der Union-SDK-Stand `v1.0l` im Build und die untersuchte Union-Laufzeit `1.0m`
-sind unterschiedliche Angaben und kein erfundener Versionssprung. Die generische
-`UnionAfx.h`-Integration und die drei G2A-SDK-Definitionseinheiten werden mitgebaut;
-die fremde Koop-Spielimplementierung wird nicht kompiliert.
-
-Ein separat vorhandener Checkout kann direkt über `-SdkRoot` genutzt werden.
-Wer die SDK-Referenz beschafft, muss deren eigene Rechte und Voraussetzungen
-beachten. Fremde Dateien nicht in den Git-Index dieses Projekts aufnehmen.
-Ein geeigneter lokaler, ignorierter Ablageort ist `local/sdk/GothicCoop`.
-
-## Build aus dem Repository-Hauptverzeichnis
+## Commands
 
 ```powershell
-# Eigenständige Tests ohne Union-/Gothic-SDK:
-.\scripts\Build-Alpha.ps1 -TestsOnly
-
-# Eigene Ninja-VDF, DLL und Tests mit separat beschafftem SDK:
 python -m pip install zenkit==1.3.0.4
 .\scripts\Build-Alpha.ps1 -SdkRoot .\local\sdk\GothicCoop
 
-# Falls MSBuild nicht automatisch gefunden wird:
-.\scripts\Build-Alpha.ps1 -SdkRoot .\local\sdk\GothicCoop -MSBuildPath "C:\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+# Standalone C++ tests without the external game SDK:
+.\scripts\Build-Alpha.ps1 -TestsOnly
 ```
 
-Das letzte Beispiel bezeichnet einen selbst gewählten Werkzeugpfad, keine mitgelieferte Datei.
+Use `-MSBuildPath <MSBuild.exe>` and `-PythonPath <python.exe>` when needed. The full build first validates/generates `LocalizationCatalogue.h`, then builds the own Ninja VDF/hash header, then the DLL and technical suite. Preserve this order.
 
-Direkter Projektaufruf als Alternative (vorher eigene Ninja-VDF und Hashheader erzeugen):
+Outputs: `build/alpha/G2NotR/OreboundCoop.dll`, `build/alpha/ninja/OreboundCoop_Core.vdf`, its manifest and `build/alpha/tests/OreboundNetworkTests.exe`. Run tests from the checkout root so synthetic fixtures resolve.
 
-```powershell
-python .\scripts\Build-NinjaModule.py
-MSBuild .\src\ZweiklangCoop\ZweiklangCoop.vcxproj /m /p:Configuration=Release /p:Platform=Win32 /p:Game=G2NotR /p:SdkRoot="D:\SDK\GothicCoop\"
-MSBuild .\src\ZweiklangCoop\NetworkTests.vcxproj /m /p:Configuration=Release /p:Platform=Win32
-.\build\alpha\tests\ZweiklangNetworkTests.exe
-```
+Default tests include interactive DE/US keyboard checks. `--headless` explicitly skips only that check for a service session; the normal interactive run remains required. Real loopback UDP and file recovery tests do not execute Gothic. A successful build/static script check is not native Ninja/Union parser or two-PC gameplay acceptance.
 
-Die Test-EXE aus dem Repository-Hauptverzeichnis ausführen, damit die synthetischen
-Dateien unter `src/ZweiklangCoop/tests/fixtures` gefunden werden.
-
-## Ausgabe und Prüfungen
-
-| Datei | Bedeutung |
-|---|---|
-| `build/alpha/G2NotR/ZweiklangCoop.dll` | Eigene Win32-Union-DLL |
-| `build/alpha/tests/ZweiklangNetworkTests.exe` | Eigenständige technische Tests |
-| `build/logs/plugin.log` | Plugin-Buildprotokoll |
-| `build/logs/tests-build.log` | Test-Buildprotokoll |
-| `build/logs/tests.log` | Testausgabe |
-
-Die aktuelle Veröffentlichungsvorbereitung wurde mit der genannten lokalen
-Werkzeugkette neu gebaut. **3.413 Assertions bestanden**; Menü-Strukturprüfung
-und der zusätzliche Python-Check wurden ebenfalls ausgeführt. Die Tests prüfen
-unter anderem echte Loopback-UDP-Verbindungen, begrenzte Codecs, Wiederholungen,
-Recovery-Entscheidungen, Altformatdateien, Tastatureingaben und Konfiguration.
-
-Optionaler zusätzlicher Strukturcheck:
-
-```powershell
-python .\src\ZweiklangCoop\tests\CheckUnionMenu.py
-```
-
-Die Tests starten kein Gothic. Für native Engineabläufe bleibt ein gemeinsamer
-Zwei-PC-Spieltest erforderlich. Das Quellprojekt enthält zwar historische G1-
-Propertygruppen; die aktive Buildvalidierung erlaubt ausdrücklich nur `G2NotR`.
-Das ist keine Gothic-1-Freigabe.
-
-## Nach dem Build
-
-Nach [INSTALLATION.md](INSTALLATION.md) installieren. **Einmal bauen und genau
-dieselben DLL-/Skriptdateien auf beiden PCs verwenden.** Zwei getrennte Builds
-können trotz gleicher Versionsnummer unterschiedliche Binärhashes besitzen;
-die Inhaltsprüfung darf dann den Beitritt ablehnen. Buildprodukte und Protokolle
-bleiben lokal und sind durch `.gitignore` sowie die Publikationspositivliste ausgeschlossen.
-
-In nichtinteraktiven Windows-Dienstsitzungen kann das Testprogramm ausdrücklich mit `--headless` laufen. Nur der interaktive Tastaturlayouttest wird dabei sichtbar ausgelassen; den Standardlauf auf einem Desktop zusätzlich ausführen. `scripts/Test-ContentIdentity.ps1` prüft die kulturunabhängige Kennung auf PowerShell 5.1 und 7.
-
-
-Aktueller Charakterstand: [Alpha.31](docs/ALPHA-31.md), Protokoll 11. Persönliche NPC-Zustände, Schutz lokaler Fortschritte, besondere Bewegungen, Verwandlungen und reguläre Beschwörungen sind technisch implementiert; native Zwei-PC-Abnahme bleibt offen. Zusätzliche [Charakter-Testliste](docs/TEST-ALPHA31-CHARAKTERE.md).
-
-
-Alpha.32 erzeugt außerdem `build/alpha/ninja/ZweiklangCoop_Core.vdf` und ein Manifest. Kein Fremdinhalt wird eingebaut. Für einen bestimmten Interpreter `-PythonPath <python.exe>` angeben. `-TestsOnly` benötigt kein zenkit/SDK. Der automatisch erzeugte `NinjaArchiveHash.h` muss zum eigenen Archiv passen; Buildreihenfolge beibehalten. Native Ninja-/Union-Skriptparser und Zwei-PC-Spielabnahme bleiben offen.
+`scripts/Test-Tools.py` tests configuration preservation. `scripts/Audit-Publication.py --staged` verifies the complete explicit publication allowlist. Never stage original games, third-party archives, SDK binaries, real logs or website files.

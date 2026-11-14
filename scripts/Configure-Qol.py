@@ -30,7 +30,7 @@ def configure(game,loader_only=False):
     for relative in ['System/Gothic.ini','System/SystemPack.ini','System/Union.ini']:
         path=game/relative
         if path.exists() and path.read_bytes().startswith((b'\xff\xfe',b'\xfe\xff')):
-            raise ValueError('UTF-16-Laufzeitkonfiguration nicht unterstützt; keine Änderungen vorgenommen.')
+            raise ValueError('UTF-16 runtime configuration is not supported; no changes made.')
     gothic=game/'System/Gothic.ini'
     for key,value in ([] if loader_only else [('Strength','0'),('Perma','1'),('Anim','0'),('Weapon','1'),('Party','1')]):set_option(gothic,'NINJA_SPRINT',key,value)
     for key,value in ([] if loader_only else [('Key','RMB'),('Prefix','Erhalten:'),('UseAnimations','1'),('AnimSpeed','700')]):set_option(gothic,'NINJA_QUICKLOOT',key,value)
@@ -38,6 +38,6 @@ def configure(game,loader_only=False):
     if (game/'System/Union.ini').exists():set_option(game/'System/Union.ini','PLUGINS','PluginList','Ninja.dll**',merge=True)
 if __name__=='__main__':
     game=Path(sys.argv[1]).resolve()
-    if not (game/'System/Gothic2.exe').is_file():raise SystemExit('GamePath enthält keine Gothic2.exe.')
+    if not (game/'System/Gothic2.exe').is_file():raise SystemExit('GamePath does not contain Gothic2.exe.')
     configure(game,loader_only="--loader-only" in sys.argv[2:])
     print('QoL defaults and Union Ninja loader configured; existing personal/graphics/key settings preserved:',game)

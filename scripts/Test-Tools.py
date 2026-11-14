@@ -1,4 +1,4 @@
-"""Isolierte Regressionen der byteerhaltenden QoL-Konfiguration; keine Spielstarts."""
+"""Isolated byte-preserving QoL configuration regressions; no game starts."""
 from pathlib import Path
 import importlib.util,tempfile
 root=Path(__file__).resolve().parents[1]
@@ -11,7 +11,7 @@ cases=[
     (b'[NINJA_QUICKLOOT]\nKey=V\nPrefix=Beute:\nAnimSpeed=900',b''),
     (b'[VIDEO]\nvalue=2',b'[PLUGINS]\nPluginList=Ninja,Other.dll\n'),
 ]
-with tempfile.TemporaryDirectory(prefix='zweiklang-config-test-') as directory:
+with tempfile.TemporaryDirectory(prefix='orebound-config-test-') as directory:
     game=Path(directory).resolve()
     assert game.is_relative_to(Path(tempfile.gettempdir()).resolve())
     system=game/'System';system.mkdir()
@@ -36,6 +36,6 @@ with tempfile.TemporaryDirectory(prefix='zweiklang-config-test-') as directory:
     before={path.name:path.read_bytes() for path in system.iterdir()}
     try:module.configure(game)
     except ValueError:pass
-    else:raise AssertionError('Nicht unterstütztes Format wurde nicht abgelehnt')
+    else:raise AssertionError('Unsupported format was not rejected')
     assert before=={path.name:path.read_bytes() for path in system.iterdir()}
-print('PASS: fünf Konfigurationsfälle, vorhandene Werte/Kodierung, UTF-8-BOM und Idempotenz; UTF-16 vor jeder Änderung abgelehnt.')
+print('PASS: five configuration cases, retained values/encoding, UTF-8 BOM and idempotence; UTF-16 rejected before any mutation.')

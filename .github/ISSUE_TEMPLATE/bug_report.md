@@ -1,30 +1,15 @@
 ---
-name: Fehler melden
-about: Reproduzierbarer Fehler der Koop-Alpha
-title: ""
-labels: ""
-assignees: ""
+name: Bug report
+about: Report a reproducible Orebound Co-op issue
+title: "[Bug] "
+labels: bug
 ---
 
-## Umgebung
+## Environment
+Plugin build/protocol, Gothic/Union/Ninja versions, optional module profile, host/client UI languages.
 
-- Pluginversion / Commit:
-- Gothic-II-/Union-Version:
-- Weitere Plugins und deren Versionen:
-- Host oder Gast:
-- Neues Spiel oder passender bestehender Teststand:
+## Reproduction
+Steps, expected result, actual result, affected PC, timestamps/test markers and whether reconnect changes the result.
 
-## Reproduktion
-
-1.
-2.
-3.
-
-## Erwartetes und tatsächliches Verhalten
-
-## Diagnose
-
-Schritt-ID der Testmarke, Uhrzeit, betroffener PC und relevante Logauszüge.
-Vor Veröffentlichung Spielernamen, IPs, lokale Pfade und sonstige persönliche
-Inhalte prüfen und gegebenenfalls entfernen. Keine Spielstände, Originalarchive,
-Zugangsdaten oder vollständigen privaten Diagnosearchive öffentlich anhängen.
+## Evidence
+Attach only intentionally shared, redacted diagnostics. Remove personal names/addresses/secrets. Do not upload original games, SDKs or third-party archives. State which checks were performed in the native game and which were only automated.

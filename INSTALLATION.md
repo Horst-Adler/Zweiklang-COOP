@@ -1,56 +1,53 @@
-# Installation der Entwickler-Alpha.32
+# Installing Orebound Co-op Alpha.33
 
-Technisch implementiert, gemeinsame native Abnahme offen. Keine Spiele, SDKs oder fremden Plugins enthalten; kein öffentliches Fertig-Release vorausgesetzt.
+This is a developer build, not a completed campaign release. Close Gothic on both PCs and back up test saves before installing.
 
-## Basis und eigener Build
+## Prepare and build
 
-Gothic II DNdR 2.6-fix/LAA (x86), Union 1.0m und passende x86-VC++-Laufzeit separat auf beiden PCs vorbereiten. Das fremde `System/Autorun/Menu/zUnionMenu.d` aus der eigenen Union-Installation behalten oder dem Installer über `-UnionMenuScriptPath` bereitstellen. Vor Änderungen Spiele schließen und Spielstände sichern. Keine unterschiedlichen TCs oder unabhängig fortgeschrittenen Saves mischen.
+Use separately obtained Gothic II: Night of the Raven 2.6-fix/LAA, Union 1.0m, Ninja 4.1.16 and the matching x86 Visual C++ runtime. Retain your own `System/Autorun/Menu/zUnionMenu.d`, or supply it with `-UnionMenuScriptPath`. Follow [BUILDING.md](BUILDING.md).
 
-Nach [BUILDING.md](BUILDING.md) bauen. Eigene Runtime:
+The four own runtime files are:
 
 ```text
-System/Autorun/ZweiklangCoop.dll
-System/Autorun/ZweiklangCoop_Menu.d
-System/Autorun/ZweiklangCoop_Npc.d
-Data/ZweiklangCoop_Core.vdf
-System/ZweiklangCoop.ini
+System/Autorun/OreboundCoop.dll
+System/Autorun/OreboundCoop_Menu.d
+System/Autorun/OreboundCoop_Npc.d
+Data/OreboundCoop_Core.vdf
 ```
 
-Die Core-VDF enthält eigene Ninja-Skripte, kein Startbild. Das Originalmenü bleibt aktiv. Union ist Hauptkern; Ninja 4.1.16 ist die zusätzliche Pflichtlaufzeit. Toolkit, Quickloot, Sprint und PatchMenu sind für das Minimalprofil nicht erforderlich.
+Settings are stored in `System/OreboundCoop.ini`. The Core VDF contains our Ninja scripts, not a custom start screen.
 
-## Minimalprofil
-
-Ninja 4.1.16 separat installieren. Den Ninja-Loader registrieren, falls noch nicht vorhanden:
+## Minimal installation
 
 ```powershell
-python .\scripts\Configure-Qol.py "D:\Spiele\Gothic II" --loader-only
-.\scripts\Install-Alpha.ps1 -GamePath "D:\Spiele\Gothic II" -WhatIf
-.\scripts\Install-Alpha.ps1 -GamePath "D:\Spiele\Gothic II"
+python .\scripts\Configure-Qol.py "D:\Games\Gothic II" --loader-only
+.\scripts\Install-Orebound.ps1 -GamePath "D:\Games\Gothic II" -WhatIf
+.\scripts\Install-Orebound.ps1 -GamePath "D:\Games\Gothic II"
 ```
 
-`--loader-only` ergänzt ausschließlich `Ninja.dll**` in der Pluginliste der Spielkonfiguration; es erzeugt keine Komfortoptionen und ändert keine Grafikwerte. Vorhandene persönliche Werte bleiben erhalten. Der Installer installiert standardmäßig keine Komfortarchive. Bereits vorhandene Archive werden erhalten und geprüft, deshalb für ein wirklich minimales Profil alle vier Komfortarchive bei geschlossenem Spiel außerhalb von Data sichern/deaktivieren und den Installer erneut ausführen.
+The loader-only command adds Ninja to the game's plugin list without changing graphics or creating comfort settings. New profiles default to English. Existing legacy profiles retain personal settings and default to German if they do not already declare a language. Use the Union menu to select English/German and save the selection. `-Language en` or `-Language de` explicitly selects a language during installation.
 
-## Optionales Komfortprofil
+## Legacy migration
 
-Unterstützt werden Quickloot 1.9.5 und Sprint 2.4.0 **mit privater Koop-Brücke Revision 1**, Toolkit 16.0 und PatchMenu 1.1.1. Die untersuchten Komfortmodule benötigen unter Ninja 4 Toolkit; es wird bei expliziter Auswahl automatisch in die Dateiauswahl aufgenommen. Unverändertes Upstream-Quickloot/Sprint ist im Koop nicht sicher und wird abgewiesen.
+The installer backs up both old and new owned runtime files, saves, state and logs. It removes the exact old `ZweiklangCoop.dll`, two old Autorun scripts, old Core VDF and old INI from active paths after backing them up. Both DLL names must never be loaded together.
 
-Originaldateien selbst beschaffen. Brücken lokal erzeugen; Beispiel nur für Quickloot, mit benötigtem Toolkit im Eingabeordner:
+Existing `ZweiklangCoopState`, `ZweiklangLogs`, `ZWEIKLANG_RECOVERY.BIN`, `ZWEIKLANG_ACTORS.BIN` and legacy script symbols are deliberately retained when present. These are compatibility identifiers, not active product branding. Save/journal formats are unchanged. Existing native journal text remains historical text; new own entries use the selected language.
+
+## Optional comfort modules
+
+The minimal core requires none of the four comfort archives. Known Quickloot 1.9.5 and Sprint 2.4.0 require bridge revision 1; Toolkit 16.0 is a conditional dependency for those modules and PatchMenu 1.1.1. Obtain inputs separately and prepare local copies:
 
 ```powershell
-python .\scripts\Prepare-QolCompatibility.py --input .\local\originale --output .\local\qol-kompatibel --modules Quickloot
-.\scripts\Install-Alpha.ps1 -GamePath "D:\Spiele\Gothic II" -QolDirectory .\local\qol-kompatibel -OptionalModules Quickloot
+python .\scripts\Prepare-QolCompatibility.py --input .\local\originals --output .\local\compatible --modules Quickloot
+.\scripts\Install-Orebound.ps1 -GamePath "D:\Games\Gothic II" -QolDirectory .\local\compatible -OptionalModules Quickloot
 ```
 
-Für das vollständige bisherige Profil ohne `--modules` vorbereiten und `-OptionalModules Quickloot,Sprint,PatchMenu` verwenden. Alternativ einzelne Module auswählen. Ninja.dll im Eingabeordner ist für das reine Vorbereiten optional; als Spielbasis bleibt Ninja erforderlich. Hashes stehen in `config/Dependencies.json`. Fremde Ausgaben nicht veröffentlichen. Komfort-Voreinstellungen lassen sich bei Bedarf ohne `--loader-only` ergänzen; vorhandene Werte bleiben bestehen.
+Select `Quickloot,Sprint,PatchMenu` for the full examined profile. The installer includes required Toolkit in the selection. Retained optional files are validated; unknown versions are not enabled by a language or compatibility switch. Both peers need matching optional profiles and recalculated content IDs.
 
-## Sicherheit, Verbindung und Rückbau
+## Start, test and rollback
 
-Der Installer prüft die wirksamen Abhängigkeiten vor dem Schreiben, sichert betroffene Runtime-Dateien, installiert die vier eigenen Laufzeitdateien und berechnet die vollständige ContentId. Persönliche Konfiguration wird erhalten; neue Rollen-/Namensparameter überschreiben bestehende Profile nicht. Ingame im Union-Menü Rolle, Name, IP, Port, Figur und Friendly Fire prüfen. F6 Host, F7 beitreten, F8 trennen; zuerst eine Spielwelt laden und sichere Savebindung herstellen.
+Start Gothic manually. Configure role, name, IP, port and friendly fire under Union & Plugins. Load a compatible world/save and wait for full readiness. F6 hosts, F7 joins, F8 disconnects. Saving has coordinated pause controls; loading/world changes still disconnect. Shared one-click campaign saving is not released.
 
-Beide PCs brauchen denselben Build, Protokoll 11, dieselbe Welt und aktuell **dasselbe optionale Profil**. Unbekannte/geänderte oder nur auf einem PC vorhandene Erweiterungen nicht durch kopierte ContentId übergehen. Automatische Erkennung prüft zusätzlich tatsächlich geladene Skripte und Brückenrevisionen. Der Installer selbst startet kein Spiel und ändert keine Saves, Recovery-Dateien oder Windows-/VM-Einstellungen.
+Use new test slots. Begin with join/readiness, regular pickups, optional Quickloot separately, containers and sequential saving, then the Cavalorn route. [Test plan](docs/TESTPLAN-CAVALORN.md). English game-script compatibility and native language-switch/menu acceptance remain separate open tests.
 
-Rückbau: `scripts/Restore-Runtime.ps1 -Manifest <gesichertes-manifest.json> -GamePath <Spielpfad>`. Es werden nur explizit zugelassene Runtime-Dateien wiederhergestellt oder neu hinzugekommene deaktiviert. Keine Save-Rücksetzung. Vor älteren Builds separat die Save-/Formatkompatibilität prüfen.
-
-## Noch im Spiel zu prüfen
-
-Minimalprofil: Parser/Start, Beitritt/Bereitschaft, reguläres Aufheben, Leiche/Kiste, Speichern/Recovery, Händler, Cavalorn-EP. Komfortprofil zusätzlich Quickloot, Sprint und PatchMenu. Gesonderte Alpha.31-Charakterfälle separat abnehmen. Der kurze [Cavalorn-Test](docs/TESTPLAN-CAVALORN.md) ist keine komplette Kampagnenabnahme. [Modulvertrag und Grenzen](docs/UNION-NINJA.md).
+Restore only a verified runtime manifest with `scripts/Restore-Runtime.ps1`; it restores approved runtime files without resetting saves. Keep matching save/recovery backups before trying older builds.

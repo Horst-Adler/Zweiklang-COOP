@@ -1,15 +1,15 @@
-"""Lokale Koop-Brücken aus separat beschafften Originalarchiven erzeugen.
+"""Prepare local co-op bridges from separately obtained original archives.
 
-Fremde Archive werden nicht mit diesem Repository veröffentlicht.
+Third-party archives are not published with this repository.
 """
 from pathlib import Path
 import argparse,struct,hashlib,json,shutil,difflib
 parser=argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--input',type=Path,required=True,help='Ordner mit fünf separat beschafften Originaldateien')
-parser.add_argument('--output',type=Path,required=True,help='Lokaler Ausgabeordner außerhalb des Git-Index')
-parser.add_argument('--modules',nargs='*',choices=['Quickloot','Sprint','Toolkit','PatchMenu'],default=['Quickloot','Sprint','Toolkit','PatchMenu'],help='Nur gewählte Komfortmodule vorbereiten; Toolkit für abhängige Module automatisch ergänzen')
+parser.add_argument('--input',type=Path,required=True,help='Directory containing separately obtained selected original files')
+parser.add_argument('--output',type=Path,required=True,help='Local output directory outside the Git index')
+parser.add_argument('--modules',nargs='*',choices=['Quickloot','Sprint','Toolkit','PatchMenu'],default=['Quickloot','Sprint','Toolkit','PatchMenu'],help='Prepare selected optional modules only; include Toolkit for dependent modules')
 args=parser.parse_args();source=args.input.resolve();dest=args.output.resolve()
-if source==dest:raise SystemExit('Eingabe und Ausgabe müssen verschieden sein.')
+if source==dest:raise SystemExit('Input and output directories must differ.')
 expected={
  'Quickloot.vdf':'6676CC0D59CA803DF1D0E626AB1C3191FBEFEFF63EF6E823413395D22F0BBC34',
  'Sprint.vdf':'1A74DCC2986252D34F927526780DAAAFC045F6891511209EA892B496CC150E4C',
@@ -24,7 +24,7 @@ for name in needed:
     digest=expected[name]
     path=source/name
     if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest().upper()!=digest:
-        raise SystemExit('Fehlende oder abweichende Originaldatei: '+name)
+        raise SystemExit('Missing or unsupported original file: '+name)
 dest.mkdir(parents=True,exist_ok=True)
 def entries(raw):
     count=struct.unpack_from('<I',raw,272)[0];catalog=struct.unpack_from('<I',raw,288)[0]
@@ -84,4 +84,4 @@ for folder in ['Data','System']:
     for path in sorted((dest/folder).iterdir()):
         if path.is_file():files.append(dict(relative=path.relative_to(dest).as_posix(),sha256=hashlib.sha256(path.read_bytes()).hexdigest().upper(),bytes=path.stat().st_size))
 (dest/'manifest.json').write_text(json.dumps(dict(bridge_revision=1,changes=changes,files=files),indent=2),encoding='utf-8')
-print('Koop-Brücken erzeugt. Fremde Originale bleiben unverändert; Ausgabe nicht veröffentlichen.')
+print('Compatibility bridges prepared. Original inputs unchanged; do not publish the foreign output archives.')

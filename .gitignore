@@ -1,4 +1,4 @@
-# Lokale Originalspiele, Website und private Arbeitsdaten niemals veröffentlichen.
+# Never publish local games, the productive website or private working data.
 /games/
 /client/
 /website/
@@ -21,6 +21,8 @@
 **/saves_*/
 **/ZweiklangCoopState/
 **/ZweiklangLogs/
+**/OreboundCoopState/
+**/OreboundLogs/
 **/__pycache__/
 .vs/
 .vscode/
@@ -34,7 +36,8 @@
 *.tlog
 *.log
 *.ini
-!/config/ZweiklangCoop.example.ini
+!/config/OreboundCoop.example.ini
+!/config/legacy-ZweiklangCoop.example.ini
 *.exe
 *.dll
 *.lib
@@ -59,8 +62,8 @@
 *.zip
 *.7z
 *.bin
-# Ausschließlich vier geprüfte synthetische Eingaben des eigenen Serializers.
-!/src/ZweiklangCoop/tests/fixtures/Recovery17Store.bin
-!/src/ZweiklangCoop/tests/fixtures/Recovery17Checkpoint.bin
-!/src/ZweiklangCoop/tests/fixtures/Recovery18Store.bin
-!/src/ZweiklangCoop/tests/fixtures/Recovery18Checkpoint.bin
+# Only the four audited synthetic inputs emitted by the own serializer.
+!/src/OreboundCoop/tests/fixtures/Recovery17Store.bin
+!/src/OreboundCoop/tests/fixtures/Recovery17Checkpoint.bin
+!/src/OreboundCoop/tests/fixtures/Recovery18Store.bin
+!/src/OreboundCoop/tests/fixtures/Recovery18Checkpoint.bin
